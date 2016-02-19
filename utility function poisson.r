@@ -515,7 +515,8 @@ bv.n <-compiler::cmpfun(bv.n,options= c(suppressAll=TRUE)) # performance boost
 
 ############### write observation file #########################
 write.output <- function () {
-# this is to format the mating list to write to the observation file for this replicate
+# this is to format the mating list to write to the observation file for this replicate for the calculation of BV
+  # fertility first and then write the observations for body weight of kits
 set(mating.list, j = which(colnames(mating.list) %in% 
                              c("sire.id", "f0.dam", "dam.fert", "perm.env.ls", "sire.fert", "barren")), value= NULL)
 mating.list[, c("dam.id","birthyear.dam")

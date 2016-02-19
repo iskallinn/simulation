@@ -59,7 +59,7 @@ selection <- 1
 ############## Connection for output ##############
 
 # Rprof("profile2.out", line.profiling=TRUE)
-solutions <-numeric(n*nruns)
+# solutions <-numeric(n*nruns)
 setwd("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
 con <- file(description="results",open="w")
 cat("Gen","Gmean","Gvar","Fis","Obs.fert", "mean.phenotype.bs.females", "gen.value.bs", "mean.phenotype.bs.males","bw.var",sep="\t",file=con)
@@ -80,7 +80,7 @@ for (t in 1:nruns) {
     pedigree <- file(description = paste("pedigree", sep=""), open="w")
   }
 year <- 1
-runcounter <- sum(t)
+# runcounter <- sum(t)
 
 
 ############### Create base population ############
@@ -140,7 +140,7 @@ cat (0, mean(mating.list$dam.fert),var(mating.list$dam.fert),0,mean(mating.list$
      , mean(next.gen$direct.genetic.body.size),mean(next.gen.males$bs.phenotype), var(next.gen$direct.genetic.body.size), sep="\t",file=con)
 cat("\n",file=con)
 
-solutions[[year+(runcounter-1)]] <- mean(next.gen$bs.phenotype)
+# solutions[[year+(runcounter-1)]] <- mean(next.gen$bs.phenotype)
 
 if (make.obs.file == 1) {
   write.output()
@@ -193,7 +193,7 @@ mating.list <- dam.age ()  # checks the dam age and puts the effect for yearling
    }
    
    next.gen <- rbind(next.gen,old.females)
-      solutions[year+(runcounter-1)] <- c(mean(next.gen$bs.phenotype))
+      # solutions[year+(runcounter-1)] <- c(mean(next.gen$bs.phenotype))
 
     cat (y, mean(next.gen$fert),var(next.gen$fert),mean(mating.list$f0.dam)
          ,mean(mating.list$obs_fert), mean(next.gen$bs.phenotype), mean(next.gen$direct.genetic.body.size)
