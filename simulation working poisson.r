@@ -5,12 +5,12 @@ library(data.table)  # faster then data frames
 library(mvtnorm)     # generating random deviates from a multivariate normal distribution
 ############### Controls for simulation ############
 n.females <-  1000             # NUMBER OF FEMALES
-nruns <- 2                    # how many replicates of the simulation
-n <- 10                        # number of generation per replicate
+nruns <- 1                    # how many replicates of the simulation
+n <- 3                        # number of generation per replicate
 mating.method <- assortative   # mating method, random or assortative
-selection.method <- selection  # selection mating, selection = truncation,  no selection = next gen is chosen at random
-make.obs.file <- 0 # 1 = make observation file, 0 otherwise
- 
+selection.method <- blup  # selection mating, selection = truncation,  no selection = next gen is chosen at random
+make.obs.file <- 1 # 1 = make observation file, 0 otherwise
+use.true.sire <- 0 # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
 ############### Innter settings, change at own risk##########
 male.ratio <-  6               # MALE TO FEMALE RATIO
 male.inf <-  0.98              # % ODDS OF MALE BEING NOT BARREN
@@ -56,6 +56,7 @@ assortative <- 1
 random <- 0
 no.selection <- 0
 selection <- 1
+blup <- 2
 ############## Connection for output ##############
 
 # Rprof("profile2.out", line.profiling=TRUE)
@@ -72,6 +73,7 @@ for (t in 1:nruns) {
 
   if (make.obs.file == 1) {
   output <- file(description = paste("Replicate", sep=""), open="w")
+    
 #cat("ID","prodyear","damage","obs.fert", sep="\t", file=output) 
 #cat("\n", file= output) 
   }
@@ -79,6 +81,7 @@ for (t in 1:nruns) {
   if (make.obs.file == 1) {
     pedigree <- file(description = paste("pedigree", sep=""), open="w")
   }
+  
 year <- 1
 # runcounter <- sum(t)
 
@@ -120,21 +123,16 @@ pedfile <- make.pedfile.gen0()
 # We choose females to fit n.females, based on prop of old females
 # Note: currently all females are replaced in year 1
 
-if (selection.method == selection) {
+
   old.females <- sel.old.females ( gen0.females)
   next.gen <- sel.yearlings.females (gen1)
   next.gen.males <- sel.males (gen1)
   if("f0.dam" %in% colnames(old.females)) {
     set( old.females, j=which(colnames(old.females) %in% 
                                 "f0.dam")  , value=NULL )
-    }
+  }
   next.gen <- rbind(next.gen, old.females)
-} else if (selection.method == no.selection) {
-  old.females <- nosel.old.females(gen0.females) #old females
-  next.gen <- nosel.yearlings.females(gen1) # females
-  next.gen.males <- nosel.males(gen1)  # males
-  next.gen <- rbind(next.gen, old.females)
-}
+
 ############## First year statistics #######################
 cat (0, mean(mating.list$dam.fert),var(mating.list$dam.fert),0,mean(mating.list$obs_fert), mean(next.gen$bs.phenotype)
      , mean(next.gen$direct.genetic.body.size),mean(next.gen.males$bs.phenotype), var(next.gen$direct.genetic.body.size), sep="\t",file=con)
@@ -172,7 +170,14 @@ mating.list <- dam.age ()  # checks the dam age and puts the effect for yearling
                            *barren*semen.quality ) 
   set( mating.list, j=which(colnames(mating.list) %in% c("semen.quality","dam.age")) , value=NULL )
   
+  if (make.obs.file == 1) {
+    write.output()
+  }
+  
    kit.list <- bv.n()
+   if (selection.method== blup) {
+     solutions <- calculate.selection.index()
+   }
 ############### Selection of next generation    #############
    # See utility functions for method
    if (selection.method == selection) {
@@ -180,11 +185,11 @@ mating.list <- dam.age ()  # checks the dam age and puts the effect for yearling
      next.gen <- sel.yearlings.females (kit.list)
      next.gen.males <- sel.males (kit.list)
 ############### No selection of next generation #############
-   } else if (selection.method == no.selection ) {
-     old.females <- nosel.old.females ()
-     next.gen <- nosel.yearlings.females (kit.file_df)
-     next.gen.males <- nosel.males (kit.file_df)
-   }
+   } else if (selection.method == blup ) {
+     old.females <- selind.old.females ()
+     next.gen <- indexsel.yearlings.females (kit.list)
+     next.gen.males <- indsel.males (kit.list)
+   } 
    if("f0.dam" %in% colnames(old.females)) {
      set( old.females, j=which(colnames(old.females) %in% 
                                  "f0.dam")  , value=NULL )}
@@ -200,13 +205,10 @@ mating.list <- dam.age ()  # checks the dam age and puts the effect for yearling
          ,mean(next.gen.males$bs.phenotype),var(next.gen$direct.genetic.body.size), sep="\t",file=con)
    cat("\n",file=con)
    
-if (make.obs.file == 1) {
-  write.output()
-  }
    
    } 
-write.pedigree()
-
+# write.pedigree()
+# rm(mating.list)
 
 }
 close(con=con)

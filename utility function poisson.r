@@ -517,31 +517,37 @@ bv.n <-compiler::cmpfun(bv.n,options= c(suppressAll=TRUE)) # performance boost
 write.output <- function () {
 # this is to format the mating list to write to the observation file for this replicate for the calculation of BV
   # fertility first and then write the observations for body weight of kits
-set(mating.list, j = which(colnames(mating.list) %in% 
-                             c("sire.id", "f0.dam", "dam.fert", "perm.env.ls", "sire.fert", "barren")), value= NULL)
-mating.list[, c("dam.id","birthyear.dam")
-            :=lapply(.SD, function(x) as.integer(x)), .SDcols=1:2]
-
-for (i in 1:nrow(mating.list)) { # this is to change the parity into a two class thing
-  if (year - mating.list$birthyear.dam[i] == 1) {
-    mating.list$dam.age [i] <- as.integer(1)
-  }
-  else {
-    mating.list$dam.age[i] <- as.integer(2)
-  }
-}
-set(mating.list, j = which(colnames(mating.list) %in% 
-                             c("birthyear.dam")), value= NULL)   
+# set(mating.list, j = which(colnames(mating.list) %in% 
+#                              c("sire.id", "f0.dam", "dam.fert", "perm.env.ls", "sire.fert", "barren")), value= NULL)
+  mating.list[,`:=`(dam.age=0)]
+  
+  mating.list[, c("dam.id","birthyear.dam")
+            :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("dam.id","birthyear.dam")]
+  mating.list[,`:=`(prodyear=as.integer(year), 
+                    dam.age = ifelse( year-mating.list$birthyear.dam == 1, as.integer(1), as.integer(2)))]
+  
+# for (i in 1:nrow(mating.list)) { # this is to change the parity into a two class thing
+#   if (year - mating.list$birthyear.dam[i] == 1) {
+#     mating.list$dam.age [i] <- as.integer(1)
+#   }
+#   else {
+#     mating.list$dam.age[i] <- as.integer(2)
+#   }
+# }
+# set(mating.list, j = which(colnames(mating.list) %in%
+#                              c("birthyear.dam")), value= NULL)
 setkey(mating.list, dam.id)
 mating.list[mating.list,prodyear:=as.integer(year)]
+mating.list[, c("dam.id","dam.age")
+            :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("dam.id","dam.age")]
 
-if("f0" %in% colnames(mating.list)) {
-  set( mating.list, j=which(colnames(mating.list) %in% 
-                              "f0")  , value=NULL )
-}
-setcolorder(mating.list, c("dam.id", "prodyear" , "dam.age" , "obs_fert"))
-
-write.table(format(mating.list, nsmall=1), file= output, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
+# if("f0" %in% colnames(mating.list)) {
+#   set( mating.list, j=which(colnames(mating.list) %in%
+#                               "f0")  , value=NULL )
+# }
+# setcolorder(mating.list, c("dam.id", "prodyear" , "dam.age" , "obs_fert"))
+# x <- mating.list[,.(dam.id,prodyear,dam.age,obs_fert)]
+write.table(format(mating.list[,.(dam.id,prodyear,dam.age,obs_fert)], nsmall=1), file= output, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
 
 } 
 ############### make dam.age checks #################
@@ -562,10 +568,15 @@ dam.age <- function (){
 ############  Write pedigree file to DMU
  write.pedigree <- function ( ) {
    if (make.obs.file == 1) {
-
-   set(pedfile, j = which(colnames(pedfile) %in%
-                            "sex"), value=NULL )
-     write.table(pedfile, file= pedigree, col.names=FALSE, row.names=FALSE, quote=FALSE)
+     if (use.true.sire== 1) {
+       pedigree.true <- file(description = paste("pedigree.true", sep=""), open="w")
+       
+       write.table(pedfile[,.(id,true.sire,dam.id,birthyear)], file= pedigree.true, col.names=FALSE, row.names=FALSE, quote=FALSE)
+       close(pedigree.true)
+     }
+   # set(pedfile, j = which(colnames(pedfile) %in%
+   #                          "sex","true.sire"), value=NULL )
+     write.table(pedfile[,.(id,sire.assumed,dam.id,birthyear)], file= pedigree, col.names=FALSE, row.names=FALSE, quote=FALSE)
    close(con=pedigree)
      }
  }
