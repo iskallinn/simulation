@@ -264,7 +264,7 @@ sel.old.females <- function (y) {
   setkey(mating.list, obs_fert)
   setorder(mating.list, -obs_fert)
   if ("birthyear.dam" %in% colnames(mating.list)) {
-    mating.list <- subset(mating.list, year -birthyear.dam < 5) 
+    mating.list <- subset(mating.list, year -birthyear.dam < max.age.females) 
   }
   old.females <- mating.list[1:(n.females*prop.oldfemales),]
   set( old.females, j=which(colnames(old.females) %in% 
@@ -480,6 +480,19 @@ bv.n <- function () {
   
   ttt = trimPed(pedfile1,is.element( pedfile1$id, kit.list$id)) #trims the pedfile into only those related to kits
   t4 = cbind(pedfile1,ttt) #bind the logical vector to the temporary file
+  if( make.obs.file == 1) {
+    pedigree <- file(description = paste("pedigree", sep=""), open="w")
+    
+    write.table(pedfile1[,.(id,sire.assumed,dam.id,birthyear)], file= pedigree, col.names=FALSE, row.names=FALSE, quote=FALSE)
+    close(pedigree)}
+  if( use.true.sire == 1){
+    pedigree.true <- file(description = paste("pedigree.true", sep=""), open="w")
+    
+    write.table(pedfile1[,.(id,true.sire,dam.id,birthyear)], file= pedigree.true, col.names=FALSE, row.names=FALSE, quote=FALSE)
+    close(pedigree.true)}
+  
+   
+  
   t4 = subset(t4, ttt==TRUE) # delete everyone in the temporary pedigree who do not provide information on kits
   t4 <-as.data.frame(t4) # change temporary file into data frame since calcInbreeding expects a data frame
   f0 <- calcInbreeding(t4) # calculate inbreeding. NOTE This is what causes slowdown of program as the pedigree gets deeper
@@ -510,11 +523,12 @@ bv.n <- function () {
                                                    "sire.fert.1st","sire.fert.2nd","sire.bs.2nd"
                                                    ,"true.sire.fert","true.sire.bs", "true.sire.check")) , value=NULL ) # removes bv of parents
   return(kit.list)
-}
+} 
 bv.n <-compiler::cmpfun(bv.n,options= c(suppressAll=TRUE)) # performance boost
 
 ############### write observation file #########################
 write.output <- function () {
+
 # this is to format the mating list to write to the observation file for this replicate for the calculation of BV
   # fertility first and then write the observations for body weight of kits
 # set(mating.list, j = which(colnames(mating.list) %in% 
