@@ -468,9 +468,16 @@ bv.n <- function () {
   
   kit.list <- cbind (id,kit.list,  birthyear, sex,mendelian, true.sire, true.sire.check)
   # now check the true sire before calculating inbreeding
-  kit.list$true.sire.check <- ifelse( kit.list$sire.id.1st != kit.list$sire.id.2nd, rbinom(nrow(kit.list), 1, 0.85), 1) # 85% chance that the kits are sired by 2nd mating
+  kit.list$sire.id.2nd  <- ifelse( kit.list$sire.id.2nd == 0, kit.list$sire.id.1st, kit.list$sire.id.2nd) # puts the 1st sire into the 2nd sire column for single mated females
+  kit.list$sire.fert.2nd <- ifelse( kit.list$sire.id.2nd == kit.list$sire.id.1st, kit.list$sire.fert.1st, kit.list$sire.fert.2nd)
+  kit.list$sire.bs.2nd <- ifelse( kit.list$sire.id.2nd == kit.list$sire.id.1st, kit.list$sire.bs.1st, kit.list$sire.bs.2nd)
+  
+    kit.list$true.sire.check <- ifelse( kit.list$sire.id.1st != kit.list$sire.id.2nd, rbinom(nrow(kit.list), 1, 0.85), 1) # 85% chance that the kits are sired by 2nd mating
   kit.list$true.sire <- ifelse( kit.list$true.sire.check == 0, kit.list$sire.id.1st, kit.list$sire.id.2nd)
-  kit.list$true.sire <- ifelse( kit.list$sire.id.1st != 0 & kit.list$sire.id.2nd == 0, kit.list$sire.id.1st, kit.list$true.sire) # if the females are only mated once, the true sire is the first
+  # kit.list$true.sire <- ifelse( kit.list$sire.id.1st != 0 & kit.list$sire.id.2nd == 0, kit.list$sire.id.1st, kit.list$true.sire) # if the females are only mated once, the true sire is the first
+  
+
+  
   kit.list[, `:=`(true.sire.fert = ifelse(kit.list$true.sire == kit.list$sire.id.2nd, kit.list$sire.fert.2nd, kit.list$sire.fert.1st), 
               true.sire.bs = ifelse(kit.list$true.sire == kit.list$sire.id.2nd, kit.list$sire.bs.2nd, kit.list$sire.bs.1st))]
   

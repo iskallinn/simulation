@@ -16,8 +16,12 @@ selind.old.females <- function () {
     set( old.females, j=which(colnames(old.females) %in% 
                                 c("sire.id.1st","barren","dam.fert","sire.fert.1st","barren","sire.bs.1st", "dam.bs",
                                   "sire.id.2nd","sire.fert.2nd","sire.bs.2nd", "mating.will.1st.round",
-                                  "mating.will.2nd.round","blup.fert", "sem.blup.fert"))  , value=NULL )
-  return(old.females)
+                                  "mating.will.2nd.round"))  , value=NULL )
+    if("dam.age" %in% colnames(old.females)) {
+      set( old.females, j=which(colnames(old.females) %in% 
+                               c("dam.age"))  , value=NULL )
+    }
+    return(old.females)
 }  
 
 
