@@ -5,11 +5,11 @@ library(data.table)  # faster then data frames
 library(mvtnorm)     # generating random deviates from a multivariate normal distribution
 ############### Controls for simulation ############
 n.females <-  1000             # NUMBER OF FEMALES
-nruns <- 10                    # how many replicates of the simulation
-n <- 13                        # number of generation per replicate
+nruns <- 2                    # how many replicates of the simulation
+n <- 5                        # number of generation per replicate
 mating.method <- assortative   # mating method, random or assortative
 selection.method <- selection  # selection mating, selection = truncation,  no selection = next gen is chosen at random
-make.obs.file <- 1 # 1 = make observation file, 0 otherwise
+make.obs.file <- 0 # 1 = make observation file, 0 otherwise
 use.true.sire <- 0 # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
 ############### Innter settings, change at own risk##########
 male.ratio <-  6               # MALE TO FEMALE RATIO
@@ -60,8 +60,8 @@ blup <- 2
 ############## Connection for output ##############
 
 # Rprof("profile2.out", line.profiling=TRUE)
-# solutions <-numeric(n*nruns)
-setwd("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
+stat.crate <-matrix(0, nrow = (n+1)*nruns, ncol = 3)
+setwd("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/") 
 con <- file(description="results",open="w")
 cat("Gen","Gmean","Gvar","Fis","Obs.fert", "mean.phenotype.bs.females", "gen.value.bs", "mean.phenotype.bs.males","bw.var",sep="\t",file=con)
 cat("\n",file=con)
@@ -83,7 +83,7 @@ for (p in 1:nruns) {
   # }
   
 year <- 1
-# runcounter <- sum(t)
+runcounter <- sum(p)
 modify.dir.file ()
 
 ############### Create base population ############
@@ -106,6 +106,10 @@ mating.list = transform( mating.list,  obs_fert =  rpois(nrow(mating.list),
 
 set( mating.list, j=which(colnames(mating.list) %in% c("semen.quality","dam.age")) , value=NULL )
 
+if (runcounter == 1 ) {
+  stat.crate[1,2] <- nrow(mating.list)
+} else if (runcounter > 1) { 
+  stat.crate[year+(runcounter -1)*(n+1),2] <- nrow(mating.list)}
 mating.list <-  subset( mating.list,  obs_fert >  0 ) # remove females who are barren or mated with barren male
 # it is important to get rid of negative litter sizes! otherwise code crashes at many points
 
@@ -138,8 +142,13 @@ cat (0, mean(mating.list$dam.fert),var(mating.list$dam.fert),0,mean(mating.list$
      , mean(next.gen$direct.genetic.body.size),mean(next.gen.males$bs.phenotype), var(next.gen$direct.genetic.body.size), sep="\t",file=con)
 cat("\n",file=con)
 
-# solutions[[year+(runcounter-1)]] <- mean(next.gen$bs.phenotype)
-
+if (runcounter == 1) {
+  stat.crate[[1,1]] <- (mean(gen1$true.sire == gen1$sire.assumed))
+  stat.crate[1,3] <- nrow(gen1)
+} else if (runcounter > 1) {
+  stat.crate[[year+(runcounter -1)*(n+1),1]] <- (mean(gen1$true.sire == gen1$sire.assumed))
+stat.crate[year+(runcounter -1)*(n+1),3] <-nrow(gen1)
+  }
 if (make.obs.file == 1) {
   write.output()
 }
@@ -170,6 +179,9 @@ mating.list <- dam.age ()  # checks the dam age and puts the effect for yearling
                            *barren*semen.quality ) 
   set( mating.list, j=which(colnames(mating.list) %in% c("semen.quality","dam.age")) , value=NULL )
   
+  stat.crate[year+(runcounter -1)*(n+1),2] <- nrow(mating.list)
+  
+    mating.list <- subset(mating.list, obs_fert > 0)
   if (make.obs.file == 1) {
     write.output()
   }
@@ -198,8 +210,9 @@ mating.list <- dam.age ()  # checks the dam age and puts the effect for yearling
    }
    
    next.gen <- rbind(next.gen,old.females)
-      # solutions[year+(runcounter-1)] <- c(mean(next.gen$bs.phenotype))
-
+# gather up mean number of true sires
+   stat.crate[year+(runcounter -1)*(n+1),1] <- c(mean(kit.list$true.sire == kit.list$sire.assumed))
+   stat.crate[year+(runcounter -1)*(n+1),3] <- nrow(kit.list)
     cat (y, mean(next.gen$fert),var(next.gen$fert),mean(mating.list$f0.dam)
          ,mean(mating.list$obs_fert), mean(next.gen$bs.phenotype), mean(next.gen$direct.genetic.body.size)
          ,mean(next.gen.males$bs.phenotype),var(next.gen$direct.genetic.body.size), sep="\t",file=con)
@@ -211,7 +224,7 @@ mating.list <- dam.age ()  # checks the dam age and puts the effect for yearling
 # rm(mating.list)
 
 } 
-close(con=con)
+# close(con=con)
 if (make.obs.file == 1) {
   closeAllConnections()
 # close(con=output) 
