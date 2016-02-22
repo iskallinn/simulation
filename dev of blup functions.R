@@ -100,3 +100,14 @@ calculate.selection.index <- function () {
   }
   return(solutions)
 }
+
+
+modify.dir.file <- function () {
+  
+  dirfile <- readLines("bl_ass.DIR")
+  dirfile[8] <- c(paste("$DATA  ASCII (3,1,-9999) Replicate_",p, sep="")) # change the input file for BLUP so it uses the next outputfile
+  # file.create("bl_ass.DIR")
+  writeLines(dirfile, "bl_ass.DIR")
+  dirfile[25] <- c(paste("$VAR_STR 1 PED 2 ASCII pedigree_",p, sep="")) # change the input file for BLUP so it uses the next pedigree
+  writeLines(dirfile,"bl_ass.DIR")
+}

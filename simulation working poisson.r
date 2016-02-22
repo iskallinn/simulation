@@ -5,10 +5,10 @@ library(data.table)  # faster then data frames
 library(mvtnorm)     # generating random deviates from a multivariate normal distribution
 ############### Controls for simulation ############
 n.females <-  1000             # NUMBER OF FEMALES
-nruns <- 3                    # how many replicates of the simulation
+nruns <- 10                    # how many replicates of the simulation
 n <- 13                        # number of generation per replicate
 mating.method <- assortative   # mating method, random or assortative
-selection.method <- blup  # selection mating, selection = truncation,  no selection = next gen is chosen at random
+selection.method <- selection  # selection mating, selection = truncation,  no selection = next gen is chosen at random
 make.obs.file <- 1 # 1 = make observation file, 0 otherwise
 use.true.sire <- 0 # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
 ############### Innter settings, change at own risk##########
@@ -69,22 +69,22 @@ cat("\n",file=con)
 n.males <-  ceiling( n.females/male.ratio ) # calculates needed amount of males 
 
 
-for (t in 1:nruns) {
+for (p in 1:nruns) {
 
-  # if (make.obs.file == 1) {
-  # output <- file(description = paste("Replicate", sep=""), open="w")
-    
+  if (make.obs.file == 1) {
+  output <- file(description = paste("Replicate_",p, sep=""), open="w")
+  } 
 #cat("ID","prodyear","damage","obs.fert", sep="\t", file=output) 
 #cat("\n", file= output) 
-  }
   
-  if (make.obs.file == 1) {
-    pedigree <- file(description = paste("pedigree", sep=""), open="w")
-  }
+  
+  # if (make.obs.file == 1) {
+  #   pedigree <- file(description = paste("pedigree_",t, sep=""), open="w")
+  # }
   
 year <- 1
 # runcounter <- sum(t)
-
+modify.dir.file ()
 
 ############### Create base population ############
 gen0.females <- generate.base.females() # create females
@@ -210,10 +210,11 @@ mating.list <- dam.age ()  # checks the dam age and puts the effect for yearling
 # write.pedigree()
 # rm(mating.list)
 
-}
+} 
 close(con=con)
 if (make.obs.file == 1) {
-close(con=output) 
+  closeAllConnections()
+# close(con=output) 
   }
 closeAllConnections()
 # Rprof(NULL)

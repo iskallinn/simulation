@@ -488,7 +488,7 @@ bv.n <- function () {
   ttt = trimPed(pedfile1,is.element( pedfile1$id, kit.list$id)) #trims the pedfile into only those related to kits
   t4 = cbind(pedfile1,ttt) #bind the logical vector to the temporary file
   if( make.obs.file == 1) {
-    pedigree <- file(description = paste("pedigree", sep=""), open="w")
+    pedigree <- file(description = c(paste("pedigree_",p, sep="")), open="w")
     
     write.table(pedfile1[,.(id,sire.assumed,dam.id,birthyear)], file= pedigree, col.names=FALSE, row.names=FALSE, quote=FALSE)
     close(pedigree)}
