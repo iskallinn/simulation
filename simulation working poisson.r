@@ -1,6 +1,6 @@
-setwd("C:/Users/Notandi/Dropbox/Projects/simulation/")
-source("definitions.r")
-source("utility function poisson.r")
+# setwd("C:/Users/Notandi/Dropbox/Projects/simulation/")
+# source("definitions.r")
+# source("utility function poisson.r")
 ############## Connection for output ##############
 
 # Rprof("profile2.out", line.profiling=TRUE)
@@ -17,6 +17,7 @@ for (p in 1:nruns) {
 
   if (make.obs.file == 1) {
   output <- file(description = paste("Replicate_",p, sep=""), open="w")
+  phenotypes <- file(description = paste("Phenotypes",p, sep=""), open="w")
   } 
 #cat("ID","prodyear","damage","obs.fert", sep="\t", file=output) 
 #cat("\n", file= output) 
@@ -29,19 +30,14 @@ for (p in 1:nruns) {
 year <- 1
 runcounter <- sum(p)
 modify.dir.file ()
-
 ############### Create base population ############
 gen0.females <- generate.base.females() # create females
 effgen0.males <- generate.base.males() # create males
-
-############### Make mating list ##########################
 ################## assign each female a male,  based on his mating willingness ####
 mating.list <- mate (effgen0.males,gen0.females)
 ############### make gen 0 pedigree & and some bookkeeping ##############
 # This is not really needed at this point since all gen0 animals are unrelated
 
-# mating.list <- data.table( mating.list ) 
-# mating.list <- subset( mating.list,  sire.id>0 ) # remove the females who were not mated
 mating.list <- dam.age ()  
 
 mating.list = transform( mating.list,  obs_fert =  rpois(nrow(mating.list), 
@@ -56,14 +52,15 @@ if (runcounter == 1 ) {
   stat.crate[year+(runcounter -1)*(n+1),2] <- nrow(mating.list)}
 mating.list <-  subset( mating.list,  obs_fert >  0 ) # remove females who are barren or mated with barren male
 # it is important to get rid of negative litter sizes! otherwise code crashes at many points
-
 ############### Breeding value of offspring ###############################
 # put in dam id's and make genetic value of each kit for fertility
 # see utility functions for bv function
 gen1 <- bv()
 
 pedfile <- make.pedfile.gen0()
-
+if (selection.method == blup) {
+big.pedfile <- make.big.pedfile(gen1)
+}
 # At this point I think it is safe to delete some stuff from memory
 # Note that I skip the construction of pedfile1 here. I don't think it is needed. Will check on that later
 ############### Selection of first generation #########################################
@@ -80,7 +77,10 @@ pedfile <- make.pedfile.gen0()
                                 "f0.dam")  , value=NULL )
   }
   next.gen <- rbind(next.gen, old.females)
-
+  # add in next gen and gen1 to big pedigree
+  if (selection.method ==blup){
+  big.pedfile <- update.big.pedigree ()
+  }
 ############## First year statistics #######################
 cat (0, mean(mating.list$dam.fert),var(mating.list$dam.fert),0,mean(mating.list$obs_fert), mean(next.gen$bs.phenotype)
      , mean(next.gen$direct.genetic.body.size),mean(next.gen.males$bs.phenotype), var(next.gen$direct.genetic.body.size), sep="\t",file=con)
@@ -132,16 +132,18 @@ mating.list <- dam.age ()  # checks the dam age and puts the effect for yearling
   
    kit.list <- bv.n()
    if (selection.method== blup) {
+     big.pedfile <- make.big.pedfile(kit.list) # this makes the big pedigree with all animals in the pedigree
      solutions <- calculate.selection.index()
-   }
+     }
 ############### Selection of next generation    #############
    # See utility functions for method
    if (selection.method == selection) {
      old.females <- sel.old.females ( next.gen)
      next.gen <- sel.yearlings.females (kit.list)
      next.gen.males <- sel.males (kit.list)
-############### No selection of next generation #############
+############### Index selection of next generation #############
    } else if (selection.method == blup ) {
+     big.pedfile <- update.big.pedigree()
      old.females <- selind.old.females ()
      next.gen <- indexsel.yearlings.females (kit.list)
      next.gen.males <- indsel.males (kit.list)
@@ -167,11 +169,16 @@ mating.list <- dam.age ()  # checks the dam age and puts the effect for yearling
 # write.pedigree()
 # rm(mating.list)
 
+if (make.obs.file == 1) {
+   close(con=output) 
+  close(con = phenotypes)
+}
+
 } 
 # close(con=con)
-if (make.obs.file == 1) {
-  closeAllConnections()
-# close(con=output) 
-  }
+# if (make.obs.file == 1) {
+#   closeAllConnections()
+# # close(con=output) 
+#   }
 closeAllConnections()
 # Rprof(NULL)
