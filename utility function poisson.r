@@ -130,6 +130,7 @@ mate <- function (x,y) { # x = males, y = females
   # here I should reorder the dams that are leftovers to prioritize younger dams and the ones mated with shitty males
   mating.list.leftover <- as.matrix(mating.list.leftover) # way faster to loop through a matrix
   x <- as.matrix(x)
+  if (selection.method == blup){
   if (year == 1) {
  for ( i in 1:nrow(x) )  {
     #print(i)
@@ -157,7 +158,7 @@ mate <- function (x,y) { # x = males, y = females
       }
     }
  }}
-  if (year > 1) {
+  if (year == 2) {
     for ( i in 1:nrow(x) )  {
       #print(i)
       for ( j in 1:x[[i,18]] )  { 
@@ -180,6 +181,93 @@ mate <- function (x,y) { # x = males, y = females
             mating.list.leftover       [[ sum ( x$matings.left [ 1:( i - 1 ) ] ) + j, 17]] <-  x[[i,11]]         # body size of male
             
             break
+          }
+        }
+      }
+    }
+  }
+  
+  if (year > 2) {
+    for ( i in 1:nrow(x) )  {
+      #print(i)
+      for ( j in 1:x[[i,25]] )  { 
+        s <-  sum( x[1:i,25] ) # keeps track of how many females the male has been assigned
+        #         print(s)
+        #     print(j)
+        if (s < nrow(mating.list.leftover)) { # this is not a solution, need to make another controlling mechanism if the mating willingness
+          #exceeds the number of females to be mated
+          mating.list.leftover       [[s- ( j- 1 ),16]] <-  x[[i,1]]          # id of male
+          mating.list.leftover       [[s- ( j- 1 ),5]]  <-   x[[i,24]]          # semen.quality
+          mating.list.leftover       [[s- ( j- 1 ),18]] <-  x[[i,10]]          # fertility of male
+          mating.list.leftover       [[s- ( j- 1 ),17]] <-  x[[i,11]]          # body size of male
+        }
+        if (s> nrow(mating.list.leftover)) { 
+          while (sum(x[[ 1:(i-1) ,25]] ) + j <= nrow(mating.list.leftover) ) {
+            # Here i solve the problem of if the males have more mating willingness than the number of females
+            mating.list.leftover       [[ sum ( x$matings.left [ 1:( i - 1 ) ] ) + j, 16]] <-  x[[i,1]]          # id of male
+            mating.list.leftover       [[ sum ( x$matings.left [ 1:( i - 1 ) ] ) + j,  5]] <-  x[[i,24]]         # semen.quality
+            mating.list.leftover       [[ sum ( x$matings.left [ 1:( i - 1 ) ] ) + j, 18]] <-  x[[i,10]]         # fertility of male
+            mating.list.leftover       [[ sum ( x$matings.left [ 1:( i - 1 ) ] ) + j, 17]] <-  x[[i,11]]         # body size of male
+            
+            break
+          }
+        }
+      }
+    }
+  }
+  } else if (selection.method == selection) {
+    if (year == 1) {
+      for ( i in 1:nrow(x) )  {
+        #print(i)
+        for ( j in 1:x[[i,13]] )  { 
+          s <-  sum( x[1:i,13] ) # keeps track of how many females the male has been assigned
+          #         print(s)
+          #     print(j)
+          if (s < nrow(mating.list.leftover)) { # this is not a solution, need to make another controlling mechanism if the mating willingness
+            #exceeds the number of females to be mated
+            mating.list.leftover       [[s- ( j- 1 ),16]] <-  x[[i,1]]          # id of male
+            mating.list.leftover       [[s- ( j- 1 ),5]]  <-   x[[i,7]]          # semen.quality
+            mating.list.leftover       [[s- ( j- 1 ),18]] <-  x[[i,4]]          # fertility of male
+            mating.list.leftover       [[s- ( j- 1 ),17]] <-  x[[i,5]]          # body size of male
+          }
+          if (s> nrow(mating.list.leftover)) { 
+            while (sum(x[ 1:(i-1) ,13] ) + j <= nrow(mating.list.leftover) ) {
+              # Here i solve the problem of if the males have more mating willingness than the number of females
+              mating.list.leftover       [[ sum ( x[ 1:( i - 1 ),13 ] ) + j,16]] <-  x[[i,1]]          # id of male
+              mating.list.leftover       [[ sum ( x[ 1:( i - 1 ),13 ] ) + j, 5]] <-  x[[i,7]]         # semen.quality
+              mating.list.leftover       [[ sum ( x[ 1:( i - 1 ),13 ] ) + j, 18]] <-  x[[i,4]]         # fertility of male
+              mating.list.leftover       [[ sum ( x[ 1:( i - 1 ),13 ] ) + j, 17]] <-  x[[i,5]]         # body size of male
+              
+              break
+            }
+          }
+        }
+      }
+      }
+    if (year > 1) {
+      for ( i in 1:nrow(x) )  {
+        #print(i)
+        for ( j in 1:x[[i,18]] )  { 
+          s <-  sum( x[1:i,18] ) # keeps track of how many females the male has been assigned
+          #         print(s)
+          #     print(j)
+          if (s < nrow(mating.list.leftover)) { # this is not a solution, need to make another controlling mechanism if the mating willingness
+            #exceeds the number of females to be mated
+            mating.list.leftover       [[s- ( j- 1 ),16]] <-  x[[i,1]]          # id of male
+            mating.list.leftover       [[s- ( j- 1 ),5]]  <-   x[[i,17]]          # semen.quality
+            mating.list.leftover       [[s- ( j- 1 ),18]] <-  x[[i,10]]          # fertility of male
+            mating.list.leftover       [[s- ( j- 1 ),17]] <-  x[[i,11]]          # body size of male
+          }
+          if (s> nrow(mating.list.leftover)) { 
+            while (sum(x[[ 1:(i-1) ,18]] ) + j <= nrow(mating.list.leftover) ) {
+              # Here i solve the problem of if the males have more mating willingness than the number of females
+              mating.list.leftover       [[ sum ( x$matings.left [ 1:( i - 1 ) ] ) + j, 16]] <-  x[[i,1]]          # id of male
+              mating.list.leftover       [[ sum ( x$matings.left [ 1:( i - 1 ) ] ) + j,  5]] <-  x[[i,17]]         # semen.quality
+              mating.list.leftover       [[ sum ( x$matings.left [ 1:( i - 1 ) ] ) + j, 18]] <-  x[[i,10]]         # fertility of male
+              mating.list.leftover       [[ sum ( x$matings.left [ 1:( i - 1 ) ] ) + j, 17]] <-  x[[i,11]]         # body size of male
+              
+              break
+            }
           }
         }
       }
@@ -345,7 +433,10 @@ sel.yearlings.females <- function (x) { # x = kit.list
     if("f0.dam" %in% colnames(next.gen)) {
       set( next.gen, j=which(colnames(next.gen) %in% 
                                "f0.dam")  , value=NULL )
-      
+    }
+    if("prodyear" %in% colnames(next.gen)) {
+      set( next.gen, j=which(colnames(next.gen) %in% 
+                               "prodyear")  , value=NULL )
     }
     
     return (next.gen)
@@ -364,6 +455,11 @@ sel.males <- function (x) {
       set( next.gen.males, j=which(colnames(next.gen.males) %in% "f0.dam")  , value=NULL )
       
     }
+    if("prodyear" %in% colnames(next.gen.males)) {
+      set( next.gen.males, j=which(colnames(next.gen.males) %in% 
+                                     "prodyear")  , value=NULL )
+    }
+    
     return (next.gen.males)
     
     }
@@ -416,11 +512,21 @@ selind.old.females <- function () {
      set( next.gen, j=which(colnames(next.gen) %in% 
                               c("blup.fert", "sem.blup.fert"))  , value=NULL )
    }
+  if("blup.bwnov" %in% colnames(next.gen)) {
+    set( next.gen, j=which(colnames(next.gen) %in% 
+                             c("blup.bwnov", "sep.blup.bwnov"))  , value=NULL )
+  }
+  
    
-   next.gen <- merge(next.gen, solutions, by ="id", all.x=TRUE)
+   next.gen <- merge(next.gen, solutions, by ="id", all.x=TRUE) # merge solutions from blup to data.table containing the old females
    setkey(next.gen, blup.fert)
-   setorder(next.gen, -blup.fert)
-   mating.list <- subset(mating.list, year -birthyear.dam < max.age.females) 
+   next.gen <-merge(next.gen, solutions.bw, by="id", all.x=TRUE) # merge solutions from blup to data.table containing the old females
+   next.gen[, `:=`(index.bw = 100+ (blup.bwnov-mean(next.gen$blup.bwnov))/(sqrt(var(next.gen$blup.bwnov)))*10,
+                   index.fert =100+ (blup.fert-mean(next.gen$blup.fert))/(sqrt(var(next.gen$blup.fert)))*10)]
+   next.gen <- transform(next.gen, comb.ind = index.bw*weight.bw.old.females+index.fert*weight.fert.old.females)
+   next.gen <- subset(next.gen, year -birthyear < max.age.females) 
+   setkey(next.gen, comb.ind)
+      setorder(next.gen, -comb.ind)
    #then I will need to make rangering
    old.females <- next.gen[1:(n.females*prop.oldfemales),]
    set( old.females, j=which(colnames(old.females) %in% 
@@ -437,6 +543,11 @@ selind.old.females <- function () {
 ############### Index selection for females ################
 indexsel.yearlings.females <- function (x) { # x = kit.list  
    x <- merge(x, solutions, by= "id", all.x=TRUE) # merge to solutions of blup of fertility
+   x <- merge(x, solutions.bw, by="id", all.x=TRUE)
+   x[, `:=`(index.bw = 100+ (blup.bwnov-mean(x$blup.bwnov))/(sqrt(var(x$blup.bwnov)))*10,
+                   index.fert =100+ (blup.fert-mean(x$blup.fert))/(sqrt(var(x$blup.fert)))*10)]
+   x <- transform(x, comb.ind = index.bw*weight.bw.kits+index.fert*weight.fert.kits)
+   
    truncation.point <-  quantile( x$blup.fert,  probs =  quantile.setting ) 
    selection.candidates.females <- subset(x, blup.fert >= truncation.point) # throw away the smallest litters
    selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
@@ -448,15 +559,18 @@ indexsel.yearlings.females <- function (x) { # x = kit.list
      selection.candidates.females <- subset( selection.candidates.females, bs.phenotype < (roof.body.size+200)) #ease restrictions on size
      
    }
-   setkey(selection.candidates.females, bs.phenotype)           # in order to speed up ordering 
-   setorder(selection.candidates.females,-bs.phenotype)         # order the kits according to body size 
+   setkey(selection.candidates.females, comb.ind)           # in order to speed up ordering 
+   setorder(selection.candidates.females,-comb.ind)         # order the kits according to body size 
    next.gen <- selection.candidates.females[1:(n.females-nrow(old.females)),]              # take the biggest kits
    setkey(next.gen, id)
    next.gen[next.gen,obs_fert:=0]  
    if("f0.dam" %in% colnames(next.gen)) {
      set( next.gen, j=which(colnames(next.gen) %in% 
                               "f0.dam")  , value=NULL )
-     
+   }
+   if("prodyear" %in% colnames(next.gen)) {
+     set( next.gen, j=which(colnames(next.gen) %in% 
+                              "prodyear")  , value=NULL )
    }
    
    return (next.gen)
@@ -464,11 +578,15 @@ indexsel.yearlings.females <- function (x) { # x = kit.list
 ############### Index selection for males ##############
  indsel.males <- function (x) {
    x <- merge(x, solutions, by= "id", all.x=TRUE) # merge to solutions of blup of fertility
+   x <- merge(x, solutions.bw, by="id", all.x=TRUE)
+   x[, `:=`(index.bw = 100+ (blup.bwnov-mean(x$blup.bwnov))/(sqrt(var(x$blup.bwnov)))*10,
+            index.fert =100+ (blup.fert-mean(x$blup.fert))/(sqrt(var(x$blup.fert)))*10)]
+   x <- transform(x, comb.ind = index.bw*weight.bw.kits+index.fert*weight.fert.kits)
    truncation.point <-  quantile( x$blup.fert,  probs =  quantile.setting ) 
    selection.candidates.males <- subset(x, blup.fert >= truncation.point) # throw away the smallest litters
    selection.candidates.males <-  subset( selection.candidates.males,  sex  ==   1  ) # take the female kits
-   setkey(selection.candidates.males, bs.phenotype)           # in order to speed up ordering 
-   setorder(selection.candidates.males,-bs.phenotype)         # order the kits according to litter size 
+   setkey(selection.candidates.males, comb.ind)           # in order to speed up ordering 
+   setorder(selection.candidates.males,-comb.ind)         # order the kits according to litter size 
    next.gen.males <- selection.candidates.males[1:n.males,]              # take the kits from biggest litters
    set( next.gen.males, j=which(colnames(next.gen.males) %in%
                                   "perm.env.ls"), value=NULL)
@@ -476,6 +594,16 @@ indexsel.yearlings.females <- function (x) { # x = kit.list
      set( next.gen.males, j=which(colnames(next.gen.males) %in% "f0.dam")  , value=NULL )
      
    }
+   if("prodyear" %in% colnames(next.gen.males)) {
+     set( next.gen.males, j=which(colnames(next.gen.males) %in% 
+                              "prodyear")  , value=NULL )
+   }
+   # if("blup.fert" %in% colnames(next.gen.males)) {
+   #   set( next.gen.males, j=which(colnames(next.gen.males) %in% 
+   #                                  "blup.fert", "sep.blup.bwnov","index.bw","index.fert","blup.bwnov","comb.ind")  , value=NULL )
+   # }
+   
+   
    return (next.gen.males)
    
  }
@@ -527,13 +655,14 @@ if (year ==2) {
 # put in dam id's and make genetic value of each kit for fertility
 # common cause for crash was a negative litter size
 bv.n <- function () {
-  
-  
-  kit.list <- mating.list[rep(seq(nrow(mating.list)), obs_fert), # makes the kit list by expanding the mating list
+    kit.list <- mating.list[rep(seq(nrow(mating.list)), obs_fert), # makes the kit list by expanding the mating list
                           c("dam.id","sire.id.1st","dam.fert","sire.fert.1st","f0.dam","obs_fert","dam.bs","sire.bs.1st"
                             ,"perm.env.bs","birthyear.dam","sire.id.2nd","sire.fert.2nd","sire.bs.2nd") , with=F]
-  
-  id <- seq(1:sum(mating.list$obs_fert)) + max(pedfile$id) # makes ID
+  if ( selection.method == blup){
+  id <- seq(1:sum(mating.list$obs_fert)) + max(big.pedfile$id) # makes ID
+  } else {
+    id <- seq(1:sum(mating.list$obs_fert)) + max(pedfile$id) # makes ID
+} 
   birthyear <- rep (year, sum(mating.list$obs_fert)) # makes birthyear
   sex <- rbinom(sum(mating.list$obs_fert),1,0.5)+1 # makes sex, TODO check if this is true
   true.sire <- numeric(nrow(kit.list))
@@ -690,7 +819,6 @@ calculate.selection.index <- function () {
    system2("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/run_dmu4.bat", " bl_ass")
    # read the solutions and only keep the predictions of BV (they're not that right)
    solutions <- as.matrix(read.table(file="bl_ass.SOL"))
-   solutions <- solutions[-1:-sum(year+3),] # throw away the first lines
    solutions <- as.data.table(solutions)
    solutions <- subset(solutions, V1 == 4 ) # throw away the estimation of permanent environment
    set (solutions, j=c("V1","V2","V3", "V4", "V6", "V7"), value= NULL)
@@ -704,7 +832,6 @@ calculate.selection.index <- function () {
      system2("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/run_dmu4.bat", " bl_true")
      # read the solutions and only keep the predictions of BV (they're not that right)
      solutions <- as.matrix(read.table(file="bl_true.SOL"))
-     solutions <- solutions[-1:-sum(year+3),] # throw away the first lines
      solutions <- as.data.table(solutions)
      solutions <- subset(solutions, V1 == 4 ) # throw away the estimation of permanent environment
      set (solutions, j=c("V1","V2","V3", "V4", "V6", "V7"), value= NULL)
@@ -712,30 +839,49 @@ calculate.selection.index <- function () {
      
      kit.list1 <- merge(kit.list1, solutions, by= "id", all.x=TRUE)
    }
+   
    return(solutions)
  }
- 
+blup.bw.nov <- function () {
+# run blup on BW
+system2("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/run_dmu4.bat", " bw_nov")
+# read the solutions and only keep the predictions of BV (they're not that right)
+solutions.bw <- as.matrix(read.table(file="bw_nov.SOL"))
+solutions.bw <- as.data.table(solutions.bw)
+solutions.bw <- subset(solutions.bw, V1 == 4 ) # throw away the estimation of permanent environment
+set (solutions.bw, j=c("V1","V2","V3", "V4", "V6", "V7"), value= NULL)
+setnames(solutions.bw, c("V5","V8", "V9"),c("id", "blup.bwnov", "sep.blup.bwnov"))
+return (solutions.bw)
+}
 ############### Modify Dir file for fertility ################
- # this function changes the .DIR file for fertility 
+ # this function changes the .DIR file for fertility and BW
  modify.dir.file <- function () {
-   
+   # fertility modification
    dirfile <- readLines("bl_ass.DIR")
    dirfile[8] <- c(paste("$DATA  ASCII (3,1,-9999) Replicate_",p, sep="")) # change the input file for BLUP so it uses the next outputfile
    # file.create("bl_ass.DIR")
    writeLines(dirfile, "bl_ass.DIR")
    dirfile[25] <- c(paste("$VAR_STR 1 PED 2 ASCII pedigree_",p, sep="")) # change the input file for BLUP so it uses the next pedigree
    writeLines(dirfile,"bl_ass.DIR")
- }
+   
+   # bw modification
+   dirfile <- readLines("bw_nov.DIR")
+   dirfile[8] <- c(paste("$DATA  ASCII (4,1,-9999) Phenotypes",p, sep="")) # change the input file for BLUP so it uses the next outputfile
+   # file.create("bl_ass.DIR")
+   writeLines(dirfile, "bw_nov.DIR")
+   dirfile[25] <- c(paste("$VAR_STR 1 PED 2 ASCII Big_pedigree_",p, sep="")) # change the input file for BLUP so it uses the next pedigree
+   writeLines(dirfile,"bw_nov.DIR")
+   
+    }
  
-############### Create observation file for phenotypes
+############### Create observation file for phenotypes #################
 # currently only size
-create.obs.phenotypes <- function () {
-  kit.list[, c("dam.id","id")
-              :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("dam.id","id")]
-  kit.list[,`:=`(prodyear=as.integer(ifelse( sex == 1, year*(sex+6),year*(sex+8))))]
+create.obs.phenotypes <- function (x) {
+  x[, c("id","dam.id","own_littersize")
+              :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("id","dam.id","own_littersize")]
+  x[,`:=`(prodyear=as.integer(ifelse( sex == 1, year*(sex+6),year*(sex+8))))]
   # NOTE if simulation runs to 81 years, then year*sex will be the same for year 63 for dams and 81 for males
-  write.table(format(kit.list[,.(id,dam.id,prodyear,bs.phenotype)], nsmall=1, digits=2), file= phenotypes, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
-  close(con= phenotypes)
+  write.table(format(x[,.(id,dam.id,prodyear,own_littersize,bs.phenotype)], nsmall=1, digits=2), file= phenotypes, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
 }
 ############### Make gen1 big.pedfile
 make.big.pedfile <- function (x) {
@@ -756,7 +902,7 @@ make.big.pedfile <- function (x) {
   close(con=big.pedigree.con)
   return(big.pedfile)
 }
-########## Update big pedigree ############
+############### Update big pedigree ############
 update.big.pedigree <- function () {
   big.pedfile <- rbindlist( list (big.pedfile, 
                                   next.gen[,.(id,true.sire,sire.assumed,dam.id,sex,birthyear)],

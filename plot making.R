@@ -16,7 +16,7 @@ names( temp1 ) [names( temp1 )   ==   'Gmean.mean'] <-  'blup'
 temp2 <- subset(summarized.all, method=="trad")
 temp2 <- temp2 [keeps]
 names( temp2 ) [names( temp2 )   ==   'Gmean.mean'] <-  'trad'
-y <- seq(1:14)
+y <- seq(1:11)
 
 df <- cbind(temp1,temp2,y)
 
@@ -33,8 +33,8 @@ summarized.all <- rbind(summarized,summarized.blup)
 keeps <- c("Gen", "mean.phenotype.bs.females.mean","method") # choose what you want to keep
 summarized.all <- summarized.all[keeps]
 
-summarized.blup$method <- "blup"
-summarized$method <- "trad"
+# summarized.blup$method <- "blup"
+# summarized$method <- "trad"
 
 temp1 <- subset(summarized.all, method=="blup")
 keeps <- c("mean.phenotype.bs.females.mean")
@@ -44,7 +44,7 @@ names( temp1 ) [names( temp1 )   ==   'mean.phenotype.bs.females.mean'] <-  'blu
 temp2 <- subset(summarized.all, method=="trad")
 temp2 <- temp2 [keeps]
 names( temp2 ) [names( temp2 )   ==   'mean.phenotype.bs.females.mean'] <-  'trad'
-y <- seq(1:14)
+y <- seq(1:11)
 
 df <- cbind(temp1,temp2,y)
 
@@ -72,7 +72,7 @@ names( temp1 ) [names( temp1 )   ==   'Obs.fert.mean'] <-  'blup'
 temp2 <- subset(summarized.all, method=="trad")
 temp2 <- temp2 [keeps]
 names( temp2 ) [names( temp2 )   ==   'Obs.fert.mean'] <-  'trad'
-y <- seq(1:14)
+y <- seq(1:11)
 
 df <- cbind(temp1,temp2,y)
 
@@ -101,7 +101,7 @@ names( temp1 ) [names( temp1 )   ==   'mean.phenotype.bs.males.mean'] <-  'blup'
 temp2 <- subset(summarized.all, method=="trad")
 temp2 <- temp2 [keeps]
 names( temp2 ) [names( temp2 )   ==   'mean.phenotype.bs.males.mean'] <-  'trad'
-y <- seq(1:14)
+y <- seq(1:11)
 
 df <- cbind(temp1,temp2,y)
 
@@ -129,7 +129,7 @@ names( temp1 ) [names( temp1 )   ==   'Fis.mean'] <-  'blup'
 temp2 <- subset(summarized.all, method=="trad")
 temp2 <- temp2 [keeps]
 names( temp2 ) [names( temp2 )   ==   'Fis.mean'] <-  'trad'
-y <- seq(1:14)
+y <- seq(1:11)
 
 df <- cbind(temp1,temp2,y)
 
@@ -158,7 +158,7 @@ names( temp1 ) [names( temp1 )   ==   'Gvar.mean'] <-  'blup'
 temp2 <- subset(summarized.all, method=="trad")
 temp2 <- temp2 [keeps]
 names( temp2 ) [names( temp2 )   ==   'Gvar.mean'] <-  'trad'
-y <- seq(1:14)
+y <- seq(1:11)
 
 df <- cbind(temp1,temp2,y)
 

@@ -60,7 +60,7 @@ gen1 <- bv()
 pedfile <- make.pedfile.gen0()
 if (selection.method == blup) {
 big.pedfile <- make.big.pedfile(gen1)
-}
+create.obs.phenotypes (gen1)}
 # At this point I think it is safe to delete some stuff from memory
 # Note that I skip the construction of pedfile1 here. I don't think it is needed. Will check on that later
 ############### Selection of first generation #########################################
@@ -133,7 +133,9 @@ mating.list <- dam.age ()  # checks the dam age and puts the effect for yearling
    kit.list <- bv.n()
    if (selection.method== blup) {
      big.pedfile <- make.big.pedfile(kit.list) # this makes the big pedigree with all animals in the pedigree
+     create.obs.phenotypes (kit.list)
      solutions <- calculate.selection.index()
+     solutions.bw <- blup.bw.nov()
      }
 ############### Selection of next generation    #############
    # See utility functions for method

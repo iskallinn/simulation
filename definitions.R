@@ -3,7 +3,12 @@ library(gamlss.dist) # for making zero inflated poisson random deviates for mati
 library(pedigree)    # for calculating inbreeding and trimming pedigree
 library(data.table)  # faster then data frames
 library(mvtnorm)     # generating random deviates from a multivariate normal distribution
-
+############## Index weights ############
+# weights must sum to 1
+weight.fert.old.females <- 0.35
+weight.bw.old.females   <- 0.65
+weight.fert.kits        <- 0.35
+weight.bw.kits          <- 0.65
 ##############Switches, best left alone ###########
 assortative <- 1
 random <- 0
@@ -12,8 +17,8 @@ selection <- 1
 blup <- 2
 ############### Controls for simulation ############
 n.females <-  1000             # NUMBER OF FEMALES
-nruns <- 2                    # how many replicates of the simulation
-n <- 5                        # number of generation per replicate
+nruns <- 1                    # how many replicates of the simulation
+n <- 3                        # number of generation per replicate
 mating.method <- assortative   # mating method, random or assortative
 selection.method <- blup  # selection mating, selection = truncation,  no selection = next gen is chosen at random
 make.obs.file <- 1 # 1 = make observation file, 0 otherwise
