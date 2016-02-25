@@ -1,7 +1,7 @@
-generate.gen0 <- function ()  {
+generate.gen0 <- function (p)  { # p = is the loopcounter for the replicates
   #cat("ID","prodyear","damage","obs.fert", sep="\t", file=output) 
   #cat("\n", file= output) 
-  
+  p <- p
   
   if (make.obs.file == 1) {
     pedigree <- file(description = paste("pedigree_",p, sep=""), open="w")
@@ -9,7 +9,7 @@ generate.gen0 <- function ()  {
   year <- 1
   # runcounter <- sum(p)
   # if (selection.method == blup) {
-   modify.dir.file ()
+   modify.dir.file (p)
   # }
   ############### Create base population ############
   gen0.females <- generate.base.females() # create females

@@ -852,7 +852,7 @@ return (solutions.bw)
 }
 ############### Modify Dir file for fertility ################
  # this function changes the .DIR file for fertility and BW
- modify.dir.file <- function () {
+ modify.dir.file <- function (p) {
    # fertility modification
    dirfile <- readLines("bl_ass.DIR")
    dirfile[8] <- c(paste("$DATA  ASCII (3,1,-9999) Replicate_",p, sep="")) # change the input file for BLUP so it uses the next outputfile
