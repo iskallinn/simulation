@@ -46,6 +46,8 @@ pr.barren.one.mating.yearling     <- 0.8 # probability of single mated yearling 
 pr.barren.double.mating.yearling  <- 0.9 # probability of double mated yearling being barren
 pr.barren.one.mating.old          <- 0.9 # probability of single mated old female being barren
 pr.barren.double.mating.old       <- 0.95 # probaility of double mated old female being barren
+n.males <-  ceiling( n.females/male.ratio ) # calculates needed amount of males 
+
 
 ############# Variance settings for traits ###################
 variance.fertility     <-  0.0122738     # Genetic variance of fertility, live born
