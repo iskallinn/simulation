@@ -1,4 +1,4 @@
-generate.gen0 <- function (p)  { # p = is the loopcounter for the replicates
+generate.gen0 <- function (p,year)  { # p = is the loopcounter for the replicates
   #cat("ID","prodyear","damage","obs.fert", sep="\t", file=output) 
   #cat("\n", file= output) 
   p <- p
@@ -15,11 +15,11 @@ generate.gen0 <- function (p)  { # p = is the loopcounter for the replicates
   gen0.females <- generate.base.females() # create females
   effgen0.males <- generate.base.males() # create males
   ################## assign each female a male,  based on his mating willingness ####
-   mating.list <- mate (effgen0.males,gen0.females)
+   mating.list <- mate (effgen0.males,gen0.females,year)
   # ############### make gen 0 pedigree & and some bookkeeping ##############
   # # This is not really needed at this point since all gen0 animals are unrelated
   # 
-  mating.list <- dam.age (mating.list)
+  mating.list <- dam.age (mating.list, year)
   # 
   mating.list = transform( mating.list,  obs_fert =  rpois(nrow(mating.list),
                                                            lambda = exp(1.95 + perm.env.ls + dam.fert+dam.age))*barren*semen.quality)
@@ -36,12 +36,12 @@ generate.gen0 <- function (p)  { # p = is the loopcounter for the replicates
   # ############### Breeding value of offspring ###############################
   # # put in dam id's and make genetic value of each kit for fertility
   # # see utility functions for bv function
-  gen1 <- bv(mating.list, effgen0.males)
+  gen1 <- bv(mating.list, effgen0.males,year)
   # 
   pedfile <- make.pedfile.gen0(gen0.females,effgen0.males)
   if (selection.method == blup) {
-    big.pedfile <- make.big.pedfile(gen1, pedfile)
-    create.obs.phenotypes (gen1)}
+    big.pedfile <- make.big.pedfile(gen1, pedfile,year,p)
+    create.obs.phenotypes (gen1, year,p)}
   # # At this point I think it is safe to delete some stuff from memory
   # # Note that I skip the construction of pedfile1 here. I don't think it is needed. Will check on that later
   # ############### Selection of first generation #########################################
@@ -50,7 +50,7 @@ generate.gen0 <- function (p)  { # p = is the loopcounter for the replicates
   # # Note: currently all females are replaced in year 1
   # 
   # 
-  old.females <- sel.old.females ( gen0.females,mating.list)
+  old.females <- sel.old.females ( gen0.females,mating.list,year)
   next.gen <- sel.yearlings.females (gen1, old.females)
   next.gen.males <- sel.males (gen1)
   if("f0.dam" %in% colnames(old.females)) {
@@ -63,9 +63,12 @@ generate.gen0 <- function (p)  { # p = is the loopcounter for the replicates
     big.pedfile <- update.big.pedigree (big.pedfile, next.gen, next.gen.males)
   }
   # ############## First year statistics #######################
-  cat (0, mean(mating.list$dam.fert),var(mating.list$dam.fert),0,mean(mating.list$obs_fert), mean(next.gen$bs.phenotype)
+  con <- file(description="results",open="a")
+  
+  cat (year, mean(mating.list$dam.fert),var(mating.list$dam.fert),0,mean(mating.list$obs_fert), mean(next.gen$bs.phenotype)
        , mean(next.gen$direct.genetic.body.size),mean(next.gen.males$bs.phenotype), var(next.gen$direct.genetic.body.size), sep="\t",file=con)
   cat("\n",file=con)
+  close(con=con)
   # 
   # # if (runcounter == 1) {
   # #   # stat.crate[[1,1]] <- (mean(gen1$true.sire == gen1$sire.assumed))
@@ -75,7 +78,7 @@ generate.gen0 <- function (p)  { # p = is the loopcounter for the replicates
   #   # stat.crate[year+(runcounter -1)*(n+1),3] <-nrow(gen1)
   # # }
   if (make.obs.file == 1) {
-    write.output(mating.list)
+    write.output(mating.list,year,p)
   }
   # 
   # remove(mating.list,gen0.females,gen1,effgen0.males,old.females) #remove all the stuff I don't need anymore

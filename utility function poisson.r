@@ -77,7 +77,7 @@ generate.base.males <- function () {
   return (effgen0.males)
 }
 ############### Mating list and mate function #################
-mate <- function (x,y) { # x = males, y = females
+mate <- function (x,y,year) { # x = males, y = females
   mating.list <- x[rep(seq(nrow(x)), mating.willingness.1st),  #expands the male list into a mating list, based on mat.will.1st
                    c("id","fert", "direct.genetic.body.size", "semen.quality.1st","semen.quality.2nd","can.remate","mating.willingness.1st","mating.willingness.2nd") 
                    , with=F] #specify which columns to incl.
@@ -304,7 +304,7 @@ setkey(y, id)
 ############### Breeding value of offspring ###############################
 # put in dam id's and make genetic value of each kit for fertility
 # common cause for crash was a negative litter size
-bv <- function (x,y) { #x = mating.list, y= effgen0.males
+bv <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
   gen1 <- x[rep(seq(nrow(x)), obs_fert), 
             c("dam.id","sire.id.1st","dam.fert","sire.fert.1st","f0","obs_fert","dam.bs","sire.bs.1st"
               ,"perm.env.bs","birthyear.dam","sire.id.2nd","sire.fert.2nd","sire.bs.2nd") 
@@ -331,7 +331,7 @@ bv <- function (x,y) { #x = mating.list, y= effgen0.males
   #  gen1 <- count.sex.siblings(gen1) # calls function to count offspring NOT NEEDED ATM
   
   setnames(gen1, c("obs_fert","sire.id.2nd"), c("own_littersize","sire.assumed")) # renames obs_fert to own littersize of kits
-  gen1$dam.age <- ifelse( year - gen1$birthyear.dam > 1, 1,0 )
+  gen1$dam.age <- ifelse( z - gen1$birthyear.dam > 1, 1,0 )
   
   gen1$bs.phenotype <- ifelse( gen1$sex == 1,phenotype.bs.male(mean.body.size.male , gen1$direct.genetic.body.size , gen1$perm.env.bs , gen1$own_littersize, gen1$dam.age,x  ) 
                                , phenotype.bs.female(mean.body.size.female , gen1$direct.genetic.body.size , gen1$perm.env.bs,gen1$own_littersize,x )) 
@@ -347,7 +347,7 @@ bv <- function (x,y) { #x = mating.list, y= effgen0.males
 }
 ############### Selection of old females ###############################################
 # currently they are only truncated on their litter size phenotype
-sel.old.females <- function (y,x) { # y = gen0.females, x = x
+sel.old.females <- function (y,x, year) { # y = gen0.females, x = x
     setkey(x, obs_fert)
     setorder(x, -obs_fert)
     if ("birthyear.dam" %in% colnames(x)) {
@@ -506,7 +506,7 @@ nosel.males <- function (x) {
   }
 ############### Index selection of old females ###############################################
 # currently they are only truncated on their litter size phenotype
-selind.old.females <- function (x,y,z) { # x = next.gen, y = solutions, z = solutions.bw
+selind.old.females <- function (x,y,z,year) { # x = next.gen, y = solutions, z = solutions.bw
    
    if("blup.fert" %in% colnames(x)) {
      set( x, j=which(colnames(x) %in% 
@@ -624,7 +624,7 @@ make.barren.males <- function (x) { # x = next.gen.males
   return(x)
 } 
 ############### mating will of females #############
-mat.will <- function (x) { # x = next.gen
+mat.will <- function (x,year) { # x = next.gen
   x[,`:=`(dam.age = ifelse(year-birthyear != 1, 0,1))] # 1 = older females, 0 = yearlings
   
   x[,`:=`( # this makes the mating will of the females in the first round of matings
@@ -639,7 +639,7 @@ mat.will <- function (x) { # x = next.gen
   return(x)
 }
 ############### Update pedigree ########################
-update.pedigree <- function (x,y,z) { # x = pedfile, y = next.gen, z = next.gen.males
+update.pedigree <- function (x,y,z,year) { # x = pedfile, y = next.gen, z = next.gen.males
 if (year ==2) {
   x[,`:=`(true.sire = sire.id)]
   setnames(x, "sire.id", "sire.assumed")
@@ -654,7 +654,7 @@ if (year ==2) {
 ############### Breeding value of offspring in gen n###############################
 # put in dam id's and make genetic value of each kit for fertility
 # common cause for crash was a negative litter size
-bv.n <- function (x,y,z) { #x = mating.list, y = pedfile, z = big.pedfile
+bv.n <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big.pedfile
     kit.list <- x[rep(seq(nrow(x)), obs_fert), # makes the kit list by expanding the mating list
                           c("dam.id","sire.id.1st","dam.fert","sire.fert.1st","f0.dam","obs_fert","dam.bs","sire.bs.1st"
                             ,"perm.env.bs","birthyear.dam","sire.id.2nd","sire.fert.2nd","sire.bs.2nd") , with=F]
@@ -735,8 +735,8 @@ bv.n <- function (x,y,z) { #x = mating.list, y = pedfile, z = big.pedfile
 } 
 bv.n <-compiler::cmpfun(bv.n,options= c(suppressAll=TRUE)) # performance boost
 ############### write observation file #########################
-write.output <- function (x) { # x = mating.list
-
+write.output <- function (x,year,p) { # x = mating.list
+p <- p
 # this is to format the mating list to write to the observation file for this replicate for the calculation of BV
   # fertility first and then write the observations for body weight of kits
   x[,`:=`(dam.age=0)]
@@ -748,15 +748,21 @@ write.output <- function (x) { # x = mating.list
   setkey(x, dam.id)
 x[, c("dam.id","dam.age")
             :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("dam.id","dam.age")]
-
+if (year ==1 ) {
+  output <- file(description = paste("Replicate_",p, sep=""), open="w")
 write.table(format(x[,.(dam.id,prodyear,dam.age,obs_fert)], nsmall=1), file= output, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
-
+  close(con = output)
+} else if (year > 1) {
+  output <- file(description = paste("Replicate_",p, sep=""), open="a")
+  write.table(format(x[,.(dam.id,prodyear,dam.age,obs_fert)], nsmall=1), file= output, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
+  close(con = output)
+}
 } 
 ############### make dam.age checks #################
-dam.age <- function (x){ # x = mating.list
+dam.age <- function (x,y){ # x = mating.list, y = year
   dam.age <- numeric(nrow(x))
   for (i in 1:nrow(x)) { # this is to change the parity into a two class thing
-    if (year - x$birthyear.dam[i] == 1) {
+    if (y - x$birthyear.dam[i] == 1) {
       dam.age [i] <- yearling.effect
     }
     else {
@@ -843,7 +849,12 @@ blup.bw.nov <- function () {
 # run blup on BW
 system2("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/run_dmu4.bat", " bw_nov")
 # read the solutions and only keep the predictions of BV (they're not that right)
-solutions.bw <- as.matrix(read.table(file="bw_nov.SOL"))
+  #  if ( !file.exists('fort.70')) {
+  # now <-as.numeric(Sys.time()); howlong<-1; delt<-0; while(delt < howlong) 
+  #   { delt<-as.numeric(Sys.time())-now }
+  # }
+  solutions.bw <- as.matrix(read.table(file="C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/bw_nov.SOL"))
+  # }
 solutions.bw <- as.data.table(solutions.bw)
 solutions.bw <- subset(solutions.bw, V1 == 4 ) # throw away the estimation of permanent environment
 set (solutions.bw, j=c("V1","V2","V3", "V4", "V6", "V7"), value= NULL)
@@ -873,15 +884,22 @@ return (solutions.bw)
  
 ############### Create observation file for phenotypes #################
 # currently only size
-create.obs.phenotypes <- function (x) {
+create.obs.phenotypes <- function (x,year,p) {
   x[, c("id","dam.id","own_littersize")
               :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("id","dam.id","own_littersize")]
   x[,`:=`(prodyear=as.integer(ifelse( sex == 1, year*(sex+6),year*(sex+8))))]
   # NOTE if simulation runs to 81 years, then year*sex will be the same for year 63 for dams and 81 for males
+  if (year  == 1 ) {phenotypes <- file(description = paste("Phenotypes",p, sep=""), open="w")
   write.table(format(x[,.(id,dam.id,prodyear,own_littersize,bs.phenotype)], nsmall=1, digits=2), file= phenotypes, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
-}
+ close(con=phenotypes)
+   } else if (year > 1) {
+     phenotypes <- file(description = paste("Phenotypes",p, sep=""), open="a")
+      write.table(format(x[,.(id,dam.id,prodyear,own_littersize,bs.phenotype)], nsmall=1, digits=2), file= phenotypes, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
+      close(con=phenotypes)
+    }
+  }
 ############### Make gen1 big.pedfile
-make.big.pedfile <- function (x,y) { # x = gen1 or kit.list , y = pedfile
+make.big.pedfile <- function (x,y,year,p) { # x = gen1 or kit.list , y = pedfile, year = year
   if (year == 1){
     big.pedfile <- copy(y)
     big.pedfile[,`:=`(true.sire = sire.id)]
