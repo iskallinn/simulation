@@ -1,4 +1,7 @@
-generate.gen0 <- function (p,year)  { # p = is the loopcounter for the replicates
+############### Documentation ###################
+# This function connects all the underlying functions and goes through the first
+# generation and makes and selects offspring, creates a new pedigree
+RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   #cat("ID","prodyear","damage","obs.fert", sep="\t", file=output) 
   #cat("\n", file= output) 
   p <- p
@@ -9,17 +12,17 @@ generate.gen0 <- function (p,year)  { # p = is the loopcounter for the replicate
   year <- 1
   # runcounter <- sum(p)
   # if (selection.method == blup) {
-   modify.dir.file (p)
+  ModifyDIRFile (p)
   # }
   ############### Create base population ############
-  gen0.females <- generate.base.females() # create females
-  effgen0.males <- generate.base.males() # create males
+  gen0.females <- GenerateBaseFemales() # create females
+  effgen0.males <- GenerateBaseMales() # create males
   ################## assign each female a male,  based on his mating willingness ####
    mating.list <- mate (effgen0.males,gen0.females,year)
   # ############### make gen 0 pedigree & and some bookkeeping ##############
   # # This is not really needed at this point since all gen0 animals are unrelated
   # 
-  mating.list <- dam.age (mating.list, year)
+  mating.list <- YearlingEffectOnFertility (mating.list, year)
   # 
   mating.list = transform( mating.list,  obs_fert =  rpois(nrow(mating.list),
                                                            lambda = exp(1.95 + perm.env.ls + dam.fert+dam.age))*barren*semen.quality)
@@ -36,12 +39,12 @@ generate.gen0 <- function (p,year)  { # p = is the loopcounter for the replicate
   # ############### Breeding value of offspring ###############################
   # # put in dam id's and make genetic value of each kit for fertility
   # # see utility functions for bv function
-  gen1 <- bv(mating.list, effgen0.males,year)
+  gen1 <- MakeKitsGen0(mating.list, effgen0.males,year)
   # 
-  pedfile <- make.pedfile.gen0(gen0.females,effgen0.males)
+  pedfile <- MakePedfileGen0(gen0.females,effgen0.males)
   if (selection.method == blup) {
-    big.pedfile <- make.big.pedfile(gen1, pedfile,year,p)
-    create.obs.phenotypes (gen1, year,p)}
+    big.pedfile <- WriteBigPedigree(gen1, pedfile,year,p)
+    WriteObservationFileBodyWeight (gen1, year,p)}
   # # At this point I think it is safe to delete some stuff from memory
   # # Note that I skip the construction of pedfile1 here. I don't think it is needed. Will check on that later
   # ############### Selection of first generation #########################################
@@ -50,9 +53,9 @@ generate.gen0 <- function (p,year)  { # p = is the loopcounter for the replicate
   # # Note: currently all females are replaced in year 1
   # 
   # 
-  old.females <- sel.old.females ( gen0.females,mating.list,year)
-  next.gen <- sel.yearlings.females (gen1, old.females)
-  next.gen.males <- sel.males (gen1)
+  old.females <- PhenoSelectionOldFemales ( gen0.females,mating.list,year)
+  next.gen <- PhenoSelectionFemaleKits (gen1, old.females)
+  next.gen.males <- PhenoSelectionMaleKits (gen1)
   if("f0.dam" %in% colnames(old.females)) {
     set( old.females, j=which(colnames(old.females) %in%
                                 "f0.dam")  , value=NULL )
@@ -78,7 +81,7 @@ generate.gen0 <- function (p,year)  { # p = is the loopcounter for the replicate
   #   # stat.crate[year+(runcounter -1)*(n+1),3] <-nrow(gen1)
   # # }
   if (make.obs.file == 1) {
-    write.output(mating.list,year,p)
+    WriteFertObservations(mating.list,year,p)
   }
   # 
   # remove(mating.list,gen0.females,gen1,effgen0.males,old.females) #remove all the stuff I don't need anymore
@@ -89,4 +92,4 @@ generate.gen0 <- function (p,year)  { # p = is the loopcounter for the replicate
     return( list(next.gen,next.gen.males,pedfile,big.pedfile))
     }
 }
-generate.gen0 <-compiler::cmpfun(generate.gen0,options= c(suppressAll=TRUE)) # performance boost
+RunFirstYear <-compiler::cmpfun(RunFirstYear,options= c(suppressAll=TRUE)) # performance boost

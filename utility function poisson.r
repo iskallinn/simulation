@@ -1,17 +1,15 @@
 ############### Creation of Gen0 females ############
-
-# create a list for the females
-# create ID for females
-generate.base.females <- function () {
+# This function creates the base population of females
+GenerateBaseFemales <- function () {
   id        <-  seq(1:n.females)
   #   fert      <-  rnorm(n.females)*sqrt(variance.fertility)
   add.gen <- as.data.table(rmvnorm(n.females,sigma=sigma))
-  colnames(add.gen) <- c("fert","direct.genetic.body.size")
-  perm.env.ls <- rnorm(n.females)*sqrt(var.perm.env.ls)
-  sex       <-  rep(2, times = n.females)
-  dam.id    <-  rep(0, times = n.females) 
-  sire.id   <-  rep(0, times = n.females)
-  birthyear <-  rep(0, times = n.females)
+  colnames(add.gen)     <- c("fert","direct.genetic.body.size")
+  perm.env.ls           <- rnorm(n.females)*sqrt(var.perm.env.ls)
+  sex                   <-  rep(2, times = n.females)
+  dam.id                <-  rep(0, times = n.females) 
+  sire.id               <-  rep(0, times = n.females)
+  birthyear             <-  rep(0, times = n.females)
   mating.will.1st.round <- rbinom( n.females, 1, mating.will.yearling.1st)
   mating.will.2nd.round <- numeric(n.females)
   #create breeding value of fertility for females
@@ -33,8 +31,8 @@ generate.base.females <- function () {
   return (gen0.females)
 }
 ############### Creation of Gen0 males#######################################
-# create a list for the males
-generate.base.males <- function () {
+# This function creates  the base population of males
+GenerateBaseMales <- function () {
   mating.willingness.1st <-  numeric( n.males )  # preallocate a numeric vector
   mating.willingness.2nd  <-  numeric( n.males)
   semen.quality.1st      <-  numeric( n.males )  # preallocate a numeric vector
@@ -77,6 +75,14 @@ generate.base.males <- function () {
   return (effgen0.males)
 }
 ############### Mating list and mate function #################
+# This functions performs the mating in both the first and subsequent generations
+# It works on a simple principle, it first expands the male list by their mating 
+# mating willingness and allocates each female a mate. Based on if the male 
+# is allowed to remate, the male is then remated first with "their" females
+# otherwise the males with "left over" matings are iterated through the list 
+# of females using an inefficient looping function, it would speed up the program
+# if a more lean method could be thought out to perform it. 
+
 mate <- function (x,y,year) { # x = males, y = females
   mating.list <- x[rep(seq(nrow(x)), mating.willingness.1st),  #expands the male list into a mating list, based on mat.will.1st
                    c("id","fert", "direct.genetic.body.size", "semen.quality.1st","semen.quality.2nd","can.remate","mating.willingness.1st","mating.willingness.2nd") 
@@ -292,8 +298,8 @@ mate <- function (x,y,year) { # x = males, y = females
 } 
 mate <-compiler::cmpfun(mate,options= c(suppressAll=TRUE)) # performance boost
 ############### make gen 0 pedigree & and some bookkeeping ##############
-# This is not really needed at this point since all gen0 animals are unrelated
-make.pedfile.gen0 <- function(x,y) { #x = gen0 females, y = effgen0.males
+# This function makes the pedfile for the first generation which is then expanded upon each generation
+MakePedfileGen0 <- function(x,y) { #x = gen0 females, y = effgen0.males
 setkey(x, id)
 setkey(y, id)
   pedfile <- x[,.(id,sire.id,dam.id,sex,birthyear)] #use .(colnames) instead of c(colnames) in data.table
@@ -302,9 +308,9 @@ setkey(y, id)
   return (pedfile)
 } 
 ############### Breeding value of offspring ###############################
-# put in dam id's and make genetic value of each kit for fertility
-# common cause for crash was a negative litter size
-bv <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
+# This function creates the kits for the first generation only, since the 
+# subsequent generation is more complex this is the only instance of it
+MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
   gen1 <- x[rep(seq(nrow(x)), obs_fert), 
             c("dam.id","sire.id.1st","dam.fert","sire.fert.1st","f0","obs_fert","dam.bs","sire.bs.1st"
               ,"perm.env.bs","birthyear.dam","sire.id.2nd","sire.fert.2nd","sire.bs.2nd") 
@@ -347,7 +353,7 @@ bv <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
 }
 ############### Selection of old females ###############################################
 # currently they are only truncated on their litter size phenotype
-sel.old.females <- function (y,x, year) { # y = gen0.females, x = x
+PhenoSelectionOldFemales <- function (y,x, year) { # y = gen0.females, x = x
     setkey(x, obs_fert)
     setorder(x, -obs_fert)
     if ("birthyear.dam" %in% colnames(x)) {
@@ -413,7 +419,7 @@ sel.old.females <- function (y,x, year) { # y = gen0.females, x = x
     
   }  
 ############### Selection of yearling females in 1st gen ###############################
-sel.yearlings.females <- function (x,y) { # x = kit.list, y = y  
+PhenoSelectionFemaleKits <- function (x,y) { # x = kit.list, y = y  
     truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting ) 
     selection.candidates.females <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
     selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
@@ -442,7 +448,7 @@ sel.yearlings.females <- function (x,y) { # x = kit.list, y = y
     return (next.gen)
   }
 ############### Selection of yearling males in 1st gen ###############################
-sel.males <- function (x) {
+PhenoSelectionMaleKits <- function (x) {
     truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting ) 
     selection.candidates.males <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
     selection.candidates.males <-  subset( selection.candidates.males,  sex  ==   1  ) # take the female kits
@@ -506,7 +512,7 @@ nosel.males <- function (x) {
   }
 ############### Index selection of old females ###############################################
 # currently they are only truncated on their litter size phenotype
-selind.old.females <- function (x,y,z,year) { # x = next.gen, y = solutions, z = solutions.bw
+IndSelectionOldFemales <- function (x,y,z,year) { # x = next.gen, y = solutions, z = solutions.bw
    
    if("blup.fert" %in% colnames(x)) {
      set( x, j=which(colnames(x) %in% 
@@ -541,7 +547,7 @@ selind.old.females <- function (x,y,z,year) { # x = next.gen, y = solutions, z =
  }  
  
 ############### Index selection for females ################
-indexsel.yearlings.females <- function (x,y,z,q) { # x = kit.list , y = solutions, z = solutions.bw, q = old.females 
+IndSelFemaleKits <- function (x,y,z,q) { # x = kit.list , y = solutions, z = solutions.bw, q = old.females 
    x <- merge(x, y, by= "id", all.x=TRUE) # merge to solutions of blup of fertility
    x <- merge(x, z, by="id", all.x=TRUE)
    x[, `:=`(index.bw = 100+ (blup.bwnov-mean(x$blup.bwnov))/(sqrt(var(x$blup.bwnov)))*10,
@@ -576,7 +582,7 @@ indexsel.yearlings.females <- function (x,y,z,q) { # x = kit.list , y = solution
    return (next.gen)
  }
 ############### Index selection for males ##############
- indsel.males <- function (x,y,z) { # x = kit.list, y = solutions, z = solutions.bw
+ IndSelMaleKits <- function (x,y,z) { # x = kit.list, y = solutions, z = solutions.bw
    x <- merge(x, y, by= "id", all.x=TRUE) # merge to solutions of blup of fertility
    x <- merge(x, z, by="id", all.x=TRUE)
    x[, `:=`(index.bw = 100+ (blup.bwnov-mean(x$blup.bwnov))/(sqrt(var(x$blup.bwnov)))*10,
@@ -609,9 +615,8 @@ indexsel.yearlings.females <- function (x,y,z,q) { # x = kit.list , y = solution
  }
  
  
- ############## script for running BLUP ##############
 ############### Make barren males ##################
-make.barren.males <- function (x) { # x = next.gen.males 
+PrepareMalesForMating <- function (x) { # x = next.gen.males 
   setkey(x, id)
   #   next.gen.males[next.gen.males,semen.quality:=rbinom( nrow(next.gen.males),  1,  male.inf )]
   #   next.gen.males[next.gen.males,mating.willingness:=rZIP( nrow(next.gen.males),  mu = male.ratio,  sigma = 0.05 )]
@@ -624,7 +629,7 @@ make.barren.males <- function (x) { # x = next.gen.males
   return(x)
 } 
 ############### mating will of females #############
-mat.will <- function (x,year) { # x = next.gen
+PrepareFemalesForMating <- function (x,year) { # x = next.gen
   x[,`:=`(dam.age = ifelse(year-birthyear != 1, 0,1))] # 1 = older females, 0 = yearlings
   
   x[,`:=`( # this makes the mating will of the females in the first round of matings
@@ -639,7 +644,7 @@ mat.will <- function (x,year) { # x = next.gen
   return(x)
 }
 ############### Update pedigree ########################
-update.pedigree <- function (x,y,z,year) { # x = pedfile, y = next.gen, z = next.gen.males
+UpdatePedigree <- function (x,y,z,year) { # x = pedfile, y = next.gen, z = next.gen.males
 if (year ==2) {
   x[,`:=`(true.sire = sire.id)]
   setnames(x, "sire.id", "sire.assumed")
@@ -654,7 +659,7 @@ if (year ==2) {
 ############### Breeding value of offspring in gen n###############################
 # put in dam id's and make genetic value of each kit for fertility
 # common cause for crash was a negative litter size
-bv.n <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big.pedfile
+MakeKitsGenN <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big.pedfile
     kit.list <- x[rep(seq(nrow(x)), obs_fert), # makes the kit list by expanding the mating list
                           c("dam.id","sire.id.1st","dam.fert","sire.fert.1st","f0.dam","obs_fert","dam.bs","sire.bs.1st"
                             ,"perm.env.bs","birthyear.dam","sire.id.2nd","sire.fert.2nd","sire.bs.2nd") , with=F]
@@ -721,8 +726,10 @@ bv.n <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big.pedfile
   
   setnames(kit.list, "obs_fert", "own_littersize") # changes obs fert into the littersize of the kit
   kit.list$dam.age <- ifelse( year - kit.list$birthyear.dam > 1, 1,0 )
-  kit.list$bs.phenotype <- ifelse( kit.list$sex == 1,phenotype.bs.male(mean.body.size.male , kit.list$direct.genetic.body.size , kit.list$perm.env.bs , kit.list$own_littersize, kit.list$dam.age ,x ) 
-                                   , phenotype.bs.female(mean.body.size.female , kit.list$direct.genetic.body.size , kit.list$perm.env.bs,kit.list$own_littersize,x )) 
+  kit.list$bs.phenotype <- ifelse( kit.list$sex == 1,MakePhenotypesBWMales ( mean.body.size.male ,
+  kit.list$direct.genetic.body.size , kit.list$perm.env.bs , kit.list$own_littersize, kit.list$dam.age ,x ) ,
+  MakePhenotypesBWFemales(mean.body.size.female ,kit.list$direct.genetic.body.size , 
+  kit.list$perm.env.bs, kit.list$own_littersize,x )) 
   # generate phenotype for body size
   
   kit.list[,`:=`(perm.env.bs = rnorm(sum(x$obs_fert))*sqrt(var.body.size.spec.env))] # generate specific env. for body size
@@ -733,9 +740,11 @@ bv.n <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big.pedfile
                                                    ,"true.sire.fert","true.sire.bs", "true.sire.check")) , value=NULL ) # removes bv of parents
   return(kit.list)
 } 
-bv.n <-compiler::cmpfun(bv.n,options= c(suppressAll=TRUE)) # performance boost
+MakeKitsGenN <-compiler::cmpfun(MakeKitsGenN,options= c(suppressAll=TRUE)) # performance boost
 ############### write observation file #########################
-write.output <- function (x,year,p) { # x = mating.list
+# This function writes to file in the manner that DMU requires the observed litter size
+# in the year which it is performed and the replicate
+WriteFertObservations <- function (x,year,p) { # x = mating.list
 p <- p
 # this is to format the mating list to write to the observation file for this replicate for the calculation of BV
   # fertility first and then write the observations for body weight of kits
@@ -759,7 +768,7 @@ write.table(format(x[,.(dam.id,prodyear,dam.age,obs_fert)], nsmall=1), file= out
 }
 } 
 ############### make dam.age checks #################
-dam.age <- function (x,y){ # x = mating.list, y = year
+YearlingEffectOnFertility <- function (x,y){ # x = mating.list, y = year
   dam.age <- numeric(nrow(x))
   for (i in 1:nrow(x)) { # this is to change the parity into a two class thing
     if (y - x$birthyear.dam[i] == 1) {
@@ -774,7 +783,9 @@ dam.age <- function (x,y){ # x = mating.list, y = year
 }
 
 ############  Write pedigree file to DMU
- write.pedigree <- function ( ) {
+# Currently not in use, would be good idea to use this function instead of repeating the code within 
+# MakeKitsGenN
+ WritePedigreeForDMU <- function ( ) {
    if (make.obs.file == 1) {
      if (use.true.sire== 1) {
        pedigree.true <- file(description = paste("pedigree.true", sep=""), open="w")
@@ -789,11 +800,11 @@ dam.age <- function (x,y){ # x = mating.list, y = year
      }
  }
 ############### Make phenotype for body size ######
- phenotype.bs.male <- function(x,y,z,t,u,mat) { # x = mean, y = additive genetic, z = specific gen, t = number of  sibs, mat =mating.list
+ MakePhenotypesBWMales <- function(x,y,z,t,u,mat) { # x = mean, y = additive genetic, z = specific gen, t = number of  sibs, mat =mating.list
    value <- x+ y + z + rnorm( sum(mat$obs_fert))*(sqrt(var.res.body.size))+t*sib.effect.male+ u * bw.eff.damage
    return(value)
  } 
- phenotype.bs.female <- function(x,y,z,t,mat) { # x = mean, y = additive genetic, z = specific gen, t = number of sibs
+ MakePhenotypesBWFemales <- function(x,y,z,t,mat) { # x = mean, y = additive genetic, z = specific gen, t = number of sibs
    value <- x+ y + z + rnorm( sum(mat$obs_fert))*(sqrt(var.res.body.size))+t*sib.effect.female 
    return(value)
  } 
@@ -819,7 +830,7 @@ count.sex.siblings <- function (x) {
  return(x)
  }
 ############### Calculate selection index ###########
-calculate.selection.index <- function () {
+CalculateBLUPLitterSize <- function () {
    system2("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/run_dmu4.bat", " bl_ass")
    # read the solutions and only keep the predictions of BV (they're not that right)
    solutions <- as.matrix(read.table(file="bl_ass.SOL"))
@@ -845,7 +856,7 @@ calculate.selection.index <- function () {
    
    return(solutions)
  }
-blup.bw.nov <- function () {
+CalulateBLUPBodyWeightNov <- function () {
 # run blup on BW
 system2("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/run_dmu4.bat", " bw_nov")
 # read the solutions and only keep the predictions of BV (they're not that right)
@@ -863,7 +874,8 @@ return (solutions.bw)
 }
 ############### Modify Dir file for fertility ################
  # this function changes the .DIR file for fertility and BW
- modify.dir.file <- function (p) {
+# So it takes in the replicate from the current replicate of the simulation
+ ModifyDIRFile <- function (p) {
    # fertility modification
    dirfile <- readLines("bl_ass.DIR")
    dirfile[8] <- c(paste("$DATA  ASCII (3,1,-9999) Replicate_",p, sep="")) # change the input file for BLUP so it uses the next outputfile
@@ -884,7 +896,7 @@ return (solutions.bw)
  
 ############### Create observation file for phenotypes #################
 # currently only size
-create.obs.phenotypes <- function (x,year,p) {
+WriteObservationFileBodyWeight <- function (x,year,p) {
   x[, c("id","dam.id","own_littersize")
               :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("id","dam.id","own_littersize")]
   x[,`:=`(prodyear=as.integer(ifelse( sex == 1, year*(sex+6),year*(sex+8))))]
@@ -899,7 +911,7 @@ create.obs.phenotypes <- function (x,year,p) {
     }
   }
 ############### Make gen1 big.pedfile
-make.big.pedfile <- function (x,y,year,p) { # x = gen1 or kit.list , y = pedfile, year = year
+WriteBigPedigree <- function (x,y,year,p) { # x = gen1 or kit.list , y = pedfile, year = year
   if (year == 1){
     big.pedfile <- copy(y)
     big.pedfile[,`:=`(true.sire = sire.id)]

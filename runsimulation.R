@@ -1,4 +1,4 @@
-run.simulation <- function (x,year,p) { # x = output from gen0
+RunSimulation <- function (x,year,p) { # x = output from gen0
 next.gen <- rbindlist(x[1])
 next.gen.males <- rbindlist(x[2])
 if (selection.method == blup) {
@@ -13,15 +13,15 @@ set( temp, j=which(colnames(temp) %in% c("obs_fert","perm.env"))  , value=NULL )
 t <- rbind(next.gen.males,temp, fill=T) # needed down the road 
 remove(temp) 
 ############### Make barren males ##########################
-next.gen.males <- make.barren.males(next.gen.males)
-next.gen <- mat.will(next.gen,year)
+next.gen.males <- PrepareMalesForMating(next.gen.males)
+next.gen <- PrepareFemalesForMating(next.gen,year)
 # ############### assign each female a male,  based on his mating willingness #####
 mating.list <- mate(next.gen.males,next.gen,year)
 # ############### Update pedigree ########################
-pedfile <- update.pedigree(pedfile, next.gen, next.gen.males,year)
+pedfile <- UpdatePedigree(pedfile, next.gen, next.gen.males,year)
 # ############### Inbreeding Coefficient and calculation of breeding value#############################
   # mating.list <- subset( mating.list,  sire.id>0 ) # remove the females who were not mated
-mating.list <- dam.age (mating.list, year)  # checks the dam age and puts the effect for yearlings
+mating.list <- YearlingEffectOnFertility (mating.list, year)  # checks the dam age and puts the effect for yearlings
 
 mating.list = transform( mating.list,  obs_fert =  rpois(nrow(mating.list),
                                                          lambda = exp(1.95 + perm.env.ls + dam.fert+dam.age))
@@ -32,32 +32,33 @@ set( mating.list, j=which(colnames(mating.list) %in% c("semen.quality","dam.age"
 # 
 mating.list <- subset(mating.list, obs_fert > 0)
 if (make.obs.file == 1) {
-  write.output(mating.list,year,p)
+  WriteFertObservations(mating.list,year,p)
 }
 # 
 if (selection.method == blup){
-kit.list <- bv.n(mating.list,pedfile, big.pedfile,year,p)
+kit.list <- MakeKitsGenN(mating.list,pedfile, big.pedfile,year,p)
 } else if (selection.method == selection) {
   kit.list <- bv.n(mating.list,pedfile, pedfile, year,p)
 }
 if (selection.method== blup) {
-  big.pedfile <- make.big.pedfile(kit.list, big.pedfile,year,p) # this makes the big pedigree with all animals in the pedigree
-  create.obs.phenotypes (kit.list,year,p)
-  solutions <- calculate.selection.index()
-  solutions.bw <- blup.bw.nov()
+  big.pedfile <- WriteBigPedigree ( kit.list, big.pedfile,year,p ) 
+  # this makes the big pedigree with all animals in the pedigree
+  WriteObservationFileBodyWeight (kit.list,year,p)
+  solutions.littersize <- CalculateBLUPLitterSize ()
+  solutions.bw.nov     <- CalulateBLUPBodyWeightNov ()
 }
 # ############### Selection of next generation    #############
 # # See utility functions for method
 if (selection.method == selection) {
-  old.females <- sel.old.females ( next.gen,mating.list,year)
-  next.gen <- sel.yearlings.females (kit.list, old.females)
-  next.gen.males <- sel.males (kit.list)
+  old.females <- PhenoSelectionOldFemales ( next.gen,mating.list,year)
+  next.gen <- PhenoSelectionFemaleKits (kit.list, old.females)
+  next.gen.males <- PhenoSelectionMaleKits (kit.list)
   ############### Index selection of next generation #############
 } else if (selection.method == blup ) {
-  big.pedfile <- update.big.pedigree(big.pedfile, next.gen, next.gen.males)
-  old.females <- selind.old.females (next.gen, solutions, solutions.bw,year)
-  next.gen <- indexsel.yearlings.females (kit.list,solutions,solutions.bw,old.females)
-  next.gen.males <- indsel.males (kit.list,solutions,solutions.bw)
+  big.pedfile    <- update.big.pedigree    ( big.pedfile, next.gen, next.gen.males)
+  old.females    <- IndSelectionOldFemales ( next.gen, solutions.littersize, solutions.bw.nov,year)
+  next.gen       <- IndSelFemaleKits       ( kit.list,solutions.littersize,solutions.bw.nov,old.females)
+  next.gen.males <- IndSelMaleKits         ( kit.list,solutions.littersize,solutions.bw.nov)
 }
 if("f0.dam" %in% colnames(old.females)) {
   set( old.females, j=which(colnames(old.females) %in%
@@ -77,11 +78,11 @@ cat (year, mean(next.gen$fert),var(next.gen$fert),mean(mating.list$f0.dam)
      ,mean(next.gen.males$bs.phenotype),var(next.gen$direct.genetic.body.size), sep="\t",file=con)
 cat("\n",file=con)
 close(con=con)
-if (selection.method == blup){
+if ( selection.method == blup ) {
 return (list(next.gen, next.gen.males,pedfile,big.pedfile))
 
-} else if (selection.method == selection) {
+ } else if (selection.method == selection) {
   return (list(next.gen, next.gen.males,pedfile))  
+ }
 }
-}
-run.simulation <-compiler::cmpfun(run.simulation,options= c(suppressAll=TRUE)) # performance boost
+RunSimulation <-compiler::cmpfun(RunSimulation,options= c(suppressAll=TRUE)) # performance boost

@@ -30,10 +30,10 @@ shinyServer(function(input, output) {
     #   phenotypes <- file(description = paste("Phenotypes",p, sep=""), open="w")
     # }
     year <- 1
-    l <- generate.gen0(p,year)
+    l <- RunFirstYear(p,year)
     for (y in 1:n) {
       year <- 1+y
-      l <-run.simulation(l,year,p)
+      l <-RunSimulation(l,year,p)
       
     } 
     # if (make.obs.file == 1) {

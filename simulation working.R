@@ -16,10 +16,10 @@ if (make.obs.file == 1) {
   phenotypes <- file(description = paste("Phenotypes",p, sep=""), open="w")
 }
 year <- 1
-l <- generate.gen0()
+l <- RunFirstYear()
 for (y in 1:n) {
   year <- 1+y
-  l <-run.simulation(l)
+  l <-RunSimulation(l)
   
 } 
 if (make.obs.file == 1) {
