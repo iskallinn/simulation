@@ -50,11 +50,11 @@ if (selection.method== blup) {
 # ############### Selection of next generation    #############
 # # See utility functions for method
 if (selection.method == selection) {
-  old.females <- PhenoSelectionOldFemales ( next.gen,mating.list,year)
+  old.females <- PhenoSelectionOldFemales (next.gen, mating.list, year)
   next.gen <- PhenoSelectionFemaleKits (kit.list, old.females)
   next.gen.males <- PhenoSelectionMaleKits (kit.list)
   ############### Index selection of next generation #############
-} else if (selection.method == blup ) {
+} else if (selection.method == blup) {
   big.pedfile    <- update.big.pedigree    ( big.pedfile, next.gen, next.gen.males)
   old.females    <- IndSelectionOldFemales ( next.gen, solutions.littersize, solutions.bw.nov,year)
   next.gen       <- IndSelFemaleKits       ( kit.list,solutions.littersize,solutions.bw.nov,old.females)
@@ -73,9 +73,21 @@ next.gen <- rbind(next.gen,old.females)
 # stat.crate[year+(runcounter -1)*(n+1),3] <- nrow(kit.list)
 con <- file(description="results",open="a")
 
-cat (year, mean(next.gen$fert),var(next.gen$fert),mean(mating.list$f0.dam)
-     ,mean(mating.list$obs_fert), mean(next.gen$bs.phenotype), mean(next.gen$direct.genetic.body.size)
-     ,mean(next.gen.males$bs.phenotype),var(next.gen$direct.genetic.body.size), sep="\t",file=con)
+cat (
+  year,
+  mean(next.gen$fert),
+  var(next.gen$fert),
+  mean(mating.list$f0.dam)
+  ,
+  mean(mating.list$obs_fert),
+  mean(next.gen$bs.phenotype),
+  mean(next.gen$direct.genetic.body.size)
+  ,
+  mean(next.gen.males$bs.phenotype),
+  var(next.gen$direct.genetic.body.size),
+  sep = "\t",
+  file = con
+)
 cat("\n",file=con)
 close(con=con)
 if ( selection.method == blup ) {
