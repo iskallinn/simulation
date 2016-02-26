@@ -20,7 +20,8 @@ n.females <-  1000             # NUMBER OF FEMALES
 nruns <- 1                    # how many replicates of the simulation
 n <- 3                        # number of generation per replicate
 mating.method <- assortative   # mating method, random or assortative
-selection.method <- blup  # selection mating, selection = truncation,  no selection = next gen is chosen at random
+selection.method <- blup  # selection mating, 
+# selection = truncation,  no selection = next gen is chosen at random
 make.obs.file <- 1 # 1 = make observation file, 0 otherwise
 use.true.sire <- 0 # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
 ############# Mean settings for traits   #####################

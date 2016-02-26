@@ -33,30 +33,37 @@ GenerateBaseFemales <- function () {
 ############### Creation of Gen0 males#######################################
 # This function creates  the base population of males
 GenerateBaseMales <- function () {
-  mating.willingness.1st <-  numeric( n.males )  # preallocate a numeric vector
+  mating.willingness.1st <-  numeric( n.males )  
   mating.willingness.2nd  <-  numeric( n.males)
-  semen.quality.1st      <-  numeric( n.males )  # preallocate a numeric vector
-  semen.quality.2nd      <-  numeric( n.males )  # preallocate a numeric vector
-  id                 <-  numeric( n.males )  # preallocate a numeric vector
-  #   fert               <-  numeric( n.males )  # preallocate a numeric vector
+  semen.quality.1st      <-  numeric( n.males )  
+  semen.quality.2nd      <-  numeric( n.males )  
+  id                 <-  numeric( n.males )  
   add.gen <- as.data.table(rmvnorm(n.males,sigma=sigma))
   colnames(add.gen) <- c("fert","direct.genetic.body.size")
-  sex                <-  numeric( n.males )  # preallocate a numeric vector
-  dam.id             <-  numeric( n.males ) # preallocate a numeric vector 
-  sire.id            <-  numeric( n.males ) # preallocate a numeric vector
-  birthyear          <-  numeric( n.males ) # preallocate a numeric vector
-  can.remate         <-  rbinom(n.males, 1,0.8) #TODO make this into something more meaningful once I have quality or something to rank the males on
+  sex                <-  numeric( n.males )  
+  dam.id             <-  numeric( n.males )  
+  sire.id            <-  numeric( n.males ) 
+  birthyear          <-  numeric( n.males ) 
+  can.remate         <-  rbinom(n.males, 1,0.8) 
+  
+  #TODO make this into something more meaningful once I have quality or something to rank the males on
   
   for ( i in 1:n.males )  {
-    mating.willingness.1st[i]     <-  rZIP( 1,  mu = male.ratio,  sigma = 0.05 )               # this is guesswork
-    mating.willingness.2nd [i]     <-  rZIP( 1,  mu = 8,  sigma = 0.05 )                       # too high, since this will make sure all females are mated 2
-    id[i]       <-  n.females + i                                             # create ID for males
-    #     fert[i]     <-  rnorm( 1 )*sqrt(variance.fertility)  # create breeding value of fertility for males
-    semen.quality.1st[i] <-  rbinom( 1,  1,  male.inf )                           # create on off for barren males
+    mating.willingness.1st[i]     <-  rZIP( 1,  mu = male.ratio,  sigma = 0.05 )               
+    # this is guesswork
+    mating.willingness.2nd [i]     <-  rZIP( 1,  mu = 8,  sigma = 0.05 )                       
+    # too high, since this will make sure all females are mated 2
+    id[i]       <-  n.females + i                                             
+    # create ID for males
+    semen.quality.1st[i] <-  rbinom( 1,  1,  male.inf )                           
+    # create on off for barren males
     semen.quality.2nd [i] <- semen.quality.1st [i]
-    sex [i]         <-  1                                                         # 1 = male, 2 = female
-    dam.id [i]     <-  0                                                         # this is gen0 so unknown parents
-    sire.id [i]   <-  0                                                         # this is gen0 so unknown parents
+    sex [i]         <-  1                                                         
+    # 1 = male, 2 = female
+    dam.id [i]     <-  0                                                         
+    # this is gen0 so unknown parents
+    sire.id [i]   <-  0                                                         
+    # this is gen0 so unknown parents
   }
   
   # make data table out of the males 
@@ -137,7 +144,8 @@ mate <- function (x, y, year) {
   mating.list$birthyear.dam  <- y[1:nrow(mating.list), .(birthyear)]
   setnames(mating.list, "f0", "f0.dam")
   if (year == 1) {
-    setnames(mating.list, "f0.dam", "f0") # this is because of in the breeding values of the first gen this is needed, silly really since its zero all over
+    setnames(mating.list, "f0.dam", "f0") 
+    # this is because of in the breeding values of the first gen this is needed, silly really since its zero all over
   }
   # now to make the 2nd round of matings
   mating.list.allowed <- subset(mating.list, can.remate == 1)
@@ -172,10 +180,12 @@ mate <- function (x, y, year) {
   mating.list.remated <-
     subset (mating.list.allowed, sire.id.2nd != 0)
   mating.list.leftover <-
-    subset (mating.list.allowed, sire.id.2nd == 0) # those females who were allowed to
+    subset (mating.list.allowed, sire.id.2nd == 0) 
+  # those females who were allowed to
   # be remated with 1st male but male did not have enough to mate them all
   mating.list.notallowed <- subset(mating.list, can.remate == 0)
-  x[, `:=`(matings.left = mating.willingness.2nd - mating.willingness.1st)] # figures out how many matings the males performed that did have spares
+  x[, `:=`(matings.left = mating.willingness.2nd - mating.willingness.1st)] 
+  # figures out how many matings the males performed that did have spares
   x$matings.left <-
     ifelse(x$matings.left < 0, 0, x$matings.left)  # if they have negs, they are done
   x <-
@@ -190,7 +200,8 @@ mate <- function (x, y, year) {
   
   # here I should reorder the dams that are leftovers to prioritize younger dams and the ones mated with shitty males
   mating.list.leftover <-
-    as.matrix(mating.list.leftover) # way faster to loop through a matrix
+    as.matrix(mating.list.leftover) 
+  # way faster to loop through a matrix
   x <- as.matrix(x)
   if (selection.method == blup) {
     if (year == 1) {
@@ -198,7 +209,8 @@ mate <- function (x, y, year) {
         #print(i)
         for (j in 1:x[[i, 13]])  {
           s <-
-            sum(x[1:i, 13]) # keeps track of how many females the male has been assigned
+            sum(x[1:i, 13]) 
+          # keeps track of how many females the male has been assigned
           #         print(s)
           #     print(j)
           if (s < nrow(mating.list.leftover)) {
@@ -1070,11 +1082,14 @@ WriteBigPedigree <- function (x,y,year,p) { # x = gen1 or kit.list , y = pedfile
   return(big.pedfile)
 }
 ############### Update big pedigree ############
-update.big.pedigree <- function (x,y,z) { # x = big.pedfile, y = next.gen, z = next.gen.males
-  big.pedfile <- rbindlist( list (x, 
-                                  y[,.(id,true.sire,sire.assumed,dam.id,sex,birthyear)],
-                                  z[,.(id,true.sire,sire.assumed,dam.id,sex,birthyear)]), use.names=TRUE)
-  dups <- duplicated(big.pedfile$id)
-  big.pedfile <- big.pedfile[!dups,]
-  return(big.pedfile)
-}
+update.big.pedigree <-
+  function (x, y, z) {
+    # x = big.pedfile, y = next.gen, z = next.gen.males
+    big.pedfile <- rbindlist(list (x,
+                                   y[, .(id, true.sire, sire.assumed, dam.id, sex, birthyear)],
+                                   z[, .(id, true.sire, sire.assumed, dam.id, sex, birthyear)]), use.names =
+                               TRUE)
+    dups <- duplicated(big.pedfile$id)
+    big.pedfile <- big.pedfile[!dups, ]
+    return(big.pedfile)
+  }
