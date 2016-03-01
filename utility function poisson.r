@@ -491,8 +491,8 @@ MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
   setnames(gen1, c("obs_fert","sire.id.2nd"), c("own_littersize","sire.assumed")) # renames obs_fert to own littersize of kits
   gen1$dam.age <- ifelse( z - gen1$birthyear.dam > 1, 1,0 )
   
-  gen1$bs.phenotype <- ifelse( gen1$sex == 1,phenotype.bs.male(mean.body.size.male , gen1$direct.genetic.body.size , gen1$perm.env.bs , gen1$own_littersize, gen1$dam.age,x  ) 
-                               , phenotype.bs.female(mean.body.size.female , gen1$direct.genetic.body.size , gen1$perm.env.bs,gen1$own_littersize,x )) 
+  gen1$bs.phenotype <- ifelse( gen1$sex == 1,MakePhenotypesBWMales(mean.body.size.male , gen1$direct.genetic.body.size , gen1$perm.env.bs , gen1$own_littersize, gen1$dam.age,x  ) 
+                               , MakePhenotypesBWFemales(mean.body.size.female , gen1$direct.genetic.body.size , gen1$perm.env.bs,gen1$own_littersize,x )) 
   # generate phenotype for body size
   
   gen1[,`:=`(perm.env.bs = rnorm(sum(x$obs_fert))*sqrt(var.body.size.spec.env))] # generate specific env. for body size

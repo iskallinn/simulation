@@ -53,8 +53,7 @@ shinyUI(fluidPage(
                          choices = list("Selection" = 1, 
                                         "BLUP" = 2),
                          selected = 1),
-      submitButton()
-      
+      submitButton ( )      
       
       
     ),
