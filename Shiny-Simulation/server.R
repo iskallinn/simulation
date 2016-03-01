@@ -54,6 +54,7 @@ shinyServer(function(input, output) {
     #   close(con = phenotypes)
     # }
     print("reached end")
+    if (p == nruns) {
     results <- read.table("results", header = TRUE)
     summarized <-
       summaryBy(
@@ -66,20 +67,37 @@ shinyServer(function(input, output) {
       )
     
   output$plot1 <-
-    renderPlot(
-      expr <- (qplot(Gen, Gmean.mean, data = summarized)
-      #          + geom_errorbar(
-      #   aes(
-      #     x = Gen,
-      #     ymin = Gmean.mean - sqrt(Gmean.var),
-      #     ymax = Gmean.mean + sqrt(Gmean.var)
-      #   ),
-      #   width = 0.25,
-      #   data = summarized
-      # ))
-      # expr <- plot(results$Gen, results$Gmean)
-      )
-      )
+    reactivePlot(function() {
+      pl1 <- (ggplot(data = summarized, aes(x=Gen, y =Gmean.mean,fill = Gmean.mean))
+            + geom_line(linetype =2)
+            + geom_errorbar(
+              aes(
+                x = Gen,
+                ymin = Gmean.mean - sqrt(Gmean.var),
+                ymax = Gmean.mean + sqrt(Gmean.var)
+              ),
+              width = 0.25,
+              data = summarized
+            ))
+      print(pl1)
+    })
+  output$plot2 <-
+    reactivePlot(function() {
+      pl2 <- (ggplot(data = summarized, aes(x=Gen, y =Obs.fert.mean))
+              + geom_line(linetype =2)
+              + geom_errorbar(
+                aes(
+                  x = Gen,
+                  ymin = Obs.fert.mean - sqrt(Obs.fert.var),
+                  ymax = Obs.fert.mean + sqrt(Obs.fert.var)
+                ),
+                width = 0.25,
+                data = summarized
+              ))
+      print(pl2)
+    })
+  
+  }
       }
   closeAllConnections()
   

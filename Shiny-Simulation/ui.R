@@ -13,7 +13,7 @@ library(shiny)
 shinyUI(fluidPage(
 
   # Application title
-  titlePanel("Mink Sim 0.01"),
+  titlePanel("Mink Sim 0.02"),
 
   # Sidebar with a slider input for number of bins
   sidebarLayout(
@@ -61,11 +61,14 @@ shinyUI(fluidPage(
 
     # Show a plot of the generated distribution
     mainPanel(
-      plotOutput("plot1")
-      
+      tabsetPanel(
+      tabPanel("Genetic trend, litter size",plotOutput("plot1"))
+      ,
+      tabPanel("Litter size, 1st counting",plotOutput("plot2"))
+    )
     )
   )
-))
+)) 
 
 # renderInputs <- function(prefix) {
 #   wellPanel(

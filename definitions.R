@@ -17,7 +17,7 @@ selection <- 1
 blup <- 2
 ############### Controls for simulation ############
 n.females <-  1000             # NUMBER OF FEMALES
-nruns <- 1                    # how many replicates of the simulation
+nruns <- 2                    # how many replicates of the simulation
 n <- 3                        # number of generation per replicate
 mating.method <- assortative   # mating method, random or assortative
 selection.method <- blup  # selection mating, 
