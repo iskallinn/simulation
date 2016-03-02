@@ -7,7 +7,9 @@ Utility function poisson.r contains all of the minor functions that are run with
 in the simulatino
 
 Generatebasegen.r is the first year of the simulation
+
 runsimulation.r is the nth year of the simulation
+
 simulation_function.r is the "overall" simulation function
 
 Shiny app is in the "Shiny app" folder and contains the server.r and ui.r 
