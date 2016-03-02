@@ -71,6 +71,7 @@ Simulation <- function (
     "gen.value.bs",
     "mean.phenotype.bs.males",
     "bw.var",
+    "cor.bw.to.blup",
     sep = "\t",
     file = con
   )

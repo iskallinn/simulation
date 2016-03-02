@@ -846,16 +846,16 @@ MakeKitsGenN <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big
   
   ttt = trimPed(pedfile1,is.element( pedfile1$id, kit.list$id)) #trims the pedfile into only those related to kits
   t4 = cbind(pedfile1,ttt) #bind the logical vector to the temporary file
-  if( make.obs.file == 1) {
+  if( make.obs.file == 1 & use.true.sire == 0) {
     pedigree <- file(description = c(paste("pedigree_",p, sep="")), open="w")
     
     write.table(pedfile1[,.(id,sire.assumed,dam.id,birthyear)], file= pedigree, col.names=FALSE, row.names=FALSE, quote=FALSE)
     close(pedigree)}
-  if( use.true.sire == 1){
-    pedigree.true <- file(description = paste("pedigree.true", sep=""), open="w")
+  if( make.obs.file == 1 & use.true.sire == 1) {
+    pedigree <- file(description = c(paste("pedigree_",p, sep="")), open="w")
     
-    write.table(pedfile1[,.(id,true.sire,dam.id,birthyear)], file= pedigree.true, col.names=FALSE, row.names=FALSE, quote=FALSE)
-    close(pedigree.true)}
+    write.table(pedfile1[,.(id,true.sire,dam.id,birthyear)], file= pedigree, col.names=FALSE, row.names=FALSE, quote=FALSE)
+    close(pedigree)}
   
    
   
@@ -940,10 +940,9 @@ YearlingEffectOnFertility <- function (x,y){ # x = mating.list, y = year
  WritePedigreeForDMU <- function ( ) {
    if (make.obs.file == 1) {
      if (use.true.sire== 1) {
-       pedigree.true <- file(description = paste("pedigree.true", sep=""), open="w")
-       
-       write.table(pedfile[,.(id,true.sire,dam.id,birthyear)], file= pedigree.true, col.names=FALSE, row.names=FALSE, quote=FALSE)
-       close(pedigree.true)
+
+       write.table(pedfile[,.(id,true.sire,dam.id,birthyear)], file= pedigree, col.names=FALSE, row.names=FALSE, quote=FALSE)
+       close(con=pedigree)
      }
    # set(pedfile, j = which(colnames(pedfile) %in%
    #                          "sex","true.sire"), value=NULL )
@@ -995,16 +994,16 @@ CalculateBLUPLitterSize <- function () {
    # kit.list1 <- merge(kit.list, solutions, by= "id", all.x=TRUE)
    # next.gen <- merge(next.gen, solutions, by ="id", all.x=TRUE)
    
-   if (use.true.sire == 1) {
-     system2("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/run_dmu4.bat", " bl_true")
-     # read the solutions and only keep the predictions of BV (they're not that right)
-     solutions <- as.matrix(read.table(file="bl_true.SOL"))
-     solutions <- as.data.table(solutions)
-     solutions <- subset(solutions, V1 == 4 ) # throw away the estimation of permanent environment
-     set (solutions, j=c("V1","V2","V3", "V4", "V6", "V7"), value= NULL)
-     setnames(solutions, c("V5","V8", "V9"),c("id", "blup.fert", "sem.blup.fert"))
-     
-   }
+   # if (use.true.sire == 1) {
+   #   system2("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/run_dmu4.bat", " bl_true")
+   #   # read the solutions and only keep the predictions of BV (they're not that right)
+   #   solutions <- as.matrix(read.table(file="bl_true.SOL"))
+   #   solutions <- as.data.table(solutions)
+   #   solutions <- subset(solutions, V1 == 4 ) # throw away the estimation of permanent environment
+   #   set (solutions, j=c("V1","V2","V3", "V4", "V6", "V7"), value= NULL)
+   #   setnames(solutions, c("V5","V8", "V9"),c("id", "blup.fert", "sem.blup.fert"))
+   #   
+   # }
    
    return(solutions)
  }
@@ -1041,8 +1040,15 @@ return (solutions.bw)
    dirfile[8] <- c(paste("$DATA  ASCII (4,1,-9999) Phenotypes",p, sep="")) # change the input file for BLUP so it uses the next outputfile
    # file.create("bl_ass.DIR")
    writeLines(dirfile, "bw_nov.DIR")
-   dirfile[25] <- c(paste("$VAR_STR 1 PED 2 ASCII Big_pedigree_",p, sep="")) # change the input file for BLUP so it uses the next pedigree
+   dirfile[25] <- c(paste("$VAR_STR 2 PED 2 ASCII Big_pedigree_",p, sep="")) # change the input file for BLUP so it uses the next pedigree
    writeLines(dirfile,"bw_nov.DIR")
+   
+   dirfile <- readLines("reml_bwnov.DIR")
+   dirfile[8] <- c(paste("$DATA  ASCII (4,1,-9999) Phenotypes",p, sep="")) # change the input file for BLUP so it uses the next outputfile
+   # file.create("bl_ass.DIR")
+   writeLines(dirfile, "reml_bwnov.DIR")
+   dirfile[25] <- c(paste("$VAR_STR 2 PED 2 ASCII Big_pedigree_",p, sep="")) # change the input file for BLUP so it uses the next pedigree
+   writeLines(dirfile,"reml_bwnov.DIR")
    
     }
  
