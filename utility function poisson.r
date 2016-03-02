@@ -825,20 +825,54 @@ MakeKitsGenN <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big
   mendelian <- as.data.table(rmvnorm(nrow(kit.list),sigma=sigma))
   colnames(mendelian) <- c("mend.fert","mend.bw")
   
-  kit.list <- cbind (id,kit.list,  birthyear, sex,mendelian, true.sire, true.sire.check)
+  kit.list <-
+    cbind (id,
+           kit.list,
+           birthyear,
+           sex,
+           mendelian,
+           true.sire,
+           true.sire.check)
   # now check the true sire before calculating inbreeding
-  kit.list$sire.id.2nd  <- ifelse( kit.list$sire.id.2nd == 0, kit.list$sire.id.1st, kit.list$sire.id.2nd) # puts the 1st sire into the 2nd sire column for single mated females
-  kit.list$sire.fert.2nd <- ifelse( kit.list$sire.id.2nd == kit.list$sire.id.1st, kit.list$sire.fert.1st, kit.list$sire.fert.2nd)
-  kit.list$sire.bs.2nd <- ifelse( kit.list$sire.id.2nd == kit.list$sire.id.1st, kit.list$sire.bs.1st, kit.list$sire.bs.2nd)
+  kit.list$sire.id.2nd  <-
+    ifelse(kit.list$sire.id.2nd == 0,
+           kit.list$sire.id.1st,
+           kit.list$sire.id.2nd)
+  # puts the 1st sire into the 2nd sire column for single mated females
+  kit.list$sire.fert.2nd <-
+    ifelse(
+      kit.list$sire.id.2nd == kit.list$sire.id.1st,
+      kit.list$sire.fert.1st,
+      kit.list$sire.fert.2nd
+    )
+  kit.list$sire.bs.2nd <-
+    ifelse(
+      kit.list$sire.id.2nd == kit.list$sire.id.1st,
+      kit.list$sire.bs.1st,
+      kit.list$sire.bs.2nd
+    )
   
-    kit.list$true.sire.check <- ifelse( kit.list$sire.id.1st != kit.list$sire.id.2nd, rbinom(nrow(kit.list), 1, 0.85), 1) # 85% chance that the kits are sired by 2nd mating
-  kit.list$true.sire <- ifelse( kit.list$true.sire.check == 0, kit.list$sire.id.1st, kit.list$sire.id.2nd)
+  kit.list$true.sire.check <-
+    ifelse(kit.list$sire.id.1st != kit.list$sire.id.2nd,
+           rbinom(nrow(kit.list), 1, 0.85), 1)
+  # 85% chance that the kits are sired by 2nd mating
+  kit.list$true.sire <-
+    ifelse(kit.list$true.sire.check == 0,
+           kit.list$sire.id.1st,
+           kit.list$sire.id.2nd)
   # kit.list$true.sire <- ifelse( kit.list$sire.id.1st != 0 & kit.list$sire.id.2nd == 0, kit.list$sire.id.1st, kit.list$true.sire) # if the females are only mated once, the true sire is the first
-  
-
-  
-  kit.list[, `:=`(true.sire.fert = ifelse(kit.list$true.sire == kit.list$sire.id.2nd, kit.list$sire.fert.2nd, kit.list$sire.fert.1st), 
-              true.sire.bs = ifelse(kit.list$true.sire == kit.list$sire.id.2nd, kit.list$sire.bs.2nd, kit.list$sire.bs.1st))]
+  kit.list[, `:=`(
+    true.sire.fert = ifelse(
+      kit.list$true.sire == kit.list$sire.id.2nd,
+      kit.list$sire.fert.2nd,
+      kit.list$sire.fert.1st
+    ),
+    true.sire.bs = ifelse(
+      kit.list$true.sire == kit.list$sire.id.2nd,
+      kit.list$sire.bs.2nd,
+      kit.list$sire.bs.1st
+    )
+  )]
   
   setnames(kit.list, "sire.id.2nd", "sire.assumed")
   pedfile1 <- rbind(y, # orginal pedfile
@@ -846,7 +880,8 @@ MakeKitsGenN <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big
   
   ttt = trimPed(pedfile1,is.element( pedfile1$id, kit.list$id)) #trims the pedfile into only those related to kits
   t4 = cbind(pedfile1,ttt) #bind the logical vector to the temporary file
-  if( make.obs.file == 1 & use.true.sire == 0) {
+  if( make.obs.file == 1 & use.true.sire == 0) { 
+    # This is done to get solutions for the litter size of the kits born this year
     pedigree <- file(description = c(paste("pedigree_",p, sep="")), open="w")
     
     write.table(pedfile1[,.(id,sire.assumed,dam.id,birthyear)], file= pedigree, col.names=FALSE, row.names=FALSE, quote=FALSE)
@@ -1008,7 +1043,9 @@ CalculateBLUPLitterSize <- function () {
    return(solutions)
  }
 CalulateBLUPBodyWeightNov <- function () {
-# run blup on BW
+# run reml and then use the output as priors in BLUP
+  # system2("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/run_dmuai.bat", " reml_bwnov")
+  # run blup on BW  
 system2("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/run_dmu4.bat", " bw_nov")
 # read the solutions and only keep the predictions of BV (they're not that right)
   #  if ( !file.exists('fort.70')) {
@@ -1043,12 +1080,12 @@ return (solutions.bw)
    dirfile[25] <- c(paste("$VAR_STR 2 PED 2 ASCII Big_pedigree_",p, sep="")) # change the input file for BLUP so it uses the next pedigree
    writeLines(dirfile,"bw_nov.DIR")
    
-   dirfile <- readLines("reml_bwnov.DIR")
-   dirfile[8] <- c(paste("$DATA  ASCII (4,1,-9999) Phenotypes",p, sep="")) # change the input file for BLUP so it uses the next outputfile
-   # file.create("bl_ass.DIR")
-   writeLines(dirfile, "reml_bwnov.DIR")
-   dirfile[25] <- c(paste("$VAR_STR 2 PED 2 ASCII Big_pedigree_",p, sep="")) # change the input file for BLUP so it uses the next pedigree
-   writeLines(dirfile,"reml_bwnov.DIR")
+   # dirfile <- readLines("reml_bwnov.DIR")
+   # dirfile[8] <- c(paste("$DATA  ASCII (4,1,-9999) Phenotypes",p, sep="")) # change the input file for BLUP so it uses the next outputfile
+   # # file.create("bl_ass.DIR")
+   # writeLines(dirfile, "reml_bwnov.DIR")
+   # dirfile[25] <- c(paste("$VAR_STR 2 PED 2 ASCII Big_pedigree_",p, sep="")) # change the input file for BLUP so it uses the next pedigree
+   # writeLines(dirfile,"reml_bwnov.DIR")
    
     }
  

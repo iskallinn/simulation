@@ -54,6 +54,9 @@ RunSimulation <- function (x, year, p) {
     big.pedfile <- WriteBigPedigree (kit.list, big.pedfile, year, p)
     # this makes the big pedigree with all animals in the pedigree
     WriteObservationFileBodyWeight (kit.list, year, p)
+    dirfile <- readLines("reml_bwnov.PAROUT")
+    dirfile[2] <- c(paste("  2  1  1    ",var(next.gen$direct.genetic.body.size),sep=""))
+    writeLines(dirfile,"reml_bwnov.PAROUT")
     solutions.littersize <- CalculateBLUPLitterSize ()
     solutions.bw.nov     <- CalulateBLUPBodyWeightNov ()
   }
@@ -92,24 +95,6 @@ RunSimulation <- function (x, year, p) {
   # stat.crate[year+(runcounter -1)*(n+1),1] <- c(mean(kit.list$true.sire == kit.list$sire.assumed))
   # stat.crate[year+(runcounter -1)*(n+1),3] <- nrow(kit.list)
   con <- file(description = "results", open = "a")
-  # if (year == 2){
-  #   cat (
-  #     year,
-  #     mean(next.gen$fert),
-  #     var(next.gen$fert),
-  #     mean(mating.list$f0.dam)
-  #     ,
-  #     mean(mating.list$obs_fert),
-  #     mean(next.gen$bs.phenotype),
-  #     mean(next.gen$direct.genetic.body.size)
-  #     ,
-  #     mean(next.gen.males$bs.phenotype),
-  #     var(next.gen$direct.genetic.body.size),
-  #     0,
-  #     sep = "\t",
-  #     file = con
-  #   )}
-  # if (year > 2){
   cat (
     year,
     mean(next.gen$fert),
@@ -123,10 +108,10 @@ RunSimulation <- function (x, year, p) {
     mean(next.gen.males$bs.phenotype),
     var(next.gen$direct.genetic.body.size),
     cor(next.gen$direct.genetic.body.size, next.gen$blup.bwnov),
+    cor(next.gen$direct.genetic.body.size, next.gen$bs.phenotype),
     sep = "\t",
     file = con
   )
-  # }
   cat("\n", file = con)
   close(con = con)
   if (selection.method == blup) {

@@ -68,9 +68,23 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   # ############## First year statistics #######################
   con <- file(description="results",open="a")
   
-  cat (year, mean(mating.list$dam.fert),var(mating.list$dam.fert),0,mean(mating.list$obs_fert), mean(next.gen$bs.phenotype)
-       , mean(next.gen$direct.genetic.body.size),mean(next.gen.males$bs.phenotype), var(next.gen$direct.genetic.body.size), 0, sep="\t",file=con)
-  cat("\n",file=con)
+  cat (
+    year,
+    mean(mating.list$dam.fert),
+    var(mating.list$dam.fert),
+    0,
+    mean(mating.list$obs_fert),
+    mean(next.gen$bs.phenotype)
+    ,
+    mean(next.gen$direct.genetic.body.size),
+    mean(next.gen.males$bs.phenotype),
+    var(next.gen$direct.genetic.body.size),
+    0,
+    cor(next.gen$direct.genetic.body.size, next.gen$bs.phenotype),
+    sep = "\t",
+    file = con
+  )
+  cat("\n", file = con)
   close(con=con)
   # 
   # # if (runcounter == 1) {

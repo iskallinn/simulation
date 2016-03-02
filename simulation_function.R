@@ -72,6 +72,7 @@ Simulation <- function (
     "mean.phenotype.bs.males",
     "bw.var",
     "cor.bw.to.blup",
+    "cor.bw.phenotype",
     sep = "\t",
     file = con
   )
@@ -80,10 +81,10 @@ Simulation <- function (
   
   for (p in 1:nruns) {
     year <- 1
-    l <- RunFirstYear(p = nruns, year)
+    l <- RunFirstYear(p , year)
     for (y in 1:n) {
       year <- 1 + y
-      l <- RunSimulation(l, year, p =nruns)
+      l <- RunSimulation(l, year, p)
       
     }
     print("reached end")
