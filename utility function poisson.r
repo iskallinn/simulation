@@ -709,14 +709,14 @@ IndSelFemaleKits <- function (x,y,z,q) { # x = kit.list , y = solutions, z = sol
    truncation.point <-  quantile( x$blup.fert,  probs =  quantile.setting ) 
    selection.candidates.females <- subset(x, blup.fert >= truncation.point) # throw away the smallest litters
    selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
-   selection.candidates.females <- subset( selection.candidates.females, bs.phenotype < roof.body.size)
-   if (nrow(selection.candidates.females) < n.females*(1-prop.oldfemales)){ 
-     truncation.point <-  quantile( x$own_littersize,  probs =  (quantile.setting  ) ) #can't change this since the kits won't have cards 
-     selection.candidates.females <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
-     selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
-     selection.candidates.females <- subset( selection.candidates.females, bs.phenotype < (roof.body.size+200)) #ease restrictions on size
-     
-   }
+   # selection.candidates.females <- subset( selection.candidates.females, bs.phenotype < roof.body.size)
+   # if (nrow(selection.candidates.females) < n.females*(1-prop.oldfemales)){ 
+   #   truncation.point <-  quantile( x$own_littersize,  probs =  (quantile.setting  ) ) #can't change this since the kits won't have cards 
+   #   selection.candidates.females <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
+   #   selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
+   #   selection.candidates.females <- subset( selection.candidates.females, bs.phenotype < (roof.body.size+200)) #ease restrictions on size
+   #   
+   # }
    setkey(selection.candidates.females, comb.ind)           # in order to speed up ordering 
    setorder(selection.candidates.females,-comb.ind)         # order the kits according to body size 
    next.gen <- selection.candidates.females[1:(n.females-nrow(q)),]              # take the biggest kits

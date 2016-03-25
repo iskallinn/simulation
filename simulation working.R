@@ -8,6 +8,5 @@ source("generatebasegen.r")
 source("runsimulation.r")
 source("simulation_function.r")
 
-Simulation( n = 10, nruns = 15, use.true.sire = 1)
-
+Simulation( n = 15, nruns = 1, use.true.sire = 1)
 closeAllConnections()
