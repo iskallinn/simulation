@@ -57,6 +57,7 @@ RunSimulation <- function (x, year, p) {
     dirfile <- readLines("reml_bwnov.PAROUT")
     dirfile[2] <- c(paste("  2  1  1    ",var(next.gen$direct.genetic.body.size),sep=""))
     writeLines(dirfile,"reml_bwnov.PAROUT")
+    if(trace.ped == 1 ){TracePed(kit.list,next.gen)}
     solutions.littersize <- CalculateBLUPLitterSize ()
     solutions.bw.nov     <- CalulateBLUPBodyWeightNov ()
   }

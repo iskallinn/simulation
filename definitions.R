@@ -15,6 +15,7 @@ random <- 0
 no.selection <- 0
 selection <- 1
 blup <- 2
+trace.ped <- 0
 ############### Controls for simulation ############
 n.females <-  1000             # NUMBER OF FEMALES
 nruns <- 2                    # how many replicates of the simulation

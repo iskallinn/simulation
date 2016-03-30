@@ -8,5 +8,6 @@ source("generatebasegen.r")
 source("runsimulation.r")
 source("simulation_function.r")
 
-Simulation( n = 15, nruns = 1, use.true.sire = 1)
+system.time(Simulation( n = 3, nruns = 1, use.true.sire = 1))
+
 closeAllConnections()

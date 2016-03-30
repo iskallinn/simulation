@@ -1065,27 +1065,38 @@ return (solutions.bw)
 # So it takes in the replicate from the current replicate of the simulation
  ModifyDIRFile <- function (p) {
    # fertility modification
+   if (trace.ped == 0 ){
    dirfile <- readLines("bl_ass.DIR")
-   dirfile[8] <- c(paste("$DATA  ASCII (3,1,-9999) Replicate_",p, sep="")) # change the input file for BLUP so it uses the next outputfile
-   # file.create("bl_ass.DIR")
-   writeLines(dirfile, "bl_ass.DIR")
-   dirfile[25] <- c(paste("$VAR_STR 1 PED 2 ASCII pedigree_",p, sep="")) # change the input file for BLUP so it uses the next pedigree
+   dirfile[8] <- c(paste("$DATA  ASCII (3,1,-9999) Replicate_",p, sep=""))
+   # change the input file for BLUP so it uses the next outputfile
+
+      writeLines(dirfile, "bl_ass.DIR")
+   dirfile[25] <- c(paste("$VAR_STR 1 PED 2 ASCII pedigree_",p, sep="")) 
+   # change the input file for BLUP so it uses the next pedigree
    writeLines(dirfile,"bl_ass.DIR")
    
    # bw modification
    dirfile <- readLines("bw_nov.DIR")
-   dirfile[8] <- c(paste("$DATA  ASCII (4,1,-9999) Phenotypes",p, sep="")) # change the input file for BLUP so it uses the next outputfile
-   # file.create("bl_ass.DIR")
+   dirfile[8] <- c(paste("$DATA  ASCII (4,1,-9999) Phenotypes",p, sep="")) 
+   # change the input file for BLUP so it uses the next outputfile
    writeLines(dirfile, "bw_nov.DIR")
-   dirfile[25] <- c(paste("$VAR_STR 2 PED 2 ASCII Big_pedigree_",p, sep="")) # change the input file for BLUP so it uses the next pedigree
+   dirfile[25] <- c(paste("$VAR_STR 2 PED 2 ASCII Big_pedigree_",p, sep="")) 
+   # change the input file for BLUP so it uses the next pedigree
    writeLines(dirfile,"bw_nov.DIR")
-   
-   # dirfile <- readLines("reml_bwnov.DIR")
-   # dirfile[8] <- c(paste("$DATA  ASCII (4,1,-9999) Phenotypes",p, sep="")) # change the input file for BLUP so it uses the next outputfile
-   # # file.create("bl_ass.DIR")
-   # writeLines(dirfile, "reml_bwnov.DIR")
-   # dirfile[25] <- c(paste("$VAR_STR 2 PED 2 ASCII Big_pedigree_",p, sep="")) # change the input file for BLUP so it uses the next pedigree
-   # writeLines(dirfile,"reml_bwnov.DIR")
+   } else if (trace.ped == 1) {
+   dirfile <- readLines("trace.DIR")
+   dirfile[1] <- c(paste("Big_pedigree_",p, sep=""))
+   writeLines(dirfile,"trace.DIR")
+   # change the pedigree name in the dir file
+   dirfile <- readLines("bl_ass.DIR")
+   dirfile[25] <- c(paste("$VAR_STR 1 PED 2 ASCII trace.PRUNE")) # change the input file for BLUP so it uses the next pedigree
+    writeLines(dirfile,"bl_ass.DIR")
+  # change the pedigree name in case of trace being asked for
+    dirfile <- readLines("bw_nov.DIR")
+    dirfile[25] <- c(paste("$VAR_STR 1 PED 2 ASCII trace.PRUNE")) # change the input file for BLUP so it uses the next pedigree
+    writeLines(dirfile,"bw_nov.DIR")
+    
+   }
    
     }
  
@@ -1136,3 +1147,18 @@ update.big.pedigree <-
     big.pedfile <- big.pedfile[!dups, ]
     return(big.pedfile)
   }
+############## Trace pedigree ###############
+# this is a function to trim the pedigree which gets too big and unwieldy after
+# a certain number of generations
+# it takes a list of animals to trace and returns a trimmed pedigree that is 
+# then used by DMU to calculate breeding values
+# currently unused, controlled by switch since it did not improve functionality
+
+TracePed <- function(list.trace, next.gen) {
+  trace <- file(description = "trace", open="w")
+  write.table(rbind(list.trace[,.(id)],next.gen[,.(id)]), 
+              file= trace,
+              col.names=FALSE, row.names=FALSE, quote=FALSE)
+  close(trace)
+  system2("run_DmuTrace.bat", "trace")
+}
