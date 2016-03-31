@@ -3,29 +3,43 @@
 GenerateBaseFemales <- function () {
   id        <-  seq(1:n.females)
   #   fert      <-  rnorm(n.females)*sqrt(variance.fertility)
-  add.gen <- as.data.table(rmvnorm(n.females,sigma=sigma))
-  colnames(add.gen)     <- c("fert","direct.genetic.body.size")
-  perm.env.ls           <- rnorm(n.females)*sqrt(var.perm.env.ls)
+  add.gen <- as.data.table(rmvnorm(n.females, sigma = sigma))
+  colnames(add.gen)     <- c("litter.size", "bw.oct")
+  perm.env.ls           <- rnorm(n.females) * sqrt(var.perm.env.ls)
   sex                   <-  rep(2, times = n.females)
-  dam.id                <-  rep(0, times = n.females) 
+  dam.id                <-  rep(0, times = n.females)
   sire.id               <-  rep(0, times = n.females)
   birthyear             <-  rep(0, times = n.females)
-  mating.will.1st.round <- rbinom( n.females, 1, mating.will.yearling.1st)
+  mating.will.1st.round <-
+    rbinom(n.females, 1, mating.will.yearling.1st)
   mating.will.2nd.round <- numeric(n.females)
   #create breeding value of fertility for females
   
-  gen0.females <-  data.table( id, add.gen,perm.env.ls, sex, sire.id
-                               ,  dam.id, birthyear, mating.will.1st.round, mating.will.2nd.round )
-  gen0.females$mating.will.2nd.round <- ifelse (gen0.females$mating.will.1st.round == 1
-                                                , rbinom(sum(gen0.females$mating.will.1st.round),1,mating.will.yearling.2nd)
-                                                ,0 ) 
+  gen0.females <-  data.table(
+    id,
+    add.gen,
+    perm.env.ls,
+    sex,
+    sire.id
+    ,
+    dam.id,
+    birthyear,
+    mating.will.1st.round,
+    mating.will.2nd.round
+  )
+  gen0.females$mating.will.2nd.round <-
+    ifelse (gen0.females$mating.will.1st.round == 1,
+            rbinom(sum(gen0.females$mating.will.1st.round),1,mating.will.yearling.2nd
+      ), 0 )
   
-   
+  
   gen0.females[, c("fert")
-               :=lapply(.SD, function(x) x*sqrt(variance.fertility)), .SDcols=c("fert")] # makes the variance proper
+               := lapply(.SD, function(x)
+                 x * sqrt(variance.fertility)), .SDcols = c("fert")] # makes the variance proper
   
-  gen0.females[, c("direct.genetic.body.size")
-               :=lapply(.SD, function(x) x*sqrt(var.body.size.direct)), .SDcols=c("direct.genetic.body.size")] # makes variance proper
+  gen0.females[, c("bw.oct")
+               := lapply(.SD, function(x)
+                 x * sqrt(var.body.size.direct)), .SDcols = c("bw.oct")] # makes variance proper
   
   
   return (gen0.females)
@@ -39,7 +53,7 @@ GenerateBaseMales <- function () {
   semen.quality.2nd      <-  numeric( n.males )  
   id                 <-  numeric( n.males )  
   add.gen <- as.data.table(rmvnorm(n.males,sigma=sigma))
-  colnames(add.gen) <- c("fert","direct.genetic.body.size")
+  colnames(add.gen) <- c("fert","bw.oct")
   sex                <-  numeric( n.males )  
   dam.id             <-  numeric( n.males )  
   sire.id            <-  numeric( n.males ) 
@@ -73,8 +87,8 @@ GenerateBaseMales <- function () {
   gen0.males[, c("fert")
              :=lapply(.SD, function(x) x*sqrt(variance.fertility)), .SDcols=c("fert")] # makes the variance proper
   
-  gen0.males[, c("direct.genetic.body.size")
-             :=lapply(.SD, function(x) x*sqrt(var.body.size.direct)), .SDcols=c("direct.genetic.body.size")] # makes variance proper
+  gen0.males[, c("bw.oct")
+             :=lapply(.SD, function(x) x*sqrt(var.body.size.direct)), .SDcols=c("bw.oct")] # makes variance proper
   
   
   #make a subset of the males which will mate, this must be moved into the mating function 
@@ -97,7 +111,7 @@ mate <- function (x, y, year) {
       c(
         "id",
         "fert",
-        "direct.genetic.body.size",
+        "bw.oct",
         "semen.quality.1st",
         "semen.quality.2nd",
         "can.remate",
@@ -111,7 +125,7 @@ mate <- function (x, y, year) {
   
   setnames(
     mating.list,
-    c("id", "direct.genetic.body.size", "fert"),
+    c("id", "bw.oct", "fert"),
     c("sire.id.1st", "sire.bs.1st", "sire.fert.1st")
   )
   setkey(mating.list, sire.id.1st)
@@ -133,7 +147,7 @@ mate <- function (x, y, year) {
   mating.list$dam.id       <- y[1:nrow(mating.list), .(id)]
   mating.list$dam.fert     <- y[1:nrow(mating.list), .(fert)]
   mating.list$dam.bs       <-
-    y[1:nrow(mating.list), .(direct.genetic.body.size)]
+    y[1:nrow(mating.list), .(bw.oct)]
   mating.list$perm.env.ls  <- y[1:nrow(mating.list), .(perm.env.ls)]
   if ("f0" %in% colnames(y)) {
     mating.list$f0  <- y[1:nrow(mating.list), .(f0)]
@@ -484,15 +498,15 @@ MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
   gen1[, `:=`(fert = 0.5*(dam.fert + true.sire.fert) + 
                 mend.fert*(sqrt(0.5*variance.fertility)*( 1- f0 )) # Breeding value of offspring, littersize
               , perm.env.ls = rnorm(sum(x$obs_fert))*sqrt(var.perm.env.ls) # perm env for litter size
-              , direct.genetic.body.size = 0.5*(dam.bs + true.sire.bs) + 
+              , bw.oct = 0.5*(dam.bs + true.sire.bs) + 
                 mend.bw*(sqrt(0.5*var.body.size.direct)*( 1- f0 )))]# Breeding value of offspring, body size
   #  gen1 <- count.sex.siblings(gen1) # calls function to count offspring NOT NEEDED ATM
   
   setnames(gen1, c("obs_fert","sire.id.2nd"), c("own_littersize","sire.assumed")) # renames obs_fert to own littersize of kits
   gen1$dam.age <- ifelse( z - gen1$birthyear.dam > 1, 1,0 )
   
-  gen1$bs.phenotype <- ifelse( gen1$sex == 1,MakePhenotypesBWMales(mean.body.size.male , gen1$direct.genetic.body.size , gen1$perm.env.bs , gen1$own_littersize, gen1$dam.age,x  ) 
-                               , MakePhenotypesBWFemales(mean.body.size.female , gen1$direct.genetic.body.size , gen1$perm.env.bs,gen1$own_littersize,x )) 
+  gen1$bs.phenotype <- ifelse( gen1$sex == 1,MakePhenotypesBWMales(mean.body.size.male , gen1$bw.oct , gen1$perm.env.bs , gen1$own_littersize, gen1$dam.age,x  ) 
+                               , MakePhenotypesBWFemales(mean.body.size.female , gen1$bw.oct , gen1$perm.env.bs,gen1$own_littersize,x )) 
   # generate phenotype for body size
   
   gen1[,`:=`(perm.env.bs = rnorm(sum(x$obs_fert))*sqrt(var.body.size.spec.env))] # generate specific env. for body size
@@ -550,7 +564,7 @@ PhenoSelectionOldFemales <- function (y,x, year) { # y = gen0.females, x = x
     if("bs.phenotype" %in% colnames(old.females)){
       
     } else {
-      old.females <-transform(old.females, bs.phenotype = mean.body.size.female + direct.genetic.body.size + rnorm(1)*sqrt(var.res.body.size))
+      old.females <-transform(old.females, bs.phenotype = mean.body.size.female + bw.oct + rnorm(1)*sqrt(var.res.body.size))
     }
     if("mating.will.2nd.round" %in% colnames(old.females)) {
       set(old.females, j=c("mating.will.2nd.round", "mating.will.1st.round"),value=NULL)
@@ -908,14 +922,14 @@ MakeKitsGenN <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big
   kit.list[, `:=`(fert = 0.5*(dam.fert + true.sire.fert) + 
                     mend.fert*(sqrt(0.5*variance.fertility)*( 1- f0 )) # Breeding value of offspring, littersize
                   , perm.env.ls = rnorm(sum(x$obs_fert))*sqrt(var.perm.env.ls) # perm env for litter size
-                  , direct.genetic.body.size = 0.5*(dam.bs + true.sire.bs) + 
+                  , bw.oct = 0.5*(dam.bs + true.sire.bs) + 
                     mend.bw*(sqrt(0.5*var.body.size.direct)*( 1- f0 )))]# Breeding value of offspring, body size
   
   setnames(kit.list, "obs_fert", "own_littersize") # changes obs fert into the littersize of the kit
   kit.list$dam.age <- ifelse( year - kit.list$birthyear.dam > 1, 1,0 )
   kit.list$bs.phenotype <- ifelse( kit.list$sex == 1,MakePhenotypesBWMales ( mean.body.size.male ,
-  kit.list$direct.genetic.body.size , kit.list$perm.env.bs , kit.list$own_littersize, kit.list$dam.age ,x ) ,
-  MakePhenotypesBWFemales(mean.body.size.female ,kit.list$direct.genetic.body.size , 
+  kit.list$bw.oct , kit.list$perm.env.bs , kit.list$own_littersize, kit.list$dam.age ,x ) ,
+  MakePhenotypesBWFemales(mean.body.size.female ,kit.list$bw.oct , 
   kit.list$perm.env.bs, kit.list$own_littersize,x )) 
   # generate phenotype for body size
   

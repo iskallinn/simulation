@@ -105,7 +105,7 @@ Simulation <- function (
       l <- RunSimulation(l, year, p)
       
     }
-    print("reached end")
+    print("reached end", p)
     
   }
   

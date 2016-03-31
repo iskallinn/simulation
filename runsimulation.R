@@ -54,7 +54,7 @@ RunSimulation <- function (x, year, p) {
     big.pedfile <- WriteBigPedigree (kit.list, big.pedfile, year, p)
     # this makes the big pedigree with all animals in the pedigree
     dirfile <- readLines("reml_bwnov.PAROUT")
-    dirfile[2] <- c(paste("  2  1  1    ",var(next.gen$direct.genetic.body.size),sep=""))
+    dirfile[2] <- c(paste("  2  1  1    ",var(next.gen$bw.oct),sep=""))
     writeLines(dirfile,"reml_bwnov.PAROUT")
     if(trace.ped == 1 ){TracePed(kit.list,next.gen)}
     solutions.littersize <- CalculateBLUPLitterSize ()
@@ -105,12 +105,12 @@ RunSimulation <- function (x, year, p) {
     ,
     mean(mating.list$obs_fert),
     mean(next.gen$bs.phenotype),
-    mean(next.gen$direct.genetic.body.size)
+    mean(next.gen$bw.oct)
     ,
     mean(next.gen.males$bs.phenotype),
-    var(next.gen$direct.genetic.body.size),
-    cor(next.gen$direct.genetic.body.size, next.gen$blup.bwnov),
-    cor(next.gen$direct.genetic.body.size, next.gen$bs.phenotype),
+    var(next.gen$bw.oct),
+    cor(next.gen$bw.oct, next.gen$blup.bwnov),
+    cor(next.gen$bw.oct, next.gen$bs.phenotype),
     sep = "\t",
     file = con
   )
@@ -122,10 +122,10 @@ RunSimulation <- function (x, year, p) {
       mean(mating.list$f0.dam),
       mean(mating.list$obs_fert),
       mean(next.gen$bs.phenotype),
-      mean(next.gen$direct.genetic.body.size),
+      mean(next.gen$bw.oct),
       mean(next.gen.males$bs.phenotype),
-      var(next.gen$direct.genetic.body.size),
-      cor(next.gen$direct.genetic.body.size, next.gen$bs.phenotype),
+      var(next.gen$bw.oct),
+      cor(next.gen$bw.oct, next.gen$bs.phenotype),
       sep = "\t",
       file = con
     )

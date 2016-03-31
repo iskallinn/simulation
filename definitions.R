@@ -65,6 +65,21 @@ sigma <-  matrix(
   c(1, -0.5, -0.5, 1), # genetic correlations of traits
   nrow=2, 
   ncol=2) 
-colnames(sigma) <- c("body.size.direct","litter.size")
-rownames(sigma)<- c("body.size.direct","litter.size")
+colnames(sigma) <- c("bw.oct","litter.size")
+rownames(sigma)<- c("bw.oct","litter.size")
+
+# bigger sigma matrix for more traits
+# values are found in "Correlation between the development of mink kits in the
+# lactation and growth perios, correlations to fur properties and heritability
+# estimation, by Hansen, Lohi & Berg, 1992
+sigma2 <- matrix(
+  c(  1,    0.9, -0.5, -0.08,   -0.41,  0.73,
+     0.9,  1,    -0.5,   0,     -0.4,   0.7,
+    -0.5, -0.5,   1,     0,      0,     0,
+    -0.08, 0,     0,     1,      0.6,   0,
+    -0.41, -0.4, 0,     0.6,     1,     0,
+    0.73,  0.7,  0,     0,       0,     1),
+  nrow=6, ncol=6, dimnames= list(c("bw.oct", "bw.sept", "litter.size", 
+  "live.qual", "skin.qual", "skin.length" ),
+  c("bw.oct", "bw.sept", "litter.size", "live.qual", "skin.qual", "skin.length" )))
 

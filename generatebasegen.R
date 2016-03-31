@@ -75,11 +75,11 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
     0,
     mean(mating.list$obs_fert),
     mean(next.gen$bs.phenotype),
-    mean(next.gen$direct.genetic.body.size),
+    mean(next.gen$bw.oct),
     mean(next.gen.males$bs.phenotype),
-    var(next.gen$direct.genetic.body.size),
+    var(next.gen$bw.oct),
     0,
-    cor(next.gen$direct.genetic.body.size, next.gen$bs.phenotype),
+    cor(next.gen$bw.oct, next.gen$bs.phenotype),
     sep = "\t",
     file = con
   )
@@ -91,10 +91,10 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       0,
       mean(mating.list$obs_fert),
       mean(next.gen$bs.phenotype),
-      mean(next.gen$direct.genetic.body.size),
+      mean(next.gen$bw.oct),
       mean(next.gen.males$bs.phenotype),
-      var(next.gen$direct.genetic.body.size),
-      cor(next.gen$direct.genetic.body.size, next.gen$bs.phenotype),
+      var(next.gen$bw.oct),
+      cor(next.gen$bw.oct, next.gen$bs.phenotype),
       sep = "\t",
       file = con
     )
