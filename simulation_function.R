@@ -7,7 +7,7 @@ Simulation <- function (
   assortative = 1,
   random = 0,
   no.selection = 0,
-  selection = 1,
+  phenotypic = 1,
   blup = 2,
   ############### Controls for simulation ############
   n.females =  1000,             # NUMBER OF FEMALES
@@ -60,6 +60,7 @@ Simulation <- function (
                             c("body.size.direct","litter.size")))
 ) { 
   setwd("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
+  if (selection.method == blup) {
   con <- file(description = "results", open = "w")
   cat(
     "Gen",
@@ -76,6 +77,23 @@ Simulation <- function (
     sep = "\t",
     file = con
   )
+  } else if (selection.method == phenotypic) {
+    con <- file(description = "results", open = "w")
+    cat(
+      "Gen",
+      "Gmean",
+      "Gvar",
+      "Fis",
+      "Obs.fert",
+      "mean.phenotype.bs.females",
+      "gen.value.bs",
+      "mean.phenotype.bs.males",
+      "bw.var",
+      "cor.bw.phenotype",
+      sep = "\t",
+      file = con
+    )
+  }
   cat("\n", file = con)
   close(con = con)
   

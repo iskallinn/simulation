@@ -5,7 +5,7 @@ RunSimulation <- function (x, year, p) {
   if (selection.method == blup) {
     big.pedfile <- rbindlist(x[4])
     pedfile <- rbindlist(x[3])
-  } else if (selection.method == selection) {
+  } else if (selection.method == phenotypic) {
     pedfile <- rbindlist(x[3])
   }
   # print( y )
@@ -47,8 +47,8 @@ RunSimulation <- function (x, year, p) {
   #
   if (selection.method == blup) {
     kit.list <- MakeKitsGenN(mating.list, pedfile, big.pedfile, year, p)
-  } else if (selection.method == selection) {
-    kit.list <- bv.n(mating.list, pedfile, pedfile, year, p)
+  } else if (selection.method == phenotypic) {
+    kit.list <- MakeKitsGenN(mating.list, pedfile, pedfile, year, p)
   }
   if (selection.method == blup) {
     big.pedfile <- WriteBigPedigree (kit.list, big.pedfile, year, p)
@@ -63,7 +63,7 @@ RunSimulation <- function (x, year, p) {
   }
   # ############### Selection of next generation    #############
   # # See utility functions for method
-  if (selection.method == selection) {
+  if (selection.method == phenotypic) {
     old.females <-
       PhenoSelectionOldFemales (next.gen, mating.list, year)
     next.gen <- PhenoSelectionFemaleKits (kit.list, old.females)
@@ -96,7 +96,8 @@ RunSimulation <- function (x, year, p) {
   # stat.crate[year+(runcounter -1)*(n+1),1] <- c(mean(kit.list$true.sire == kit.list$sire.assumed))
   # stat.crate[year+(runcounter -1)*(n+1),3] <- nrow(kit.list)
   con <- file(description = "results", open = "a")
-  cat (
+  if (selection.method == blup) {
+    cat (
     year,
     mean(next.gen$fert),
     var(next.gen$fert),
@@ -113,12 +114,28 @@ RunSimulation <- function (x, year, p) {
     sep = "\t",
     file = con
   )
+  } else if (selection.method == phenotypic) {
+    cat (
+      year,
+      mean(next.gen$fert),
+      var(next.gen$fert),
+      mean(mating.list$f0.dam),
+      mean(mating.list$obs_fert),
+      mean(next.gen$bs.phenotype),
+      mean(next.gen$direct.genetic.body.size),
+      mean(next.gen.males$bs.phenotype),
+      var(next.gen$direct.genetic.body.size),
+      cor(next.gen$direct.genetic.body.size, next.gen$bs.phenotype),
+      sep = "\t",
+      file = con
+    )
+    }
   cat("\n", file = con)
   close(con = con)
   if (selection.method == blup) {
     return (list(next.gen, next.gen.males, pedfile, big.pedfile))
     
-  } else if (selection.method == selection) {
+  } else if (selection.method == phenotypic) {
     return (list(next.gen, next.gen.males, pedfile))
   }
 }

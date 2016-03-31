@@ -67,15 +67,14 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   }
   # ############## First year statistics #######################
   con <- file(description="results",open="a")
-  
+  if (selection.method == blup) {
   cat (
     year,
     mean(mating.list$dam.fert),
     var(mating.list$dam.fert),
     0,
     mean(mating.list$obs_fert),
-    mean(next.gen$bs.phenotype)
-    ,
+    mean(next.gen$bs.phenotype),
     mean(next.gen$direct.genetic.body.size),
     mean(next.gen.males$bs.phenotype),
     var(next.gen$direct.genetic.body.size),
@@ -84,6 +83,23 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
     sep = "\t",
     file = con
   )
+  } else if (selection.method == phenotypic) {
+    cat (
+      year,
+      mean(mating.list$dam.fert),
+      var(mating.list$dam.fert),
+      0,
+      mean(mating.list$obs_fert),
+      mean(next.gen$bs.phenotype),
+      mean(next.gen$direct.genetic.body.size),
+      mean(next.gen.males$bs.phenotype),
+      var(next.gen$direct.genetic.body.size),
+      cor(next.gen$direct.genetic.body.size, next.gen$bs.phenotype),
+      sep = "\t",
+      file = con
+    )
+    
+    }
   cat("\n", file = con)
   close(con=con)
   # 
@@ -100,7 +116,7 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   # 
   # remove(mating.list,gen0.females,gen1,effgen0.males,old.females) #remove all the stuff I don't need anymore
   # return( list(next.gen, next.gen.males,mating.list))
-  if (selection.method == selection){ 
+  if (selection.method == phenotypic){ 
   return( list(next.gen,next.gen.males,pedfile))
   } else if (selection.method == blup) {
     return( list(next.gen,next.gen.males,pedfile,big.pedfile))

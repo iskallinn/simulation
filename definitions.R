@@ -13,7 +13,7 @@ weight.bw.kits          <- 0.65
 assortative <- 1
 random <- 0
 no.selection <- 0
-selection <- 1
+phenotypic <- 1
 blup <- 2
 trace.ped <- 0
 mask.phenotypes <- 1 # 0 no masking, 1 mask phenotypes of kits from small litters
@@ -22,7 +22,7 @@ n.females <-  1000             # NUMBER OF FEMALES
 nruns <- 2                    # how many replicates of the simulation
 n <- 3                        # number of generation per replicate
 mating.method <- assortative   # mating method, random or assortative
-selection.method <- blup  # selection mating, 
+selection.method <- phenotypic  # selection mating, 
 # selection = truncation,  no selection = next gen is chosen at random
 make.obs.file <- 1 # 1 = make observation file, 0 otherwise
 use.true.sire <- 0 # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
