@@ -53,29 +53,42 @@ n.males <-  ceiling( n.females/male.ratio ) # calculates needed amount of males
 
 
 ############# Variance settings for traits ###################
+# fertility
 variance.fertility     <-  0.0122738     # Genetic variance of fertility, live born
 var.perm.env.ls        <-  0.0004464     # Variance of permanent environment of litter size of dam
-var.body.size.direct   <-  40000         # Genetic variance of body size, direct effect 
-var.body.size.spec.env <-  5300          # variance of specific environment (litter) on body size
-var.res.body.size      <-  32500         # residual variance of body size
-roof.body.size         <-  2400          # Maximum body weight of females to be allowed for selection
-bw.eff.damage          <-  34.5          # effect of dam age on weight of males
+# october body weight
+var.bw.oct.female      <-  9062          # Genetic variance of body size, direct effect 
+var.bw.oct.male        <-  33685         # from hansen et al 1992, ass h^2 = 0.51
+var.c.bw.oct.male      <-  4491          # from hansen et al 1992, ass c^2 = 0.068
+var.c.bw.oct.female    <-  1208          # from hansen et al 1992, ass c^2 = 0.068
+var.res.bw.oct.female  <-  7465          # from hansen et al 1992, ass c^2 andh^2 as above
+var.res.bw.oct.male    <-  27873         # from hansen et al 1992, ass c^2 andh^2 as above
+# september body weight
+var.bw.sept.female      <-  7101         # from hansen et al 1992, ass h^2 = 0.51
+var.bw.sept.male        <-  22705        # from hansen et al 1992, ass h^2 = 0.51
+var.c.bw.sept.male      <-  3027         # from hansen et al 1992, ass c^2 = 0.068
+var.c.bw.sept.female    <-  947          # from hansen et al 1992, ass c^2 = 0.068
+var.res.bw.sept.female  <-  5876         # from hansen et al 1992, ass c^2 andh^2 as above
+var.res.bw.sept.male    <-  18788        # from hansen et al 1992, ass c^2 andh^2 as above
+# misc
+roof.body.size          <-  2400          # Maximum body weight of females to be allowed for selection
+bw.eff.damage           <-  34.5          # effect of dam age on weight of males
 ############# (Co)Variance matrix ############################
-sigma <-  matrix( 
-  c(1, -0.5, -0.5, 1), # genetic correlations of traits
-  nrow=2, 
-  ncol=2) 
-colnames(sigma) <- c("bw.oct","litter.size")
-rownames(sigma)<- c("bw.oct","litter.size")
+# sigma <-  matrix( 
+#   c(1, -0.5, -0.5, 1), # genetic correlations of traits
+#   nrow=2, 
+#   ncol=2) 
+# colnames(sigma) <- c("bw.oct","litter.size")
+# rownames(sigma)<- c("bw.oct","litter.size")
 
 # bigger sigma matrix for more traits
 # values are found in "Correlation between the development of mink kits in the
 # lactation and growth perios, correlations to fur properties and heritability
 # estimation, by Hansen, Lohi & Berg, 1992
-sigma2 <- matrix(
+sigma <- matrix(
   c(  1,    0.9, -0.5, -0.08,   -0.41,  0.73,
-     0.9,  1,    -0.5,   0,     -0.4,   0.7,
-    -0.5, -0.5,   1,     0,      0,     0,
+     0.9,  1,    -0.28,   0,     -0.4,   0.7,
+    -0.5, -0.28,   1,     0,      0,     0,
     -0.08, 0,     0,     1,      0.6,   0,
     -0.41, -0.4, 0,     0.6,     1,     0,
     0.73,  0.7,  0,     0,       0,     1),

@@ -47,7 +47,7 @@ Simulation <- function (
   ############# Variance settings for traits ###################
   variance.fertility     =  0.0122738,     # Genetic variance of fertility, live born
   var.perm.env.ls        =  0.0004464 ,    # Variance of permanent environment of litter size of dam
-  var.body.size.direct   =  40000 ,        # Genetic variance of body size, direct effect 
+  var.bw.oct             =  40000 ,        # Genetic variance of body size, direct effect 
   var.body.size.spec.env =  5300  ,        # variance of specific environment (litter) on body size
   var.res.body.size      =  32500  ,       # residual variance of body size
   roof.body.size         =  2400   ,       # Maximum body weight of females to be allowed for selection
