@@ -53,12 +53,12 @@ RunSimulation <- function (x, year, p) {
   if (selection.method == blup) {
     big.pedfile <- WriteBigPedigree (kit.list, big.pedfile, year, p)
     # this makes the big pedigree with all animals in the pedigree
-    WriteObservationFileBodyWeight (kit.list, year, p)
     dirfile <- readLines("reml_bwnov.PAROUT")
     dirfile[2] <- c(paste("  2  1  1    ",var(next.gen$direct.genetic.body.size),sep=""))
     writeLines(dirfile,"reml_bwnov.PAROUT")
     if(trace.ped == 1 ){TracePed(kit.list,next.gen)}
     solutions.littersize <- CalculateBLUPLitterSize ()
+    WriteObservationFileBodyWeight (kit.list, year, p, solutions.littersize)
     solutions.bw.nov     <- CalulateBLUPBodyWeightNov ()
   }
   # ############### Selection of next generation    #############

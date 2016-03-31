@@ -16,6 +16,7 @@ no.selection <- 0
 selection <- 1
 blup <- 2
 trace.ped <- 0
+mask.phenotypes <- 1 # 0 no masking, 1 mask phenotypes of kits from small litters
 ############### Controls for simulation ############
 n.females <-  1000             # NUMBER OF FEMALES
 nruns <- 2                    # how many replicates of the simulation

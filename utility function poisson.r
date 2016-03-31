@@ -699,7 +699,7 @@ IndSelectionOldFemales <- function (x,y,z,year) { # x = next.gen, y = solutions,
  }  
  
 ############### Index selection for females ################
-IndSelFemaleKits <- function (x,y,z,q) { # x = kit.list , y = solutions, z = solutions.bw, q = old.females 
+IndSelFemaleKits <- function (x,y,z,q) { # x = kit.list , y = solutions.fert, z = solutions.bw, q = old.females 
    x <- merge(x, y, by= "id", all.x=TRUE) # merge to solutions of blup of fertility
    x <- merge(x, z, by="id", all.x=TRUE)
    x[, `:=`(index.bw = 100+ (blup.bwnov-mean(x$blup.bwnov))/(sqrt(var(x$blup.bwnov)))*10,
@@ -1102,17 +1102,22 @@ return (solutions.bw)
  
 ############### Create observation file for phenotypes #################
 # currently only size
-WriteObservationFileBodyWeight <- function (x,year,p) {
-  x[, c("id","dam.id","own_littersize")
-              :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("id","dam.id","own_littersize")]
-  x[,`:=`(prodyear=as.integer(ifelse( sex == 1, year*(sex+6),year*(sex+8))))]
+WriteObservationFileBodyWeight <- function (x,year,p,solutions) {
+  x[, c("id","dam.id","own_littersize","sex")
+              :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("id","dam.id","own_littersize","sex")]
+  # x[,`:=`(prodyear=as.integer(ifelse( sex == 1, year*(sex+6),year*(sex+8))))]
   # NOTE if simulation runs to 81 years, then year*sex will be the same for year 63 for dams and 81 for males
+  if(mask.phenotypes == 1 & year > 1) {
+    x <- merge(x, solutions, by= "id", all.x=TRUE) # merge to solutions of blup of fertility
+    truncation.point <-  quantile( x$blup.fert,  probs =  quantile.setting ) 
+    x <- subset(x, blup.fert >= truncation.point, select= c("id","dam.id","own_littersize","sex","bs.phenotype"))
+  }
   if (year  == 1 ) {phenotypes <- file(description = paste("Phenotypes",p, sep=""), open="w")
-  write.table(format(x[,.(id,dam.id,prodyear,own_littersize,bs.phenotype)], nsmall=1, digits=2), file= phenotypes, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
+  write.table(format(x[,.(id,dam.id,sex,own_littersize,bs.phenotype)], nsmall=1, digits=2), file= phenotypes, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
  close(con=phenotypes)
    } else if (year > 1) {
      phenotypes <- file(description = paste("Phenotypes",p, sep=""), open="a")
-      write.table(format(x[,.(id,dam.id,prodyear,own_littersize,bs.phenotype)], nsmall=1, digits=2), file= phenotypes, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
+      write.table(format(x[,.(id,dam.id,sex,own_littersize,bs.phenotype)], nsmall=1, digits=2), file= phenotypes, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
       close(con=phenotypes)
     }
   }
