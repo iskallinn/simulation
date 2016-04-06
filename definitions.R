@@ -27,6 +27,7 @@ mating.method <- assortative   # mating method, random or assortative
 selection.method <- phenotypic  # selection mating, 
 weighing.method <- sept         # control for when to weigh kits for selection cands
 qual.classes <- 5              # quality classes, 5 or 10 are supported
+intensity.remating <- 1/3      # this controls how many males are chosen not to be remated
 # selection = truncation,  no selection = next gen is chosen at random
 make.obs.file <- 1 # 1 = make observation file, 0 otherwise
 use.true.sire <- 0 # 1 if true sire of kits is wanted for BV prediction, 0 otherwise

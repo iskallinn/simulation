@@ -1023,8 +1023,17 @@ PrepareMalesForMating <- function (x) { # x = next.gen.males
   x[,`:=`( semen.quality.1st=  rbinom( nrow(x),  1,  male.inf ),  
                         mating.willingness.1st = rZIP( nrow(x),  mu = male.ratio,  sigma = 0.05 ),
                         mating.willingness.2nd = rZIP( nrow(x), mu = male.ratio, sigma = 0.05),
-                        can.remate = rbinom(nrow(x), 1,0.8))]
+                        can.remate = rep(1, times=nrow(x)))]
+  truncation.point <- quantile(x$live.score, probs= 1/3 )
   x[,`:=`(semen.quality.2nd = semen.quality.1st)]
+  if (weighing.method == sept){
+    setorder(x,live.score,phenotype.bw.sept) 
+  } else if (weighing.method == oct) {
+    setorder(x,live.score,phenotype.bw.oct)
+  } 
+for (i in 1:ceiling(intensity.remating*nrow(x))) {
+  x$can.remate[i] <- 0
+}
   x <- subset( x, mating.willingness.1st > 0 ) 
   return(x)
 } 
