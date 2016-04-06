@@ -611,7 +611,10 @@ MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
               , bw.oct = 0.5*(dam.bw.oct + true.sire.bw.oct) + 
                 mend.bw.oct,
               bw.sept = 0.5*(dam.bw.sept + true.sire.bw.sept) + 
-                mend.bw.oct)]# Breeding value of offspring, body size
+                mend.bw.oct,
+              live.qual = 0.5*(dam.live.qual + true.sire.live.qual)+ sqrt(0.5)*(mend.live.qual),
+              skin.qual = 0.5*(dam.skin.qual + true.sire.skin.qual)+ sqrt(0.5)*(mend.skin.qual),
+              skin.length = 0.5*(dam.skin.length + true.sire.skin.length)+ sqrt(0.5)*(mend.skin.length))]# Breeding value of offspring, body size
   #  gen1 <- count.sex.siblings(gen1) # calls function to count offspring NOT NEEDED ATM
   
   setnames(gen1, c("obs_fert","sire.id.2nd"), c("own_littersize","sire.assumed")) # renames obs_fert to own littersize of kits
@@ -637,6 +640,7 @@ MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
     "sire.skin.length.1st",
     "sire.skin.qual.1st",
     "sire.live.qual.1st",
+    "sire.id.1st",
     "dam.fert",
     "dam.bw.oct",
     "dam.bw.sept",
@@ -673,122 +677,198 @@ MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
 }
 ############### Phenotypic Selection of old females ###############################################
 # currently they are only truncated on their litter size phenotype
-PhenoSelectionOldFemales <- function (y,x, year) { # y = gen0.females, x = x
-    setkey(x, obs_fert)
-    setorder(x, -obs_fert)
-    if ("birthyear.dam" %in% colnames(x)) {
-      x <- subset(x, year -birthyear.dam < max.age.females) 
-    }
-    old.females <- x[1:(n.females*prop.oldfemales),]
-    set( old.females, j=which(colnames(old.females) %in% 
-                                c("sire.id.1st","barren","dam.fert","sire.fert.1st","barren","sire.bs.1st", "dam.bs",
-                                  "sire.id.2nd","sire.fert.2nd","sire.bs.2nd", "mating.will.1st.round",
-                                  "mating.will.2nd.round"))  , value=NULL )
-    setnames(old.females, "dam.id", "id")
-    old.females <- merge(old.females, y, by="id")
-    if("birthyear.dam" %in% colnames(old.females)) {
-      set( old.females, j=which(colnames(old.females) %in% 
-                                  c("birthyear.dam"))  , value=NULL )
-    }
-    if("f0.dam" %in% colnames(old.females)) {
-      set( old.females, j=which(colnames(old.females) %in% 
-                                  "f0.dam")  , value=NULL )
-    }
-    if("obs_fert.y" %in% colnames(old.females)) {
-      set( old.females, j=which(colnames(old.females) %in% 
-                                  "obs_fert.y")  , value=NULL )
-    }
-    if("obs_fert.x" %in% colnames(old.females)) {
-      setnames(old.females, "obs_fert.x", "obs_fert")
-    }
-    if("obs_fert.x" %in% colnames(old.females)) {
-    }  else {
-      old.females[old.females,own_littersize:=0]   
-    }
-    if("perm.env.ls.x" %in% colnames(old.females)) {
-      setnames(old.females, "perm.env.ls.x", "perm.env.ls")
-      set( old.females, j=which(colnames(old.females) %in% 
-                                  "perm.env.ls.y")  , value=NULL )
-    }
-    if("perm.env.bs.x" %in% colnames(old.females)) {
-      setnames(old.females, "perm.env.bs.x", "perm.env.bs")
-      set( old.females, j=which(colnames(old.females) %in% 
-                                  "perm.env.bs.y")  , value=NULL )
-    }
-    if("phenotype.bw.oct" %in% colnames(old.females)){
-      
-    } else {
-      old.females <-transform(old.females, phenotype.bw.oct = mean.body.size.female + bw.oct + rnorm(1)*sqrt(var.res.body.size))
-    }
-    if("mating.will.2nd.round" %in% colnames(old.females)) {
-      set(old.females, j=c("mating.will.2nd.round", "mating.will.1st.round"),value=NULL)
-    }
-    if("sire.id" %in% colnames(old.females)) {
-      setnames(old.females, "sire.id", "sire.assumed")
-      old.females[,`:=`(true.sire = old.females$sire.assumed)]
-    }
-    if("dam.age" %in% colnames(old.females)) {
-      set(old.females, j="dam.age", value = NULL)
-    }
-    if("dam.age.x" %in% colnames(old.females)) {
-      set(old.females, j=c("dam.age.x","dam.age.y","prodyear"), value = NULL)
-      }
-    
-    return(old.females)
-    
-    
-  }  
-############### Phenotypic Selection of yearling females in 1st gen ############
-PhenoSelectionFemaleKits <- function (x,y) { # x = kit.list, y = y  
-    truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting ) 
-    selection.candidates.females <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
-    selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
-    # selection.candidates.females <- subset( selection.candidates.females, phenotype.bw.oct < roof.body.size)
-    # if (nrow(selection.candidates.females) < n.females*(1-prop.oldfemales)){ 
-    #   truncation.point <-  quantile( x$own_littersize,  probs =  (quantile.setting  ) ) #can't change this since the kits won't have cards 
-    #   selection.candidates.females <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
-    #   selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
-    #   selection.candidates.females <- subset( selection.candidates.females, phenotype.bw.oct < (roof.body.size+200)) #ease restrictions on size
-    #   
-    # }
-    setkey(selection.candidates.females, phenotype.bw.oct)           # in order to speed up ordering 
-    setorder(selection.candidates.females,-phenotype.bw.oct)         # order the kits according to body size 
-    next.gen <- selection.candidates.females[1:(n.females-nrow(y)),]              # take the biggest kits
-    setkey(next.gen, id)
-    next.gen[next.gen,obs_fert:=0]  
-    if("f0.dam" %in% colnames(next.gen)) {
-      set( next.gen, j=which(colnames(next.gen) %in% 
-                               "f0.dam")  , value=NULL )
-    }
-    if("prodyear" %in% colnames(next.gen)) {
-      set( next.gen, j=which(colnames(next.gen) %in% 
-                               "prodyear")  , value=NULL )
-    }
-    
-    return (next.gen)
+PhenoSelectionOldFemales <- function (y,x, year) { # y = gen0.females, x = mating.list
+  setkey(x, obs_fert)
+  setorder(x, -obs_fert)
+  if ("birthyear.dam" %in% colnames(x)) {
+    x <- subset(x, year -birthyear.dam < max.age.females, 
+                select=c("dam.id","obs_fert","f0")) 
   }
+  old.females <- x[1:(n.females*prop.oldfemales),]
+  setnames(old.females, "dam.id", "id")
+  old.females <- merge(old.females, y, by="id")
+  
+  if("phenotype.bw.oct" %in% colnames(old.females)){
+    
+  } else {
+    if (qual.classes == 5){
+      truncs <- qnorm(p=c(0.05,0.3,0.7,0.95), 
+                      mean=mean(old.females$live.qual,
+                                sd= sqrt(var(old.females$live.qual))),
+                      lower.tail=TRUE)
+      old.females[,`:=`(live.score= ifelse(live.qual >= truncs[4],5,
+ifelse(truncs[3] < live.qual & live.qual <= truncs[4],4,
+ifelse(live.qual > truncs[2] & live.qual<=truncs[3],3,
+ifelse(live.qual > truncs[1] & live.qual <=truncs[2],2,
+ifelse(live.qual <=truncs[1],1,0
+))))))]
+    } else if (qual.classes == 10) {
+      truncs <- qnorm(p=c(0.01, 0.05, 0.15, 0.3, 0.5, 0.7, 0.85, 0.95, 0.99), 
+                      mean=mean(old.females$live.qual,
+                                sd= sqrt(var(old.females$live.qual))),
+                      lower.tail=TRUE)
+      old.females[,`:=`(live.score= 
+ifelse(live.qual >= truncs[9],10,
+ifelse(truncs[8] < live.qual & live.qual <= truncs[9],9,
+ifelse(live.qual > truncs[7] & live.qual<=truncs[8],8,
+ifelse(live.qual > truncs[6] & live.qual <=truncs[7],7,
+ifelse(live.qual > truncs[5] & live.qual <=truncs[6],6,
+ifelse(live.qual > truncs[4] & live.qual <=truncs[5],5,
+ifelse(live.qual > truncs[3] & live.qual <=truncs[4],4,
+ifelse(live.qual > truncs[2] & live.qual <=truncs[3],3,
+ifelse(live.qual > truncs[1] & live.qual <=truncs[2],2,
+ifelse(live.qual <=truncs[1],1,0 
+)))))))))))]
+    }
+    
+old.females[,`:=`(phenotype.bw.oct = 
+mean.body.size.female.oct + bw.oct +
+rnorm(nrow(old.females))*sqrt(var.c.bw.oct.female),
+phenotype.bw.sept = 
+mean.body.size.female.sept + bw.sept +
+rnorm(nrow(old.females))*sqrt(var.c.bw.oct.female)
+    )]
+  }
+  if("sire.id" %in% colnames(old.females)) {
+    setnames(old.females, "sire.id", "sire.assumed")
+    old.females[,`:=`(true.sire = old.females$sire.assumed)]
+  }
+  if ("own_littersize" %in% colnames(old.females)) {
+    
+  } else {old.females[,`:=`(own_littersize = 0)]}
+  if ("mating.will.1st.round" %in% colnames(old.females)) {
+    set( old.females, j=which(colnames(old.females) %in% 
+                                c("mating.will.1st.round","mating.will.2nd.round"))  , value=NULL )
+    
+  }
+  return(old.females)
+}  
+############### Phenotypic Selection of yearling females ############
+PhenoSelectionFemaleKits <- function (x,y) { # x = kit.list, y = y  
+  truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting ) 
+  selection.candidates.females <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
+  selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
+  if (weighing.method == oct){
+    truncation.point <-  quantile( selection.candidates.females$phenotype.bw.oct,  probs =  quantile.setting.bw ) 
+    selection.candidates.females <- subset(selection.candidates.females, phenotype.bw.oct >= truncation.point) # throw away the smallest litters
+  } else if (weighing.method == sept) {
+    truncation.point <-  quantile( selection.candidates.females$phenotype.bw.sept,
+                                   probs =  quantile.setting.bw ) 
+    selection.candidates.females <- subset(selection.candidates.females, 
+                                           phenotype.bw.sept >= truncation.point) 
+  }
+  if (qual.classes == 5){
+    truncs <- qnorm(p=c(0.05,0.3,0.7,0.95), 
+                    mean=mean(selection.candidates.females$live.qual,
+                              sd= sqrt(var(selection.candidates.females$live.qual))),
+                    lower.tail=TRUE)
+    selection.candidates.females[,`:=`(live.score= ifelse(live.qual >= truncs[4],5,
+     ifelse(truncs[3] < live.qual & live.qual <= truncs[4],4,
+      ifelse(live.qual > truncs[2] & live.qual<=truncs[3],3,
+       ifelse(live.qual > truncs[1] & live.qual <=truncs[2],2,
+        ifelse(live.qual <=truncs[1],1,0
+         ))))))]
+  } else if (qual.classes == 10) {
+    truncs <- qnorm(p=c(0.01, 0.05, 0.15, 0.3, 0.5, 0.7, 0.85, 0.95, 0.99), 
+                    mean=mean(selection.candidates.females$live.qual,
+                              sd= sqrt(var(selection.candidates.females$live.qual))),
+                    lower.tail=TRUE)
+    selection.candidates.females[,`:=`(live.score= 
+     ifelse(live.qual >= truncs[9],10,
+      ifelse(truncs[8] < live.qual & live.qual <= truncs[9],9,
+       ifelse(live.qual > truncs[7] & live.qual<=truncs[8],8,
+        ifelse(live.qual > truncs[6] & live.qual <=truncs[7],7,
+         ifelse(live.qual > truncs[5] & live.qual <=truncs[6],6,
+          ifelse(live.qual > truncs[4] & live.qual <=truncs[5],5,
+           ifelse(live.qual > truncs[3] & live.qual <=truncs[4],4,
+            ifelse(live.qual > truncs[2] & live.qual <=truncs[3],3,
+             ifelse(live.qual > truncs[1] & live.qual <=truncs[2],2,
+              ifelse(live.qual <=truncs[1],1,0 
+               )))))))))))]
+  }
+  
+  setkey(selection.candidates.females, live.score)           # in order to speed up ordering 
+  setorder(selection.candidates.females,-live.score)         # order the kits according to body size 
+  next.gen <- selection.candidates.females[1:(n.females-nrow(y)),]   # take kits with highest qual
+  setkey(next.gen, id)
+  next.gen[next.gen,obs_fert:=0]  
+  if("f0.dam" %in% colnames(next.gen)) {
+    set( next.gen, j=which(colnames(next.gen) %in% 
+                             "f0.dam")  , value=NULL )
+  }
+  if("prodyear" %in% colnames(next.gen)) {
+    set( next.gen, j=which(colnames(next.gen) %in% 
+                             "prodyear")  , value=NULL )
+  }
+  
+  
+  return (next.gen)
+}
 ############### Selection of yearling males in 1st gen ###############################
-PhenoSelectionMaleKits <- function (x) {
-    truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting ) 
-    selection.candidates.males <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
-    selection.candidates.males <-  subset( selection.candidates.males,  sex  ==   1  ) # take the female kits
-    setkey(selection.candidates.males, phenotype.bw.oct)           # in order to speed up ordering 
-    setorder(selection.candidates.males,-phenotype.bw.oct)         # order the kits according to litter size 
-    next.gen.males <- selection.candidates.males[1:n.males,]              # take the kits from biggest litters
-    set( next.gen.males, j=which(colnames(next.gen.males) %in%
-                                   "perm.env.ls"), value=NULL)
-    if("f0.dam" %in% colnames(next.gen.males)) {
-      set( next.gen.males, j=which(colnames(next.gen.males) %in% "f0.dam")  , value=NULL )
-      
-    }
-    if("prodyear" %in% colnames(next.gen.males)) {
-      set( next.gen.males, j=which(colnames(next.gen.males) %in% 
-                                     "prodyear")  , value=NULL )
-    }
+PhenoSelectionMaleKits <- function (x) { # x = kit.list 
+  truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting ) 
+  selection.candidates.males <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
+  selection.candidates.males <-  subset( selection.candidates.males,  sex  ==   1) # take the male kits
+  if (weighing.method == oct){
+    truncation.point <-  quantile( selection.candidates.males$phenotype.bw.oct,  probs =  quantile.setting.bw ) 
+    selection.candidates.males <- subset(selection.candidates.males, phenotype.bw.oct >= truncation.point) # throw away the smallest litters
+  } else if (weighing.method == sept) {
+    truncation.point <-  quantile( selection.candidates.males$phenotype.bw.sept,
+                                   probs =  quantile.setting.bw ) 
+    selection.candidates.males <- subset(selection.candidates.males, 
+                                         phenotype.bw.sept >= truncation.point) 
+  }
+  if (qual.classes == 5){
+    truncs <- qnorm(p=c(0.05,0.3,0.7,0.95), 
+                    mean=mean(selection.candidates.males$live.qual,
+                              sd= sqrt(var(selection.candidates.males$live.qual))),
+                    lower.tail=TRUE)
+    selection.candidates.males[,`:=`(live.score= ifelse(live.qual >= truncs[4],5,
+     ifelse(truncs[3] < live.qual & live.qual <= truncs[4],4,
+      ifelse(live.qual > truncs[2] & live.qual<=truncs[3],3,
+       ifelse(live.qual > truncs[1] & live.qual <=truncs[2],2,
+        ifelse(live.qual <=truncs[1],1,0
+         ))))))]
+  } else if (qual.classes == 10) {
+    truncs <- qnorm(p=c(0.01, 0.05, 0.15, 0.3, 0.5, 0.7, 0.85, 0.95, 0.99), 
+                    mean=mean(selection.candidates.males$live.qual,
+                              sd= sqrt(var(selection.candidates.males$live.qual))),
+                    lower.tail=TRUE)
+    selection.candidates.males[,`:=`(live.score= 
+      ifelse(live.qual >= truncs[9],10,
+       ifelse(truncs[8] < live.qual & live.qual <= truncs[9],9,
+        ifelse(live.qual > truncs[7] & live.qual<=truncs[8],8,
+         ifelse(live.qual > truncs[6] & live.qual <=truncs[7],7,
+          ifelse(live.qual > truncs[5] & live.qual <=truncs[6],6,
+           ifelse(live.qual > truncs[4] & live.qual <=truncs[5],5,
+            ifelse(live.qual > truncs[3] & live.qual <=truncs[4],4,
+             ifelse(live.qual > truncs[2] & live.qual <=truncs[3],3,
+              ifelse(live.qual > truncs[1] & live.qual <=truncs[2],2,
+               ifelse(live.qual <=truncs[1],1,0 
+               )))))))))))]
+  }
+  
+  setkey(selection.candidates.males, live.score)           # in order to speed up ordering 
+  if (weighing.method == sept){
+  setorder(selection.candidates.males,-live.score,-phenotype.bw.sept)         # order the kits according to body size 
+  } else if (weighing.method == oct) {
+    setorder(selection.candidates.males,-live.score,-phenotype.bw.oct)         # order the kits according to body size 
     
-    return (next.gen.males)
-    
-    }
+} 
+  next.gen <- selection.candidates.males[1:(n.males),]   # take kits with highest qual
+  setkey(next.gen, id)
+  if("f0.dam" %in% colnames(next.gen)) {
+    set( next.gen, j=which(colnames(next.gen) %in% 
+                             "f0.dam")  , value=NULL )
+  }
+  if("prodyear" %in% colnames(next.gen)) {
+    set( next.gen, j=which(colnames(next.gen) %in% 
+                             "prodyear")  , value=NULL )
+  }
+  
+  
+  return (next.gen)
+}
 ############### Noselection of old females  ###############
 nosel.old.females <- function (x) {
     old.females <- x[is.element(x$id, sample(x$id, n.females*prop.oldfemales)),]

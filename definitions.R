@@ -17,12 +17,16 @@ phenotypic <- 1
 blup <- 2
 trace.ped <- 0
 mask.phenotypes <- 1 # 0 no masking, 1 mask phenotypes of kits from small litters
+sept <- 1 # weigh kits in september
+oct <- 0  # weigh kits in october
 ############### Controls for simulation ############
 n.females <-  1000             # NUMBER OF FEMALES
 nruns <- 2                    # how many replicates of the simulation
 n <- 3                        # number of generation per replicate
 mating.method <- assortative   # mating method, random or assortative
 selection.method <- phenotypic  # selection mating, 
+weighing.method <- sept         # control for when to weigh kits for selection cands
+qual.classes <- 5              # quality classes, 5 or 10 are supported
 # selection = truncation,  no selection = next gen is chosen at random
 make.obs.file <- 1 # 1 = make observation file, 0 otherwise
 use.true.sire <- 0 # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
@@ -44,6 +48,7 @@ sib.effect.female <- -18.6      # Effect on body size of (female) one extra kit 
 sib.effect.male.sept   <- -21.5 # Effect on body size of (female) one extra kit in litter, Hansen(1997)
 sib.effect.female.sept <- -12.6 # Effect on body size of (female) one extra kit in litter, Hansen(1997)
 quantile.setting <- 0.4        # amount of kits to throw away because of too low littersize
+quantile.setting.bw <- 0.4    # prop of kits to disqualify due to weight
 mating.will.yearling.1st          <- 0.95 # probability of yearling being mated
 mating.will.yearling.2nd          <- 0.98 # probability of yearling being remated
 mating.will.old.1st               <- 0.98 # probability of old female being mated

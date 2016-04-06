@@ -60,7 +60,7 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
     set( old.females, j=which(colnames(old.females) %in%
                                 "f0.dam")  , value=NULL )
   }
-  next.gen <- rbind(next.gen, old.females)
+  next.gen <- rbind(next.gen, old.females,fill=TRUE)
   # # add in next gen and gen1 to big pedigree
   if (selection.method ==blup){
     big.pedfile <- update.big.pedigree (big.pedfile, next.gen, next.gen.males)
@@ -74,12 +74,12 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
     var(mating.list$dam.fert),
     0,
     mean(mating.list$obs_fert),
-    mean(next.gen$bs.phenotype),
+    mean(next.gen$phenotype.bw.oct),
     mean(next.gen$bw.oct),
-    mean(next.gen.males$bs.phenotype),
+    mean(next.gen.males$phenotype.bw.oct),
     var(next.gen$bw.oct),
     0,
-    cor(next.gen$bw.oct, next.gen$bs.phenotype),
+    cor(next.gen$bw.oct, next.gen$phenotype.bw.oct),
     sep = "\t",
     file = con
   )
@@ -90,11 +90,11 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       var(mating.list$dam.fert),
       0,
       mean(mating.list$obs_fert),
-      mean(next.gen$bs.phenotype),
+      mean(next.gen$phenotype.bw.oct),
       mean(next.gen$bw.oct),
-      mean(next.gen.males$bs.phenotype),
+      mean(next.gen.males$phenotype.bw.oct),
       var(next.gen$bw.oct),
-      cor(next.gen$bw.oct, next.gen$bs.phenotype),
+      cor(next.gen$bw.oct, next.gen$phenotype.bw.oct),
       sep = "\t",
       file = con
     )
