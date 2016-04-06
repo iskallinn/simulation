@@ -566,7 +566,7 @@ MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
               "sire.skin.length.2nd",
               "sire.skin.qual.2nd",
               "sire.live.qual.2nd"
-              ) 
+            ) 
             , with=F] #specify which columns to incl.
   id <- seq(1:sum(x$obs_fert)) + max(y$id) # makes ID
   birthyear <- rep (1, sum(x$obs_fert)) # makes birthyear
@@ -599,29 +599,76 @@ MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
               true.sire.live.qual = 
                 ifelse(gen1$true.sire == gen1$sire.id.2nd, 
                        gen1$sire.live.qual.2nd, gen1$sire.live.qual.1st)
-              )]
-  gen1[,.(mend.bw.oct)] <- ifelse(gen1$sex==1, gen1$mend.bw.oct*sqrt(0.5*var.bw.oct.male*( 1- gen1$f0 )),
-                                  gen1$mend.bw.oct*sqrt(0.5*var.bw.oct.female*( 1- gen1$f0 )))
-  gen1[, `:=`(fert = 0.5*(dam.fert + true.sire.fert) + 
-                mend.fert*(sqrt(0.5*variance.fertility)*( 1- f0 )) # Breeding value of offspring, littersize
+  )]
+  gen1$mend.bw.oct <-  ifelse(gen1$sex==1, gen1$mend.bw.oct*sqrt(0.5*var.bw.oct.male),
+                              gen1$mend.bw.oct*sqrt(0.5*var.bw.oct.female))
+  gen1$mend.bw.sept <-  ifelse(gen1$sex==1, gen1$mend.bw.sept*sqrt(0.5*var.bw.sept.male),
+                               gen1$mend.bw.oct*sqrt(0.5*var.bw.sept.female))
+  
+  gen1[, `:=`(litter.size = 0.5*(dam.fert + true.sire.fert) + 
+                mend.litter.size*(sqrt(0.5*variance.fertility)) # Breeding value of offspring, littersize
               , perm.env.ls = rnorm(sum(x$obs_fert))*sqrt(var.perm.env.ls) # perm env for litter size
-              , bw.oct = 0.5*(dam.bs + true.sire.bs) + 
+              , bw.oct = 0.5*(dam.bw.oct + true.sire.bw.oct) + 
+                mend.bw.oct,
+              bw.sept = 0.5*(dam.bw.sept + true.sire.bw.sept) + 
                 mend.bw.oct)]# Breeding value of offspring, body size
   #  gen1 <- count.sex.siblings(gen1) # calls function to count offspring NOT NEEDED ATM
   
   setnames(gen1, c("obs_fert","sire.id.2nd"), c("own_littersize","sire.assumed")) # renames obs_fert to own littersize of kits
   gen1$dam.age <- ifelse( z - gen1$birthyear.dam > 1, 1,0 )
   
-  gen1$bs.phenotype <- ifelse( gen1$sex == 1,MakePhenotypesBWMales(mean.body.size.male , gen1$bw.oct , gen1$perm.env.bw.oct , gen1$own_littersize, gen1$dam.age,x  ) 
-                               , MakePhenotypesBWFemales(mean.body.size.female , gen1$bw.oct , gen1$perm.env.bw.oct,gen1$own_littersize,x )) 
+  gen1$phenotype.bw.oct <- ifelse( gen1$sex == 1,MakePhenotypesBWMalesOct(mean.body.size.male.oct , gen1$bw.oct , gen1$perm.env.bw.oct , gen1$own_littersize, gen1$dam.age,x  ) 
+                                   , MakePhenotypesBWFemalesOct(mean.body.size.female.oct , gen1$bw.oct , gen1$perm.env.bw.oct,gen1$own_littersize,x )) 
+  gen1$phenotype.bw.sept <- ifelse( gen1$sex == 1,
+                                    MakePhenotypesBWMalesSept(mean.body.size.male.sept , gen1$bw.sept , gen1$perm.env.bw.sept , gen1$own_littersize, gen1$dam.age,x  ) 
+                                    , MakePhenotypesBWFemalesOct(mean.body.size.female.sept , gen1$bw.sept , gen1$perm.env.bw.sept,gen1$own_littersize,x )) 
+  
   # generate phenotype for body size
   
-  gen1[,`:=`(perm.env.bs = rnorm(sum(x$obs_fert))*sqrt(var.body.size.spec.env))] # generate specific env. for body size
+  gen1[,`:=`(perm.env.bw.sept = ifelse(sex==1, rnorm(sum(x$obs_fert))*sqrt(var.c.bw.sept.male),
+                                       rnorm(sum(x$obs_fert))*sqrt(var.c.bw.sept.female)),
+             perm.env.bw.oct = ifelse(sex==1, rnorm(sum(x$obs_fert))*sqrt(var.c.bw.oct.male),
+                                      rnorm(sum(x$obs_fert))*sqrt(var.c.bw.oct.female)))] # generate specific env. for body size
   
-  set( gen1, j=which(colnames(gen1) %in% c("dam.fert","sire.fert","sire.bs","dam.bs","mend.fert"
-                                           ,"mend.bw","birthyear.dam","dam.age","sire.id.1st","sire.bs.1st",
-                                           "sire.fert.1st","sire.fert.2nd","sire.bs.2nd"
-                                           ,"true.sire.fert","true.sire.bs", "true.sire.check")) , value=NULL ) # removes bv of parents
+  set( gen1, j=which(colnames(gen1) %in% c(
+    "sire.fert.1st",
+    "sire.bw.oct.1st",
+    "sire.bw.sept.1st",
+    "sire.skin.length.1st",
+    "sire.skin.qual.1st",
+    "sire.live.qual.1st",
+    "dam.fert",
+    "dam.bw.oct",
+    "dam.bw.sept",
+    "dam.skin.length",
+    "dam.skin.qual",
+    "dam.live.qual",
+    "sire.bw.oct.1st",
+    "sire.bw.sept.1st",
+    "perm.env.bw.oct",
+    "perm.env.bw.sept",
+    "birthyear.dam",
+    "sire.fert.2nd",
+    "sire.bw.oct.2nd",
+    "sire.bw.sept.2nd",
+    "sire.skin.length.2nd",
+    "sire.skin.qual.2nd",
+    "sire.live.qual.2nd",
+    "mend.bw.oct", 
+    "mend.bw.sept", 
+    "mend.litter.size", 
+    "mend.live.qual",
+    "mend.skin.qual", 
+    "mend.skin.length",
+    "true.sire.check",
+    "true.sire.fert",
+    "true.sire.bw.oct",
+    "true.sire.bw.sept",
+    "true.sire.skin.length",
+    "true.sire.skin.qual",
+    "true.sire.live.qual",
+    "dam.age"
+  )) , value=NULL ) # removes bv of parents
   return(gen1)
 }
 ############### Phenotypic Selection of old females ###############################################
@@ -668,10 +715,10 @@ PhenoSelectionOldFemales <- function (y,x, year) { # y = gen0.females, x = x
       set( old.females, j=which(colnames(old.females) %in% 
                                   "perm.env.bs.y")  , value=NULL )
     }
-    if("bs.phenotype" %in% colnames(old.females)){
+    if("phenotype.bw.oct" %in% colnames(old.females)){
       
     } else {
-      old.females <-transform(old.females, bs.phenotype = mean.body.size.female + bw.oct + rnorm(1)*sqrt(var.res.body.size))
+      old.females <-transform(old.females, phenotype.bw.oct = mean.body.size.female + bw.oct + rnorm(1)*sqrt(var.res.body.size))
     }
     if("mating.will.2nd.round" %in% colnames(old.females)) {
       set(old.females, j=c("mating.will.2nd.round", "mating.will.1st.round"),value=NULL)
@@ -696,16 +743,16 @@ PhenoSelectionFemaleKits <- function (x,y) { # x = kit.list, y = y
     truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting ) 
     selection.candidates.females <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
     selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
-    # selection.candidates.females <- subset( selection.candidates.females, bs.phenotype < roof.body.size)
+    # selection.candidates.females <- subset( selection.candidates.females, phenotype.bw.oct < roof.body.size)
     # if (nrow(selection.candidates.females) < n.females*(1-prop.oldfemales)){ 
     #   truncation.point <-  quantile( x$own_littersize,  probs =  (quantile.setting  ) ) #can't change this since the kits won't have cards 
     #   selection.candidates.females <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
     #   selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
-    #   selection.candidates.females <- subset( selection.candidates.females, bs.phenotype < (roof.body.size+200)) #ease restrictions on size
+    #   selection.candidates.females <- subset( selection.candidates.females, phenotype.bw.oct < (roof.body.size+200)) #ease restrictions on size
     #   
     # }
-    setkey(selection.candidates.females, bs.phenotype)           # in order to speed up ordering 
-    setorder(selection.candidates.females,-bs.phenotype)         # order the kits according to body size 
+    setkey(selection.candidates.females, phenotype.bw.oct)           # in order to speed up ordering 
+    setorder(selection.candidates.females,-phenotype.bw.oct)         # order the kits according to body size 
     next.gen <- selection.candidates.females[1:(n.females-nrow(y)),]              # take the biggest kits
     setkey(next.gen, id)
     next.gen[next.gen,obs_fert:=0]  
@@ -725,8 +772,8 @@ PhenoSelectionMaleKits <- function (x) {
     truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting ) 
     selection.candidates.males <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
     selection.candidates.males <-  subset( selection.candidates.males,  sex  ==   1  ) # take the female kits
-    setkey(selection.candidates.males, bs.phenotype)           # in order to speed up ordering 
-    setorder(selection.candidates.males,-bs.phenotype)         # order the kits according to litter size 
+    setkey(selection.candidates.males, phenotype.bw.oct)           # in order to speed up ordering 
+    setorder(selection.candidates.males,-phenotype.bw.oct)         # order the kits according to litter size 
     next.gen.males <- selection.candidates.males[1:n.males,]              # take the kits from biggest litters
     set( next.gen.males, j=which(colnames(next.gen.males) %in%
                                    "perm.env.ls"), value=NULL)
@@ -830,12 +877,12 @@ IndSelFemaleKits <- function (x,y,z,q) { # x = kit.list , y = solutions.fert, z 
    truncation.point <-  quantile( x$blup.fert,  probs =  quantile.setting ) 
    selection.candidates.females <- subset(x, blup.fert >= truncation.point) # throw away the smallest litters
    selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
-   # selection.candidates.females <- subset( selection.candidates.females, bs.phenotype < roof.body.size)
+   # selection.candidates.females <- subset( selection.candidates.females, phenotype.bw.oct < roof.body.size)
    # if (nrow(selection.candidates.females) < n.females*(1-prop.oldfemales)){ 
    #   truncation.point <-  quantile( x$own_littersize,  probs =  (quantile.setting  ) ) #can't change this since the kits won't have cards 
    #   selection.candidates.females <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
    #   selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
-   #   selection.candidates.females <- subset( selection.candidates.females, bs.phenotype < (roof.body.size+200)) #ease restrictions on size
+   #   selection.candidates.females <- subset( selection.candidates.females, phenotype.bw.oct < (roof.body.size+200)) #ease restrictions on size
    #   
    # }
    setkey(selection.candidates.females, comb.ind)           # in order to speed up ordering 
@@ -1034,7 +1081,7 @@ MakeKitsGenN <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big
   
   setnames(kit.list, "obs_fert", "own_littersize") # changes obs fert into the littersize of the kit
   kit.list$dam.age <- ifelse( year - kit.list$birthyear.dam > 1, 1,0 )
-  kit.list$bs.phenotype <- ifelse( kit.list$sex == 1,MakePhenotypesBWMales ( mean.body.size.male ,
+  kit.list$phenotype.bw.oct <- ifelse( kit.list$sex == 1,MakePhenotypesBWMales ( mean.body.size.male ,
   kit.list$bw.oct , kit.list$perm.env.bs , kit.list$own_littersize, kit.list$dam.age ,x ) ,
   MakePhenotypesBWFemales(mean.body.size.female ,kit.list$bw.oct , 
   kit.list$perm.env.bs, kit.list$own_littersize,x )) 
@@ -1106,16 +1153,36 @@ YearlingEffectOnFertility <- function (x,y){ # x = mating.list, y = year
    close(con=pedigree)
      }
  }
-############### Make phenotype for body size ######
- MakePhenotypesBWMales <- function(x,y,z,t,u,mat) { # x = mean, y = additive genetic, z = specific gen, t = number of  sibs, mat =mating.list
-   value <- x+ y + z*sqrt(var.c.bw.oct.male) + rnorm( sum(mat$obs_fert))*(sqrt(var.res.body.size))+t*sib.effect.male+ u * bw.eff.damage
+############### Make phenotype for body weight ######
+ MakePhenotypesBWMalesOct <- function(x,y,z,t,u,mat) {
+# x = mean, y = additive genetic, z = specific env, t = number of  sibs, mat =mating.list
+   value <- x+ y + z*sqrt(var.c.bw.oct.male) + 
+     rnorm( sum(mat$obs_fert))*(sqrt(var.res.bw.oct.male))+
+     t*sib.effect.male+ u * bw.eff.damage
    return(value)
  } 
- MakePhenotypesBWFemales <- function(x,y,z,t,mat) { # x = mean, y = additive genetic, z = specific gen, t = number of sibs
-   value <- x+ y + z*sqrt(var.c.bw.oct.female) + rnorm( sum(mat$obs_fert))*(sqrt(var.res.body.size))+t*sib.effect.female 
+ MakePhenotypesBWFemalesOct <- function(x,y,z,t,mat) {
+  # x = mean, y = additive genetic, z = specific env, t = number of sibs, mat=mating.list
+   value <- x+ y + z*sqrt(var.c.bw.oct.female) + 
+     rnorm( sum(mat$obs_fert))*(sqrt(var.res.bw.oct.female))+
+     t*sib.effect.female 
    return(value)
  } 
  
+ MakePhenotypesBWMalesSept <- function(x,y,z,t,u,mat) {
+   # x = mean, y = additive genetic, z = specific env, t = number of  sibs, mat =mating.list
+   value <- x+ y + z*sqrt(var.c.bw.sept.male) + 
+     rnorm( sum(mat$obs_fert))*(sqrt(var.res.bw.oct.male))+
+     t*sib.effect.male.sept+ u * bw.eff.damage
+   return(value)
+ } 
+ MakePhenotypesBWFemalesSept <- function(x,y,z,t,mat) {
+   # x = mean, y = additive genetic, z = specific env, t = number of sibs, mat=mating.list
+   value <- x+ y + z*sqrt(var.c.bw.sept.female) + 
+     rnorm( sum(mat$obs_fert))*(sqrt(var.res.bw.sept.female))+
+     t*sib.effect.female.sept 
+   return(value)
+ } 
  
  
  ############ Count sex of siblings ############
@@ -1231,14 +1298,14 @@ WriteObservationFileBodyWeight <- function (x,year,p,solutions) {
   if(mask.phenotypes == 1 & year > 1) {
     x <- merge(x, solutions, by= "id", all.x=TRUE) # merge to solutions of blup of fertility
     truncation.point <-  quantile( x$blup.fert,  probs =  quantile.setting ) 
-    x <- subset(x, blup.fert >= truncation.point, select= c("id","dam.id","own_littersize","sex","bs.phenotype"))
+    x <- subset(x, blup.fert >= truncation.point, select= c("id","dam.id","own_littersize","sex","phenotype.bw.oct"))
   }
   if (year  == 1 ) {phenotypes <- file(description = paste("Phenotypes",p, sep=""), open="w")
-  write.table(format(x[,.(id,dam.id,sex,own_littersize,bs.phenotype)], nsmall=1, digits=2), file= phenotypes, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
+  write.table(format(x[,.(id,dam.id,sex,own_littersize,phenotype.bw.oct)], nsmall=1, digits=2), file= phenotypes, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
  close(con=phenotypes)
    } else if (year > 1) {
      phenotypes <- file(description = paste("Phenotypes",p, sep=""), open="a")
-      write.table(format(x[,.(id,dam.id,sex,own_littersize,bs.phenotype)], nsmall=1, digits=2), file= phenotypes, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
+      write.table(format(x[,.(id,dam.id,sex,own_littersize,phenotype.bw.oct)], nsmall=1, digits=2), file= phenotypes, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
       close(con=phenotypes)
     }
   }

@@ -27,9 +27,10 @@ selection.method <- phenotypic  # selection mating,
 make.obs.file <- 1 # 1 = make observation file, 0 otherwise
 use.true.sire <- 0 # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
 ############# Mean settings for traits   #####################
-mean.body.size.male <- 3000
-mean.body.size.female <- 1650
-
+mean.body.size.male.oct <- 3000
+mean.body.size.female.oct <- 1650
+mean.body.size.male.sept <- 2750
+mean.body.size.female.sept <- 1450
 ############### Innter settings, change at own risk##########
 male.ratio <-  6               # MALE TO FEMALE RATIO
 male.inf <-  0.98              # % ODDS OF MALE BEING NOT BARREN
@@ -38,8 +39,10 @@ prop.oldfemales <-  0.4        # Proportion of older females
 ibd.fertility <- 0.06          # Inbreeding depression on fertility NOTE: not in use atm
 max.age.females <- 3           # define how old the females can be
 yearling.effect <- -0.07       # setting for yearling effect, current best guess is -0.07
-sib.effect.male <- -13.4      # Effect on body size of (male) one extra kit in litter, Hansen(1997)
-sib.effect.female <- -18.6    # Effect on body size of (female) one extra kit in litter, Hansen(1997)
+sib.effect.male <- -13.4       # Effect on body size of (male) one extra kit in litter, Hansen(1997)
+sib.effect.female <- -18.6      # Effect on body size of (female) one extra kit in litter, Hansen(1997)
+sib.effect.male.sept   <- -21.5 # Effect on body size of (female) one extra kit in litter, Hansen(1997)
+sib.effect.female.sept <- -12.6 # Effect on body size of (female) one extra kit in litter, Hansen(1997)
 quantile.setting <- 0.4        # amount of kits to throw away because of too low littersize
 mating.will.yearling.1st          <- 0.95 # probability of yearling being mated
 mating.will.yearling.2nd          <- 0.98 # probability of yearling being remated
