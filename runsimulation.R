@@ -54,7 +54,11 @@ RunSimulation <- function (x, year, p) {
     big.pedfile <- WriteBigPedigree (kit.list, big.pedfile, year, p)
     # this makes the big pedigree with all animals in the pedigree
     dirfile <- readLines("reml_bwnov.PAROUT")
+    if (weighing.method == oct ) {
     dirfile[2] <- c(paste("  2  1  1    ",var(next.gen$bw.oct),sep=""))
+    } else if (weighing.method == sept) {
+      dirfile[2] <- c(paste("  2  1  1    ",var(next.gen$bw.sept),sep=""))
+}
     writeLines(dirfile,"reml_bwnov.PAROUT")
     if(trace.ped == 1 ){TracePed(kit.list,next.gen)}
     solutions.littersize <- CalculateBLUPLitterSize ()
@@ -99,33 +103,33 @@ RunSimulation <- function (x, year, p) {
   if (selection.method == blup) {
     cat (
     year,
-    mean(next.gen$fert),
-    var(next.gen$fert),
+    mean(next.gen$litter.size),
+    var(next.gen$litter.size),
     mean(mating.list$f0.dam)
     ,
     mean(mating.list$obs_fert),
-    mean(next.gen$bs.phenotype),
+    mean(next.gen$phenotype.bw.oct),
     mean(next.gen$bw.oct)
     ,
-    mean(next.gen.males$bs.phenotype),
+    mean(next.gen.males$phenotype.bw.oct),
     var(next.gen$bw.oct),
     cor(next.gen$bw.oct, next.gen$blup.bwnov),
-    cor(next.gen$bw.oct, next.gen$bs.phenotype),
+    cor(next.gen$bw.oct, next.gen$phenotype.bw.oct),
     sep = "\t",
     file = con
   )
   } else if (selection.method == phenotypic) {
     cat (
       year,
-      mean(next.gen$fert),
-      var(next.gen$fert),
+      mean(next.gen$litter.size),
+      var(next.gen$litter.size),
       mean(mating.list$f0.dam),
       mean(mating.list$obs_fert),
-      mean(next.gen$bs.phenotype),
+      mean(next.gen$phenotype.bw.oct),
       mean(next.gen$bw.oct),
-      mean(next.gen.males$bs.phenotype),
+      mean(next.gen.males$phenotype.bw.oct),
       var(next.gen$bw.oct),
-      cor(next.gen$bw.oct, next.gen$bs.phenotype),
+      cor(next.gen$bw.oct, next.gen$phenotype.bw.oct),
       sep = "\t",
       file = con
     )

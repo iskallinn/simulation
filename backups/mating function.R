@@ -1,3 +1,4 @@
+#backup of mating function monster
 mate <- function (x, y, year) {
   # x = males, y = females
   mating.list <-
@@ -14,8 +15,7 @@ mate <- function (x, y, year) {
         "semen.quality.2nd",
         "can.remate",
         "mating.willingness.1st",
-        "mating.willingness.2nd",
-        "live.score"
+        "mating.willingness.2nd"
       )
       , with = F] #specify which columns to incl.
   if (nrow(mating.list) > sum(y$mating.will.1st.round)) {
@@ -24,9 +24,9 @@ mate <- function (x, y, year) {
   
   setnames(
     mating.list,
-    c("id", "bw.oct", "litter.size","bw.sept", "live.qual", "skin.qual", "skin.length","live.score"),
+    c("id", "bw.oct", "litter.size","bw.sept", "live.qual", "skin.qual", "skin.length"),
     c("sire.id.1st", "sire.bw.oct.1st", "sire.fert.1st","sire.bw.sept.1st", 
-      "sire.live.qual.1st", "sire.skin.qual.1st", "sire.skin.length.1st","sire.live.score.1st")
+      "sire.live.qual.1st", "sire.skin.qual.1st", "sire.skin.length.1st")
   )
   setkey(mating.list, sire.id.1st)
   mating.list[mating.list, c(
@@ -47,8 +47,7 @@ mate <- function (x, y, year) {
     "sire.fert.2nd",
     "sire.skin.qual.2nd",
     "sire.skin.length.2nd",
-    "sire.live.qual.2nd",
-    "sire.live.score.2nd"
+    "sire.live.qual.2nd"
   ) := 0]
   # moved scaling of perm.env.bw to the phenotype function later on
   mating.list[, `:=`(perm.env.bw.oct = rnorm(nrow(mating.list)), 
@@ -63,7 +62,7 @@ mate <- function (x, y, year) {
   mating.list$dam.skin.length  <- y[1:nrow(mating.list), .(skin.length)]
   mating.list$dam.skin.qual  <- y[1:nrow(mating.list), .(skin.qual)]
   mating.list$dam.live.qual  <- y[1:nrow(mating.list), .(live.qual)]
-  mating.list$dam.live.score <- y[1:nrow(mating.list), .(live.score)]
+  
   
   if ("f0" %in% colnames(y)) {
     mating.list$f0  <- y[1:nrow(mating.list), .(f0)]
@@ -155,18 +154,8 @@ mate <- function (x, y, year) {
     rbind(mating.list.leftover, mating.list.notallowed)
   
   # here I should reorder the dams that are leftovers to prioritize younger dams and the ones mated with shitty males
-  setkey(mating.list.leftover, dam.id)
-  setorder(mating.list.leftover, -birthyear.dam, -dam.live.score)
-  myvars <- c("sire.id.2nd",
-              "semen.quality.2nd",
-              "sire.fert.2nd",
-              "sire.bw.oct.2nd",
-              "sire.bw.sept.2nd",
-              "sire.skin.length.2nd",
-              "sire.skin.qual.2nd",
-              "sire.live.qual.2nd")
   mating.list.leftover <-
-    as.matrix(mating.list.leftover[,myvars,with=FALSE]) 
+    as.matrix(mating.list.leftover) 
   # way faster to loop through a matrix
   # this big loop has two modes, one if the selection method is blup and
   # another if the selection method is phenotypic
