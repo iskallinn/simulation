@@ -43,28 +43,42 @@ GenerateBaseFemales <- function () {
   gen0.females[, c("bw.sept")
                := lapply(.SD, function(x)
                  x * sqrt(var.bw.sept.female)), .SDcols = c("bw.sept")] # makes variance proper
+  gen0.females[, c("live.qual")
+               := lapply(.SD, function(x)
+                 x * sqrt(var.live.qual.gen)), .SDcols = c("live.qual")] # makes variance proper
+  
+  gen0.females[,`:=`(phenotype.bw.oct = 
+                      mean.body.size.female.oct + bw.oct +
+                      rnorm(nrow(gen0.females))*sqrt(var.c.bw.oct.female),
+                    phenotype.bw.sept = 
+                      mean.body.size.female.sept + bw.sept +
+                      rnorm(nrow(gen0.females))*sqrt(var.c.bw.oct.female),
+                    phenotype.live.qual = live.qual + 
+                      rnorm(nrow(gen0.females))*sqrt(var.live.qual.res)
+  )]
+  
   if (qual.classes == 5) {
     truncs <- qnorm(
       p = c(0.05, 0.3, 0.7, 0.95),
-      mean = mean(gen0.females$live.qual,
+      mean = mean(gen0.females$phenotype.live.qual),
                   sd = sqrt(var(
-                    gen0.females$live.qual
-                  ))),
+                    gen0.females$phenotype.live.qual
+                  )),
       lower.tail = TRUE
     )
     gen0.females[, `:=`(live.score = ifelse(
-      live.qual >= truncs[4],
+      phenotype.live.qual >= truncs[4],
       5,
       ifelse(
-        truncs[3] < live.qual & live.qual <= truncs[4],
+        truncs[3] < phenotype.live.qual & phenotype.live.qual <= truncs[4],
         4,
         ifelse(
-          live.qual > truncs[2] & live.qual <= truncs[3],
+          phenotype.live.qual > truncs[2] & phenotype.live.qual <= truncs[3],
           3,
           ifelse(
-            live.qual > truncs[1] & live.qual <= truncs[2],
+            phenotype.live.qual > truncs[1] & phenotype.live.qual <= truncs[2],
             2,
-            ifelse(live.qual <=
+            ifelse(phenotype.live.qual <=
                      truncs[1], 1, 0)
           )
         )
@@ -74,41 +88,41 @@ GenerateBaseFemales <- function () {
     truncs <-
       qnorm(
         p = c(0.01, 0.05, 0.15, 0.3, 0.5, 0.7, 0.85, 0.95, 0.99),
-        mean = mean(gen0.females$live.qual,
+        mean = mean(gen0.females$phenotype.live.qual),
                     sd = sqrt(var(
-                      gen0.females$live.qual
-                    ))),
+                      gen0.females$phenotype.live.qual
+                    )),
         lower.tail = TRUE
       )
     gen0.females[, `:=`(live.score =
                          ifelse(
-                           live.qual >= truncs[9],
+                           phenotype.live.qual >= truncs[9],
                            10,
                            ifelse(
-                             truncs[8] < live.qual & live.qual <= truncs[9],
+                             truncs[8] < phenotype.live.qual & phenotype.live.qual <= truncs[9],
                              9,
                              ifelse(
-                               live.qual > truncs[7] & live.qual <= truncs[8],
+                               phenotype.live.qual > truncs[7] & phenotype.live.qual <= truncs[8],
                                8,
                                ifelse(
-                                 live.qual > truncs[6] & live.qual <= truncs[7],
+                                 phenotype.live.qual > truncs[6] & phenotype.live.qual <= truncs[7],
                                  7,
                                  ifelse(
-                                   live.qual > truncs[5] & live.qual <= truncs[6],
+                                   phenotype.live.qual > truncs[5] & phenotype.live.qual <= truncs[6],
                                    6,
                                    ifelse(
-                                     live.qual > truncs[4] & live.qual <= truncs[5],
+                                     phenotype.live.qual > truncs[4] & phenotype.live.qual <= truncs[5],
                                      5,
                                      ifelse(
-                                       live.qual > truncs[3] & live.qual <= truncs[4],
+                                       phenotype.live.qual > truncs[3] & phenotype.live.qual <= truncs[4],
                                        4,
                                        ifelse(
-                                         live.qual > truncs[2] & live.qual <= truncs[3],
+                                         phenotype.live.qual > truncs[2] & phenotype.live.qual <= truncs[3],
                                          3,
                                          ifelse(
-                                           live.qual > truncs[1] & live.qual <= truncs[2],
+                                           phenotype.live.qual > truncs[1] & phenotype.live.qual <= truncs[2],
                                            2,
-                                           ifelse(live.qual <=
+                                           ifelse(phenotype.live.qual <=
                                                     truncs[1], 1, 0)
                                          )
                                        )
@@ -171,29 +185,42 @@ GenerateBaseMales <- function () {
              :=lapply(.SD, function(x) x*sqrt(var.bw.oct.male)), .SDcols=c("bw.oct")] # makes variance proper
   gen0.males[, c("bw.sept")
              :=lapply(.SD, function(x) x*sqrt(var.bw.sept.male)), .SDcols=c("bw.sept")] # makes variance proper
+  gen0.males[, c("live.qual")
+               := lapply(.SD, function(x)
+                 x * sqrt(var.live.qual.gen)), .SDcols = c("live.qual")] # makes variance proper
+  
+  gen0.males[,`:=`(phenotype.bw.oct = 
+                       mean.body.size.female.oct + bw.oct +
+                       rnorm(nrow(gen0.males))*sqrt(var.c.bw.oct.female),
+                     phenotype.bw.sept = 
+                       mean.body.size.female.sept + bw.sept +
+                       rnorm(nrow(gen0.males))*sqrt(var.c.bw.oct.female),
+                     phenotype.live.qual = live.qual + 
+                       rnorm(nrow(gen0.males))*sqrt(var.live.qual.res)
+  )]
   
   if (qual.classes == 5) {
     truncs <- qnorm(
       p = c(0.05, 0.3, 0.7, 0.95),
-      mean = mean(gen0.males$live.qual,
+      mean = mean(gen0.males$phenotype.live.qual),
                   sd = sqrt(var(
-                    gen0.males$live.qual
-                  ))),
+                    gen0.males$phenotype.live.qual
+                  )),
       lower.tail = TRUE
     )
     gen0.males[, `:=`(live.score = ifelse(
-      live.qual >= truncs[4],
+      phenotype.live.qual >= truncs[4],
       5,
       ifelse(
-        truncs[3] < live.qual & live.qual <= truncs[4],
+        truncs[3] < phenotype.live.qual & phenotype.live.qual <= truncs[4],
         4,
         ifelse(
-          live.qual > truncs[2] & live.qual <= truncs[3],
+          phenotype.live.qual > truncs[2] & phenotype.live.qual <= truncs[3],
           3,
           ifelse(
-            live.qual > truncs[1] & live.qual <= truncs[2],
+            phenotype.live.qual > truncs[1] & phenotype.live.qual <= truncs[2],
             2,
-            ifelse(live.qual <=
+            ifelse(phenotype.live.qual <=
                      truncs[1], 1, 0)
           )
         )
@@ -203,41 +230,41 @@ GenerateBaseMales <- function () {
     truncs <-
       qnorm(
         p = c(0.01, 0.05, 0.15, 0.3, 0.5, 0.7, 0.85, 0.95, 0.99),
-        mean = mean(gen0.males$live.qual,
+        mean = mean(gen0.females$phenotype.live.qual),
                     sd = sqrt(var(
-                      gen0.males$live.qual
-                    ))),
+                      gen0.females$phenotype.live.qual
+                    )),
         lower.tail = TRUE
       )
     gen0.males[, `:=`(live.score =
                           ifelse(
-                            live.qual >= truncs[9],
+                            phenotype.live.qual >= truncs[9],
                             10,
                             ifelse(
-                              truncs[8] < live.qual & live.qual <= truncs[9],
+                              truncs[8] < phenotype.live.qual & phenotype.live.qual <= truncs[9],
                               9,
                               ifelse(
-                                live.qual > truncs[7] & live.qual <= truncs[8],
+                                phenotype.live.qual > truncs[7] & phenotype.live.qual <= truncs[8],
                                 8,
                                 ifelse(
-                                  live.qual > truncs[6] & live.qual <= truncs[7],
+                                  phenotype.live.qual > truncs[6] & phenotype.live.qual <= truncs[7],
                                   7,
                                   ifelse(
-                                    live.qual > truncs[5] & live.qual <= truncs[6],
+                                    phenotype.live.qual > truncs[5] & phenotype.live.qual <= truncs[6],
                                     6,
                                     ifelse(
-                                      live.qual > truncs[4] & live.qual <= truncs[5],
+                                      phenotype.live.qual > truncs[4] & phenotype.live.qual <= truncs[5],
                                       5,
                                       ifelse(
-                                        live.qual > truncs[3] & live.qual <= truncs[4],
+                                        phenotype.live.qual > truncs[3] & phenotype.live.qual <= truncs[4],
                                         4,
                                         ifelse(
-                                          live.qual > truncs[2] & live.qual <= truncs[3],
+                                          phenotype.live.qual > truncs[2] & phenotype.live.qual <= truncs[3],
                                           3,
                                           ifelse(
-                                            live.qual > truncs[1] & live.qual <= truncs[2],
+                                            phenotype.live.qual > truncs[1] & phenotype.live.qual <= truncs[2],
                                             2,
-                                            ifelse(live.qual <=
+                                            ifelse(phenotype.live.qual <=
                                                      truncs[1], 1, 0)
                                           )
                                         )
@@ -625,6 +652,50 @@ MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
   
   gen1 <- cbind (id,gen1,  birthyear, sex, mendelian, true.sire,true.sire.check) # binds id, sex and birthyear to data.table
   
+  gen1$sire.id.2nd  <-
+    ifelse(gen1$sire.id.2nd == 0,
+           gen1$sire.id.1st,
+           gen1$sire.id.2nd)
+  # puts the 1st sire into the 2nd sire column for single mated females
+  gen1$sire.fert.2nd <-
+    ifelse(
+      gen1$sire.id.2nd == gen1$sire.id.1st,
+      gen1$sire.fert.1st,
+      gen1$sire.fert.2nd
+    )
+  gen1$sire.bw.oct.2nd <-
+    ifelse(
+      gen1$sire.id.2nd == gen1$sire.id.1st,
+      gen1$sire.bw.oct.1st,
+      gen1$sire.bw.oct.2nd
+    )
+  gen1$sire.bw.sept.2nd <-
+    ifelse(
+      gen1$sire.id.2nd == gen1$sire.id.1st,
+      gen1$sire.bw.sept.1st,
+      gen1$sire.bw.sept.2nd
+    )
+  
+  gen1$sire.skin.length.2nd <-
+    ifelse(
+      gen1$sire.id.2nd == gen1$sire.id.1st,
+      gen1$sire.skin.length.1st,
+      gen1$sire.skin.length.2nd
+    )
+  gen1$sire.skin.qual.2nd <-
+    ifelse(
+      gen1$sire.id.2nd == gen1$sire.id.1st,
+      gen1$sire.skin.qual.1st,
+      gen1$sire.skin.qual.2nd
+    )
+  gen1$sire.live.qual.2nd <-
+    ifelse(
+      gen1$sire.id.2nd == gen1$sire.id.1st,
+      gen1$sire.live.qual.1st,
+      gen1$sire.live.qual.2nd
+    )
+  
+  
   gen1$true.sire.check <- ifelse( gen1$sire.id.1st != gen1$sire.id.2nd, rbinom(nrow(gen1), 1, 0.85), 1) # 85% chance that the kits are sired by 2nd mating
   gen1$true.sire <- ifelse( gen1$true.sire.check == 0, gen1$sire.id.1st, gen1$sire.id.2nd)
   gen1[, `:=`(true.sire.fert = 
@@ -658,7 +729,7 @@ MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
                 mend.bw.oct,
               bw.sept = 0.5*(dam.bw.sept + true.sire.bw.sept) + 
                 mend.bw.oct,
-              live.qual = 0.5*(dam.live.qual + true.sire.live.qual)+ sqrt(0.5)*(mend.live.qual),
+              live.qual = 0.5*(dam.live.qual + true.sire.live.qual)+ sqrt(0.5*var.live.qual.gen)*(mend.live.qual),
               skin.qual = 0.5*(dam.skin.qual + true.sire.skin.qual)+ sqrt(0.5)*(mend.skin.qual),
               skin.length = 0.5*(dam.skin.length + true.sire.skin.length)+ sqrt(0.5)*(mend.skin.length))]# Breeding value of offspring, body size
   #  gen1 <- count.sex.siblings(gen1) # calls function to count offspring NOT NEEDED ATM
@@ -666,12 +737,54 @@ MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
   setnames(gen1, c("obs_fert","sire.id.2nd"), c("own_littersize","sire.assumed")) # renames obs_fert to own littersize of kits
   gen1$dam.age <- ifelse( z - gen1$birthyear.dam > 1, 1,0 )
   
-  gen1$phenotype.bw.oct <- ifelse( gen1$sex == 1,MakePhenotypesBWMalesOct(mean.body.size.male.oct , gen1$bw.oct , gen1$perm.env.bw.oct , gen1$own_littersize, gen1$dam.age,x  ) 
-                                   , MakePhenotypesBWFemalesOct(mean.body.size.female.oct , gen1$bw.oct , gen1$perm.env.bw.oct,gen1$own_littersize,x )) 
+  gen1$phenotype.bw.oct <- ifelse( gen1$sex == 1,MakePhenotypesBWMalesOct(mean.body.size.male.oct , gen1$bw.oct , gen1$perm.env.bw.oct , gen1$own_littersize, gen1$dam.age,x  )
+                                   , MakePhenotypesBWFemalesOct(mean.body.size.female.oct , gen1$bw.oct , gen1$perm.env.bw.oct,gen1$own_littersize,x ))
   gen1$phenotype.bw.sept <- ifelse( gen1$sex == 1,
-                                    MakePhenotypesBWMalesSept(mean.body.size.male.sept , gen1$bw.sept , gen1$perm.env.bw.sept , gen1$own_littersize, gen1$dam.age,x  ) 
-                                    , MakePhenotypesBWFemalesOct(mean.body.size.female.sept , gen1$bw.sept , gen1$perm.env.bw.sept,gen1$own_littersize,x )) 
-  
+                                    MakePhenotypesBWMalesSept(mean.body.size.male.sept , gen1$bw.sept , gen1$perm.env.bw.sept , gen1$own_littersize, gen1$dam.age,x  )
+                                    , MakePhenotypesBWFemalesOct(mean.body.size.female.sept , gen1$bw.sept , gen1$perm.env.bw.sept,gen1$own_littersize,x ))
+  gen1$phenotype.live.qual <- gen1$live.qual  + rnorm(nrow(gen1))*sqrt(var.live.qual.res)
+  # gen1[, `:=`(
+  #   phenotype.bw.oct = ifelse(
+  #     gen1$sex == 1,
+  #     MakePhenotypesBWMalesOct(
+  #       mean.body.size.male.oct ,
+  #       gen1$bw.oct ,
+  #       gen1$perm.env.bw.oct ,
+  #       gen1$own_littersize,
+  #       gen1$dam.age,
+  #       x
+  #     )
+  #     ,
+  #     MakePhenotypesBWFemalesOct(
+  #       mean.body.size.female.oct ,
+  #       gen1$bw.oct ,
+  #       gen1$perm.env.bw.oct,
+  #       gen1$own_littersize,
+  #       x
+  #     )
+  #   ),
+  #   phenotype.bw.sept = ifelse(
+  #     gen1$sex == 1,
+  #     MakePhenotypesBWMalesSept(
+  #       mean.body.size.male.sept ,
+  #       gen1$bw.sept ,
+  #       gen1$perm.env.bw.sept ,
+  #       gen1$own_littersize,
+  #       gen1$dam.age,
+  #       x
+  #     )
+  #     ,
+  #     MakePhenotypesBWFemalesOct(
+  #       mean.body.size.female.sept ,
+  #       gen1$bw.sept ,
+  #       gen1$perm.env.bw.sept,
+  #       gen1$own_littersize,
+  #       x
+  #     )
+  #   ),
+  #   phenotype.live.qual = live.qual  + rnorm(nrow(gen1)) *
+  #     sqrt(var.live.qual.res)
+  # )]
   # generate phenotype for body size
   
   gen1[,`:=`(perm.env.bw.sept = ifelse(sex==1, rnorm(sum(x$obs_fert))*sqrt(var.c.bw.sept.male),
@@ -722,10 +835,10 @@ MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
   if (qual.classes == 5) {
     truncs <- qnorm(
       p = c(0.05, 0.3, 0.7, 0.95),
-      mean = mean(gen1$live.qual,
+      mean = mean(gen1$live.qual),
                   sd = sqrt(var(
                     gen1$live.qual
-                  ))),
+                  )),
       lower.tail = TRUE
     )
     gen1[, `:=`(live.score = ifelse(
@@ -750,10 +863,10 @@ MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
     truncs <-
       qnorm(
         p = c(0.01, 0.05, 0.15, 0.3, 0.5, 0.7, 0.85, 0.95, 0.99),
-        mean = mean(gen1$live.qual,
+        mean = mean(gen1$live.qual),
                     sd = sqrt(var(
                       gen1$live.qual
-                    ))),
+                    )),
         lower.tail = TRUE
       )
     gen1[, `:=`(live.score =
@@ -820,47 +933,47 @@ PhenoSelectionOldFemales <- function (y,x, year) { # y = gen0.females, x = matin
   setnames(old.females, "dam.id", "id")
   old.females <- merge(old.females, y, by="id")
   
-  if("phenotype.bw.oct" %in% colnames(old.females)){
+  # if("phenotype.bw.oct" %in% colnames(old.females)){
 
-  } else {
-#     if (qual.classes == 5){
-#       truncs <- qnorm(p=c(0.05,0.3,0.7,0.95), 
-#                       mean=mean(old.females$live.qual,
-#                                 sd= sqrt(var(old.females$live.qual))),
-#                       lower.tail=TRUE)
-#       old.females[,`:=`(live.score= ifelse(live.qual >= truncs[4],5,
-# ifelse(truncs[3] < live.qual & live.qual <= truncs[4],4,
-# ifelse(live.qual > truncs[2] & live.qual<=truncs[3],3,
-# ifelse(live.qual > truncs[1] & live.qual <=truncs[2],2,
-# ifelse(live.qual <=truncs[1],1,0
-# ))))))]
-#     } else if (qual.classes == 10) {
-#       truncs <- qnorm(p=c(0.01, 0.05, 0.15, 0.3, 0.5, 0.7, 0.85, 0.95, 0.99), 
-#                       mean=mean(old.females$live.qual,
-#                                 sd= sqrt(var(old.females$live.qual))),
-#                       lower.tail=TRUE)
-#       old.females[,`:=`(live.score= 
-# ifelse(live.qual >= truncs[9],10,
-# ifelse(truncs[8] < live.qual & live.qual <= truncs[9],9,
-# ifelse(live.qual > truncs[7] & live.qual<=truncs[8],8,
-# ifelse(live.qual > truncs[6] & live.qual <=truncs[7],7,
-# ifelse(live.qual > truncs[5] & live.qual <=truncs[6],6,
-# ifelse(live.qual > truncs[4] & live.qual <=truncs[5],5,
-# ifelse(live.qual > truncs[3] & live.qual <=truncs[4],4,
-# ifelse(live.qual > truncs[2] & live.qual <=truncs[3],3,
-# ifelse(live.qual > truncs[1] & live.qual <=truncs[2],2,
-# ifelse(live.qual <=truncs[1],1,0 
-# )))))))))))]
-#     }
-    
-old.females[,`:=`(phenotype.bw.oct = 
-mean.body.size.female.oct + bw.oct +
-rnorm(nrow(old.females))*sqrt(var.c.bw.oct.female),
-phenotype.bw.sept = 
-mean.body.size.female.sept + bw.sept +
-rnorm(nrow(old.females))*sqrt(var.c.bw.oct.female)
-    )]
-  }
+#   } else {
+# #     if (qual.classes == 5){
+# #       truncs <- qnorm(p=c(0.05,0.3,0.7,0.95), 
+# #                       mean=mean(old.females$live.qual,
+# #                                 sd= sqrt(var(old.females$live.qual))),
+# #                       lower.tail=TRUE)
+# #       old.females[,`:=`(live.score= ifelse(live.qual >= truncs[4],5,
+# # ifelse(truncs[3] < live.qual & live.qual <= truncs[4],4,
+# # ifelse(live.qual > truncs[2] & live.qual<=truncs[3],3,
+# # ifelse(live.qual > truncs[1] & live.qual <=truncs[2],2,
+# # ifelse(live.qual <=truncs[1],1,0
+# # ))))))]
+# #     } else if (qual.classes == 10) {
+# #       truncs <- qnorm(p=c(0.01, 0.05, 0.15, 0.3, 0.5, 0.7, 0.85, 0.95, 0.99), 
+# #                       mean=mean(old.females$live.qual,
+# #                                 sd= sqrt(var(old.females$live.qual))),
+# #                       lower.tail=TRUE)
+# #       old.females[,`:=`(live.score= 
+# # ifelse(live.qual >= truncs[9],10,
+# # ifelse(truncs[8] < live.qual & live.qual <= truncs[9],9,
+# # ifelse(live.qual > truncs[7] & live.qual<=truncs[8],8,
+# # ifelse(live.qual > truncs[6] & live.qual <=truncs[7],7,
+# # ifelse(live.qual > truncs[5] & live.qual <=truncs[6],6,
+# # ifelse(live.qual > truncs[4] & live.qual <=truncs[5],5,
+# # ifelse(live.qual > truncs[3] & live.qual <=truncs[4],4,
+# # ifelse(live.qual > truncs[2] & live.qual <=truncs[3],3,
+# # ifelse(live.qual > truncs[1] & live.qual <=truncs[2],2,
+# # ifelse(live.qual <=truncs[1],1,0 
+# # )))))))))))]
+# #     }
+#     
+# old.females[,`:=`(phenotype.bw.oct = 
+# mean.body.size.female.oct + bw.oct +
+# rnorm(nrow(old.females))*sqrt(var.c.bw.oct.female),
+# phenotype.bw.sept = 
+# mean.body.size.female.sept + bw.sept +
+# rnorm(nrow(old.females))*sqrt(var.c.bw.oct.female)
+#     )]
+#   }
   if("sire.id" %in% colnames(old.females)) {
     setnames(old.females, "sire.id", "sire.assumed")
     old.females[,`:=`(true.sire = old.females$sire.assumed)]
@@ -1381,15 +1494,56 @@ MakeKitsGenN <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big
                     mend.bw.oct*(1-f0),
                   bw.sept = 0.5*(dam.bw.sept + true.sire.bw.sept) + 
                     mend.bw.oct*(1-f0),
-                  live.qual = 0.5*(dam.live.qual + true.sire.live.qual)+ sqrt(0.5)*(mend.live.qual)*(1-f0),
+                  live.qual = 0.5*(dam.live.qual + true.sire.live.qual)+ sqrt(0.5*var.live.qual.gen)*(mend.live.qual)*(1-f0),
                   skin.qual = 0.5*(dam.skin.qual + true.sire.skin.qual)+ sqrt(0.5)*(mend.skin.qual)*(1-f0),
                   skin.length = 0.5*(dam.skin.length + true.sire.skin.length)+ sqrt(0.5)*(mend.skin.length)*(1-f0))]# Breeding value of offspring, body size
   
   setnames(kit.list, "obs_fert", "own_littersize") # changes obs fert into the littersize of the kit
   kit.list$dam.age <- ifelse( year - kit.list$birthyear.dam > 1, 1,0 )
   # generate phenotype for body size 
-  kit.list$phenotype.bw.oct <-
-    ifelse(
+  # kit.list$phenotype.bw.oct <-
+  #   ifelse(
+  #     kit.list$sex == 1,
+  #     MakePhenotypesBWMalesOct(
+  #       mean.body.size.male.oct ,
+  #       kit.list$bw.oct ,
+  #       kit.list$perm.env.bw.oct ,
+  #       kit.list$own_littersize,
+  #       kit.list$dam.age,
+  #       x
+  #     )
+  #     ,
+  #     MakePhenotypesBWFemalesOct(
+  #       mean.body.size.female.oct ,
+  #       kit.list$bw.oct ,
+  #       kit.list$perm.env.bw.oct,
+  #       kit.list$own_littersize,
+  #       x
+  #     )
+  #   )
+  # # generate phenotype for body size
+  # kit.list$phenotype.bw.sept <- ifelse(
+  #   kit.list$sex == 1,
+  #   MakePhenotypesBWMalesSept(
+  #     mean.body.size.male.sept ,
+  #     kit.list$bw.sept ,
+  #     kit.list$perm.env.bw.sept ,
+  #     kit.list$own_littersize,
+  #     kit.list$dam.age,
+  #     x
+  #   )
+  #   ,
+  #   MakePhenotypesBWFemalesOct(
+  #     mean.body.size.female.sept ,
+  #     kit.list$bw.sept ,
+  #     kit.list$perm.env.bw.sept,
+  #     kit.list$own_littersize,
+  #     x
+  #   )
+  # )
+  
+  kit.list[, `:=`(
+    phenotype.bw.oct = ifelse(
       kit.list$sex == 1,
       MakePhenotypesBWMalesOct(
         mean.body.size.male.oct ,
@@ -1407,28 +1561,29 @@ MakeKitsGenN <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big
         kit.list$own_littersize,
         x
       )
-    )
-  # generate phenotype for body size
-  kit.list$phenotype.bw.sept <- ifelse(
-    kit.list$sex == 1,
-    MakePhenotypesBWMalesSept(
-      mean.body.size.male.sept ,
-      kit.list$bw.sept ,
-      kit.list$perm.env.bw.sept ,
-      kit.list$own_littersize,
-      kit.list$dam.age,
-      x
-    )
-    ,
-    MakePhenotypesBWFemalesOct(
-      mean.body.size.female.sept ,
-      kit.list$bw.sept ,
-      kit.list$perm.env.bw.sept,
-      kit.list$own_littersize,
-      x
-    )
-  )
-  
+    ),
+    phenotype.bw.sept = ifelse(
+      kit.list$sex == 1,
+      MakePhenotypesBWMalesSept(
+        mean.body.size.male.sept ,
+        kit.list$bw.sept ,
+        kit.list$perm.env.bw.sept ,
+        kit.list$own_littersize,
+        kit.list$dam.age,
+        x
+      )
+      ,
+      MakePhenotypesBWFemalesOct(
+        mean.body.size.female.sept ,
+        kit.list$bw.sept ,
+        kit.list$perm.env.bw.sept,
+        kit.list$own_littersize,
+        x
+      )
+    ),
+    phenotype.live.qual = live.qual  + rnorm(nrow(kit.list)) *
+      sqrt(var.live.qual.res)
+  )]
   
   kit.list[,`:=`(perm.env.bw.sept = ifelse(sex==1, rnorm(sum(x$obs_fert))*sqrt(var.c.bw.sept.male),
                                            rnorm(sum(x$obs_fert))*sqrt(var.c.bw.sept.female)),
@@ -1476,25 +1631,25 @@ MakeKitsGenN <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big
   if (qual.classes == 5) {
     truncs <- qnorm(
       p = c(0.05, 0.3, 0.7, 0.95),
-      mean = mean(kit.list$live.qual,
+      mean = mean(kit.list$phenotype.live.qual),
                   sd = sqrt(var(
-                    kit.list$live.qual
-                  ))),
+                    kit.list$phenotype.live.qual
+                  )),
       lower.tail = TRUE
     )
     kit.list[, `:=`(live.score = ifelse(
       live.qual >= truncs[4],
       5,
       ifelse(
-        truncs[3] < live.qual & live.qual <= truncs[4],
+        truncs[3] < phenotype.live.qual & phenotype.live.qual <= truncs[4],
         4,
         ifelse(
-          live.qual > truncs[2] & live.qual <= truncs[3],
+          phenotype.live.qual > truncs[2] & phenotype.live.qual <= truncs[3],
           3,
           ifelse(
-            live.qual > truncs[1] & live.qual <= truncs[2],
+            phenotype.live.qual > truncs[1] & phenotype.live.qual <= truncs[2],
             2,
-            ifelse(live.qual <=
+            ifelse(phenotype.live.qual <=
                      truncs[1], 1, 0)
           )
         )
@@ -1504,41 +1659,41 @@ MakeKitsGenN <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big
     truncs <-
       qnorm(
         p = c(0.01, 0.05, 0.15, 0.3, 0.5, 0.7, 0.85, 0.95, 0.99),
-        mean = mean(kit.list$live.qual,
+        mean = mean(kit.list$phenotype.live.qual),
                     sd = sqrt(var(
-                      kit.list$live.qual
-                    ))),
+                      kit.list$phenotype.live.qual
+                    )),
         lower.tail = TRUE
       )
     kit.list[, `:=`(live.score =
                       ifelse(
-                        live.qual >= truncs[9],
+                        phenotype.live.qual >= truncs[9],
                         10,
                         ifelse(
-                          truncs[8] < live.qual & live.qual <= truncs[9],
+                          truncs[8] < phenotype.live.qual & phenotype.live.qual <= truncs[9],
                           9,
                           ifelse(
-                            live.qual > truncs[7] & live.qual <= truncs[8],
+                            phenotype.live.qual > truncs[7] & phenotype.live.qual <= truncs[8],
                             8,
                             ifelse(
-                              live.qual > truncs[6] & live.qual <= truncs[7],
+                              phenotype.live.qual > truncs[6] & phenotype.live.qual <= truncs[7],
                               7,
                               ifelse(
-                                live.qual > truncs[5] & live.qual <= truncs[6],
+                                phenotype.live.qual > truncs[5] & phenotype.live.qual <= truncs[6],
                                 6,
                                 ifelse(
-                                  live.qual > truncs[4] & live.qual <= truncs[5],
+                                  phenotype.live.qual > truncs[4] & phenotype.live.qual <= truncs[5],
                                   5,
                                   ifelse(
-                                    live.qual > truncs[3] & live.qual <= truncs[4],
+                                    phenotype.live.qual > truncs[3] & phenotype.live.qual <= truncs[4],
                                     4,
                                     ifelse(
-                                      live.qual > truncs[2] & live.qual <= truncs[3],
+                                      phenotype.live.qual > truncs[2] & phenotype.live.qual <= truncs[3],
                                       3,
                                       ifelse(
-                                        live.qual > truncs[1] & live.qual <= truncs[2],
+                                        phenotype.live.qual > truncs[1] & phenotype.live.qual <= truncs[2],
                                         2,
-                                        ifelse(live.qual <=
+                                        ifelse(phenotype.live.qual <=
                                                  truncs[1], 1, 0)
                                       )
                                     )
@@ -1723,7 +1878,7 @@ return (solutions.bw)
    
    # bw modification
    dirfile <- readLines("bw_nov.DIR")
-   dirfile[8] <- c(paste("$DATA  ASCII (4,1,-9999) Phenotypes",p, sep="")) 
+   dirfile[8] <- c(paste("$DATA  ASCII (4,2,-9999) Phenotypes",p, sep="")) 
    # change the input file for BLUP so it uses the next outputfile
    writeLines(dirfile, "bw_nov.DIR")
    dirfile[25] <- c(paste("$VAR_STR 2 PED 2 ASCII Big_pedigree_",p, sep="")) 

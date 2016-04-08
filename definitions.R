@@ -79,6 +79,9 @@ var.c.bw.sept.male      <-  3027         # from hansen et al 1992, ass c^2 = 0.0
 var.c.bw.sept.female    <-  947          # from hansen et al 1992, ass c^2 = 0.068
 var.res.bw.sept.female  <-  5876         # from hansen et al 1992, ass c^2 andh^2 as above
 var.res.bw.sept.male    <-  18788        # from hansen et al 1992, ass c^2 andh^2 as above
+# quality variances
+var.live.qual.gen       <- 24.0
+var.live.qual.res       <- 60.0
 # misc
 roof.body.size          <-  2400          # Maximum body weight of females to be allowed for selection
 bw.eff.damage           <-  34.5          # effect of dam age on weight of males
