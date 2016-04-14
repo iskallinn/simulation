@@ -49,10 +49,12 @@ GenerateBaseFemales <- function () {
   
   gen0.females[,`:=`(phenotype.bw.oct = 
                       mean.body.size.female.oct + bw.oct +
-                      rnorm(nrow(gen0.females))*sqrt(var.c.bw.oct.female),
+                      rnorm(nrow(gen0.females))*sqrt(var.c.bw.oct.female)+
+                       rnorm(nrow(gen0.females))*sqrt(var.res.bw.oct.female),
                     phenotype.bw.sept = 
                       mean.body.size.female.sept + bw.sept +
-                      rnorm(nrow(gen0.females))*sqrt(var.c.bw.oct.female),
+                      rnorm(nrow(gen0.females))*sqrt(var.c.bw.sept.female)+
+                      rnorm(nrow(gen0.females))*sqrt(var.res.bw.sept.female),
                     phenotype.live.qual = live.qual + 
                       rnorm(nrow(gen0.females))*sqrt(var.live.qual.res)
   )]
@@ -152,7 +154,8 @@ GenerateBaseMales <- function () {
   dam.id             <-  numeric( n.males )  
   sire.id            <-  numeric( n.males ) 
   birthyear          <-  numeric( n.males ) 
-  can.remate         <-  rbinom(n.males, 1,0.8) 
+  can.remate         <-  rep(0,times=n.males) 
+  
   
   #TODO make this into something more meaningful once I have quality or something to rank the males on
   
@@ -190,11 +193,13 @@ GenerateBaseMales <- function () {
                  x * sqrt(var.live.qual.gen)), .SDcols = c("live.qual")] # makes variance proper
   
   gen0.males[,`:=`(phenotype.bw.oct = 
-                       mean.body.size.female.oct + bw.oct +
-                       rnorm(nrow(gen0.males))*sqrt(var.c.bw.oct.female),
+                       mean.body.size.male.oct + bw.oct +
+                       rnorm(nrow(gen0.males))*sqrt(var.c.bw.oct.male)+
+                     rnorm(nrow(gen0.males))*sqrt(var.res.bw.oct.male),
                      phenotype.bw.sept = 
-                       mean.body.size.female.sept + bw.sept +
-                       rnorm(nrow(gen0.males))*sqrt(var.c.bw.oct.female),
+                       mean.body.size.male.sept + bw.sept +
+                       rnorm(nrow(gen0.males))*sqrt(var.c.bw.oct.male)+
+                     rnorm(nrow(gen0.males))*sqrt(var.res.bw.sept.male),
                      phenotype.live.qual = live.qual + 
                        rnorm(nrow(gen0.males))*sqrt(var.live.qual.res)
   )]
@@ -230,9 +235,9 @@ GenerateBaseMales <- function () {
     truncs <-
       qnorm(
         p = c(0.01, 0.05, 0.15, 0.3, 0.5, 0.7, 0.85, 0.95, 0.99),
-        mean = mean(gen0.females$phenotype.live.qual),
+        mean = mean(gen0.males$phenotype.live.qual),
                     sd = sqrt(var(
-                      gen0.females$phenotype.live.qual
+                      gen0.males$phenotype.live.qual
                     )),
         lower.tail = TRUE
       )
@@ -276,6 +281,11 @@ GenerateBaseMales <- function () {
                             )
                           ))]
   }
+  setorder(gen0.males, -live.score, -phenotype.bw.oct)
+  for (i in 1:ceiling((1-intensity.remating)*nrow(gen0.males))) {
+    gen0.males$can.remate[i] <- 1
+  }
+  
   #make a subset of the males which will mate, this must be moved into the mating function 
   effgen0.males <- subset( gen0.males,  mating.willingness.1st > 0 ) 
   return (effgen0.males)
@@ -512,29 +522,45 @@ mate <- function (x, y, year) {
         mating.list.leftover.temp[[s - (j - 1), 9]] <- x[[i, 8]]          # live.qual sept of male
         } else if ( i > 1) {
           t <- sum(x[1:(i-1), 10])+1
-          mating.list.leftover.temp[[t, 2]] <- x[[i, 1]]          # id of male
-          mating.list.leftover.temp[[t, 3]] <- x[[i, 2]]          # semen.quality
-          mating.list.leftover.temp[[t, 4]] <- x[[i, 3]]          # fertility of male
-          mating.list.leftover.temp[[t, 5]] <- x[[i, 4]]          # body weight oct of male
-          mating.list.leftover.temp[[t, 6]] <- x[[i, 5]]          # body weight sept of male
-          mating.list.leftover.temp[[t, 7]] <- x[[i, 6]]          # skin.length of male
-          mating.list.leftover.temp[[t, 8]] <- x[[i, 7]]          # skin.qual sept of male
-          mating.list.leftover.temp[[t, 9]] <- x[[i, 8]]          # live.qual sept of male
+          mating.list.leftover.temp[[t+(j-1), 2]] <- x[[i, 1]]          # id of male
+          mating.list.leftover.temp[[t+(j-1), 3]] <- x[[i, 2]]          # semen.quality
+          mating.list.leftover.temp[[t+(j-1), 4]] <- x[[i, 3]]          # fertility of male
+          mating.list.leftover.temp[[t+(j-1), 5]] <- x[[i, 4]]          # body weight oct of male
+          mating.list.leftover.temp[[t+(j-1), 6]] <- x[[i, 5]]          # body weight sept of male
+          mating.list.leftover.temp[[t+(j-1), 7]] <- x[[i, 6]]          # skin.length of male
+          mating.list.leftover.temp[[t+(j-1), 8]] <- x[[i, 7]]          # skin.qual sept of male
+          mating.list.leftover.temp[[t+(j-1), 9]] <- x[[i, 8]]          # live.qual sept of male
           
         }
       }
       if (s > nrow(mating.list.leftover.temp)) {
         while (sum(x[1:(i - 1) , 10]) + j <= nrow(mating.list.leftover.temp)) {
           # Here i solve the problem of if the males have more mating willingness than the number of females
-          t <- sum(x[1:(i-1), 10])+1
-          mating.list.leftover.temp[[t, 2]] <- x[[i, 1]]          # id of male
-          mating.list.leftover.temp[[t, 3]] <- x[[i, 2]]          # semen.quality
-          mating.list.leftover.temp[[t, 4]] <- x[[i, 3]]          # fertility of male
-          mating.list.leftover.temp[[t, 5]] <- x[[i, 4]]          # body weight oct of male
-          mating.list.leftover.temp[[t, 6]] <- x[[i, 5]]          # body weight sept of male
-          mating.list.leftover.temp[[t, 7]] <- x[[i, 6]]          # skin.length of male
-          mating.list.leftover.temp[[t, 8]] <- x[[i, 7]]          # skin.qual sept of male
-          mating.list.leftover.temp[[t, 9]] <- x[[i, 8]]          # live.qual sept of male
+          if (s < nrow(mating.list.leftover.temp)) {
+            if ( i == 1) {
+              # this is not a solution, need to make another controlling mechanism if the mating willingness
+              #exceeds the number of females to be mated
+              mating.list.leftover.temp[[s - (j - 1), 2]] <- x[[i, 1]]          # id of male
+              mating.list.leftover.temp[[s - (j - 1), 3]] <- x[[i, 2]]          # semen.quality
+              mating.list.leftover.temp[[s - (j - 1), 4]] <- x[[i, 3]]          # fertility of male
+              mating.list.leftover.temp[[s - (j - 1), 5]] <- x[[i, 4]]          # body weight oct of male
+              mating.list.leftover.temp[[s - (j - 1), 6]] <- x[[i, 5]]          # body weight sept of male
+              mating.list.leftover.temp[[s - (j - 1), 7]] <- x[[i, 6]]          # skin.length of male
+              mating.list.leftover.temp[[s - (j - 1), 8]] <- x[[i, 7]]          # skin.qual sept of male
+              mating.list.leftover.temp[[s - (j - 1), 9]] <- x[[i, 8]]          # live.qual sept of male
+            } else if ( i > 1) {
+              t <- sum(x[1:(i-1), 10])+1
+              mating.list.leftover.temp[[t+(j-1), 2]] <- x[[i, 1]]          # id of male
+              mating.list.leftover.temp[[t+(j-1), 3]] <- x[[i, 2]]          # semen.quality
+              mating.list.leftover.temp[[t+(j-1), 4]] <- x[[i, 3]]          # fertility of male
+              mating.list.leftover.temp[[t+(j-1), 5]] <- x[[i, 4]]          # body weight oct of male
+              mating.list.leftover.temp[[t+(j-1), 6]] <- x[[i, 5]]          # body weight sept of male
+              mating.list.leftover.temp[[t+(j-1), 7]] <- x[[i, 6]]          # skin.length of male
+              mating.list.leftover.temp[[t+(j-1), 8]] <- x[[i, 7]]          # skin.qual sept of male
+              mating.list.leftover.temp[[t+(j-1), 9]] <- x[[i, 8]]          # live.qual sept of male
+              
+            }
+          }
           
           break
         }
@@ -612,7 +638,7 @@ setkey(y, id)
 # This function creates the kits for the first generation only, since the 
 # subsequent generation is more complex this is the only instance of it
 MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
-  gen1 <- x[rep(seq(nrow(x)), obs_fert), 
+  kit.list <- x[rep(seq(nrow(x)), obs_fert), 
             c("dam.id",
               "sire.id.1st",
               "dam.fert",
@@ -644,85 +670,85 @@ MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
   id <- seq(1:sum(x$obs_fert)) + max(y$id) # makes ID
   birthyear <- rep (1, sum(x$obs_fert)) # makes birthyear
   sex <- rbinom(sum(x$obs_fert),1,0.5)+1 # makes sex, TODO check if this is true
-  true.sire <- numeric(nrow(gen1))
-  true.sire.check <- numeric(nrow(gen1))
+  true.sire <- numeric(nrow(kit.list))
+  true.sire.check <- numeric(nrow(kit.list))
   mendelian <- as.data.table(rmvnorm(sum(x$obs_fert),sigma=sigma,method="svd"))
   colnames(mendelian) <- c("mend.bw.oct", "mend.bw.sept", "mend.litter.size", "mend.live.qual",
                            "mend.skin.qual", "mend.skin.length" )
   
-  gen1 <- cbind (id,gen1,  birthyear, sex, mendelian, true.sire,true.sire.check) # binds id, sex and birthyear to data.table
+  kit.list <- cbind (id,kit.list,  birthyear, sex, mendelian, true.sire,true.sire.check) # binds id, sex and birthyear to data.table
   
-  gen1$sire.id.2nd  <-
-    ifelse(gen1$sire.id.2nd == 0,
-           gen1$sire.id.1st,
-           gen1$sire.id.2nd)
+  kit.list$sire.id.2nd  <-
+    ifelse(kit.list$sire.id.2nd == 0,
+           kit.list$sire.id.1st,
+           kit.list$sire.id.2nd)
   # puts the 1st sire into the 2nd sire column for single mated females
-  gen1$sire.fert.2nd <-
+  kit.list$sire.fert.2nd <-
     ifelse(
-      gen1$sire.id.2nd == gen1$sire.id.1st,
-      gen1$sire.fert.1st,
-      gen1$sire.fert.2nd
+      kit.list$sire.id.2nd == kit.list$sire.id.1st,
+      kit.list$sire.fert.1st,
+      kit.list$sire.fert.2nd
     )
-  gen1$sire.bw.oct.2nd <-
+  kit.list$sire.bw.oct.2nd <-
     ifelse(
-      gen1$sire.id.2nd == gen1$sire.id.1st,
-      gen1$sire.bw.oct.1st,
-      gen1$sire.bw.oct.2nd
+      kit.list$sire.id.2nd == kit.list$sire.id.1st,
+      kit.list$sire.bw.oct.1st,
+      kit.list$sire.bw.oct.2nd
     )
-  gen1$sire.bw.sept.2nd <-
+  kit.list$sire.bw.sept.2nd <-
     ifelse(
-      gen1$sire.id.2nd == gen1$sire.id.1st,
-      gen1$sire.bw.sept.1st,
-      gen1$sire.bw.sept.2nd
-    )
-  
-  gen1$sire.skin.length.2nd <-
-    ifelse(
-      gen1$sire.id.2nd == gen1$sire.id.1st,
-      gen1$sire.skin.length.1st,
-      gen1$sire.skin.length.2nd
-    )
-  gen1$sire.skin.qual.2nd <-
-    ifelse(
-      gen1$sire.id.2nd == gen1$sire.id.1st,
-      gen1$sire.skin.qual.1st,
-      gen1$sire.skin.qual.2nd
-    )
-  gen1$sire.live.qual.2nd <-
-    ifelse(
-      gen1$sire.id.2nd == gen1$sire.id.1st,
-      gen1$sire.live.qual.1st,
-      gen1$sire.live.qual.2nd
+      kit.list$sire.id.2nd == kit.list$sire.id.1st,
+      kit.list$sire.bw.sept.1st,
+      kit.list$sire.bw.sept.2nd
     )
   
+  kit.list$sire.skin.length.2nd <-
+    ifelse(
+      kit.list$sire.id.2nd == kit.list$sire.id.1st,
+      kit.list$sire.skin.length.1st,
+      kit.list$sire.skin.length.2nd
+    )
+  kit.list$sire.skin.qual.2nd <-
+    ifelse(
+      kit.list$sire.id.2nd == kit.list$sire.id.1st,
+      kit.list$sire.skin.qual.1st,
+      kit.list$sire.skin.qual.2nd
+    )
+  kit.list$sire.live.qual.2nd <-
+    ifelse(
+      kit.list$sire.id.2nd == kit.list$sire.id.1st,
+      kit.list$sire.live.qual.1st,
+      kit.list$sire.live.qual.2nd
+    )
   
-  gen1$true.sire.check <- ifelse( gen1$sire.id.1st != gen1$sire.id.2nd, rbinom(nrow(gen1), 1, 0.85), 1) # 85% chance that the kits are sired by 2nd mating
-  gen1$true.sire <- ifelse( gen1$true.sire.check == 0, gen1$sire.id.1st, gen1$sire.id.2nd)
-  gen1[, `:=`(true.sire.fert = 
-                ifelse(gen1$true.sire == gen1$sire.id.2nd, 
-                       gen1$sire.fert.2nd, gen1$sire.fert.1st), 
+  
+  kit.list$true.sire.check <- ifelse( kit.list$sire.id.1st != kit.list$sire.id.2nd, rbinom(nrow(kit.list), 1, 0.85), 1) # 85% chance that the kits are sired by 2nd mating
+  kit.list$true.sire <- ifelse( kit.list$true.sire.check == 0, kit.list$sire.id.1st, kit.list$sire.id.2nd)
+  kit.list[, `:=`(true.sire.fert = 
+                ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
+                       kit.list$sire.fert.2nd, kit.list$sire.fert.1st), 
               true.sire.bw.oct = 
-                ifelse(gen1$true.sire == gen1$sire.id.2nd, 
-                       gen1$sire.bw.oct.2nd, gen1$sire.bw.oct.1st),
+                ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
+                       kit.list$sire.bw.oct.2nd, kit.list$sire.bw.oct.1st),
               true.sire.bw.sept = 
-                ifelse(gen1$true.sire == gen1$sire.id.2nd, 
-                       gen1$sire.bw.sept.2nd, gen1$sire.bw.sept.1st),
+                ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
+                       kit.list$sire.bw.sept.2nd, kit.list$sire.bw.sept.1st),
               true.sire.skin.length = 
-                ifelse(gen1$true.sire == gen1$sire.id.2nd, 
-                       gen1$sire.skin.length.2nd, gen1$sire.skin.length.1st),
+                ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
+                       kit.list$sire.skin.length.2nd, kit.list$sire.skin.length.1st),
               true.sire.skin.qual = 
-                ifelse(gen1$true.sire == gen1$sire.id.2nd, 
-                       gen1$sire.skin.qual.2nd, gen1$sire.skin.qual.1st),
+                ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
+                       kit.list$sire.skin.qual.2nd, kit.list$sire.skin.qual.1st),
               true.sire.live.qual = 
-                ifelse(gen1$true.sire == gen1$sire.id.2nd, 
-                       gen1$sire.live.qual.2nd, gen1$sire.live.qual.1st)
+                ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
+                       kit.list$sire.live.qual.2nd, kit.list$sire.live.qual.1st)
   )]
-  gen1$mend.bw.oct <-  ifelse(gen1$sex==1, gen1$mend.bw.oct*sqrt(0.5*var.bw.oct.male),
-                              gen1$mend.bw.oct*sqrt(0.5*var.bw.oct.female))
-  gen1$mend.bw.sept <-  ifelse(gen1$sex==1, gen1$mend.bw.sept*sqrt(0.5*var.bw.sept.male),
-                               gen1$mend.bw.oct*sqrt(0.5*var.bw.sept.female))
+  kit.list$mend.bw.oct <-  ifelse(kit.list$sex==1, kit.list$mend.bw.oct*sqrt(0.5*var.bw.oct.male),
+                              kit.list$mend.bw.oct*sqrt(0.5*var.bw.oct.female))
+  kit.list$mend.bw.sept <-  ifelse(kit.list$sex==1, kit.list$mend.bw.sept*sqrt(0.5*var.bw.sept.male),
+                               kit.list$mend.bw.oct*sqrt(0.5*var.bw.sept.female))
   
-  gen1[, `:=`(litter.size = 0.5*(dam.fert + true.sire.fert) + 
+  kit.list[, `:=`(litter.size = 0.5*(dam.fert + true.sire.fert) + 
                 mend.litter.size*(sqrt(0.5*variance.fertility)) # Breeding value of offspring, littersize
               , perm.env.ls = rnorm(sum(x$obs_fert))*sqrt(var.perm.env.ls) # perm env for litter size
               , bw.oct = 0.5*(dam.bw.oct + true.sire.bw.oct) + 
@@ -732,67 +758,77 @@ MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
               live.qual = 0.5*(dam.live.qual + true.sire.live.qual)+ sqrt(0.5*var.live.qual.gen)*(mend.live.qual),
               skin.qual = 0.5*(dam.skin.qual + true.sire.skin.qual)+ sqrt(0.5)*(mend.skin.qual),
               skin.length = 0.5*(dam.skin.length + true.sire.skin.length)+ sqrt(0.5)*(mend.skin.length))]# Breeding value of offspring, body size
-  #  gen1 <- count.sex.siblings(gen1) # calls function to count offspring NOT NEEDED ATM
+  #  kit.list <- count.sex.siblings(kit.list) # calls function to count offspring NOT NEEDED ATM
   
-  setnames(gen1, c("obs_fert","sire.id.2nd"), c("own_littersize","sire.assumed")) # renames obs_fert to own littersize of kits
-  gen1$dam.age <- ifelse( z - gen1$birthyear.dam > 1, 1,0 )
+  setnames(kit.list, c("obs_fert","sire.id.2nd"), c("own_littersize","sire.assumed")) # renames obs_fert to own littersize of kits
+  kit.list$dam.age <- ifelse( z - kit.list$birthyear.dam > 1, 1,0 )
   
-  gen1$phenotype.bw.oct <- ifelse( gen1$sex == 1,MakePhenotypesBWMalesOct(mean.body.size.male.oct , gen1$bw.oct , gen1$perm.env.bw.oct , gen1$own_littersize, gen1$dam.age,x  )
-                                   , MakePhenotypesBWFemalesOct(mean.body.size.female.oct , gen1$bw.oct , gen1$perm.env.bw.oct,gen1$own_littersize,x ))
-  gen1$phenotype.bw.sept <- ifelse( gen1$sex == 1,
-                                    MakePhenotypesBWMalesSept(mean.body.size.male.sept , gen1$bw.sept , gen1$perm.env.bw.sept , gen1$own_littersize, gen1$dam.age,x  )
-                                    , MakePhenotypesBWFemalesOct(mean.body.size.female.sept , gen1$bw.sept , gen1$perm.env.bw.sept,gen1$own_littersize,x ))
-  gen1$phenotype.live.qual <- gen1$live.qual  + rnorm(nrow(gen1))*sqrt(var.live.qual.res)
-  # gen1[, `:=`(
-  #   phenotype.bw.oct = ifelse(
-  #     gen1$sex == 1,
-  #     MakePhenotypesBWMalesOct(
-  #       mean.body.size.male.oct ,
-  #       gen1$bw.oct ,
-  #       gen1$perm.env.bw.oct ,
-  #       gen1$own_littersize,
-  #       gen1$dam.age,
-  #       x
-  #     )
-  #     ,
-  #     MakePhenotypesBWFemalesOct(
-  #       mean.body.size.female.oct ,
-  #       gen1$bw.oct ,
-  #       gen1$perm.env.bw.oct,
-  #       gen1$own_littersize,
-  #       x
-  #     )
-  #   ),
-  #   phenotype.bw.sept = ifelse(
-  #     gen1$sex == 1,
-  #     MakePhenotypesBWMalesSept(
-  #       mean.body.size.male.sept ,
-  #       gen1$bw.sept ,
-  #       gen1$perm.env.bw.sept ,
-  #       gen1$own_littersize,
-  #       gen1$dam.age,
-  #       x
-  #     )
-  #     ,
-  #     MakePhenotypesBWFemalesOct(
-  #       mean.body.size.female.sept ,
-  #       gen1$bw.sept ,
-  #       gen1$perm.env.bw.sept,
-  #       gen1$own_littersize,
-  #       x
-  #     )
-  #   ),
-  #   phenotype.live.qual = live.qual  + rnorm(nrow(gen1)) *
-  #     sqrt(var.live.qual.res)
-  # )]
+  # kit.list$phenotype.bw.oct <- ifelse( kit.list$sex == 1,MakePhenotypesBWMalesOct(mean.body.size.male.oct , kit.list$bw.oct , kit.list$perm.env.bw.oct , kit.list$own_littersize, kit.list$dam.age,x  )
+  #                                  , MakePhenotypesBWFemalesOct(mean.body.size.female.oct , kit.list$bw.oct , kit.list$perm.env.bw.oct,kit.list$own_littersize,x ))
+  # kit.list$phenotype.bw.sept <- ifelse( kit.list$sex == 1,
+  #                                   MakePhenotypesBWMalesSept(mean.body.size.male.sept , kit.list$bw.sept , kit.list$perm.env.bw.sept , kit.list$own_littersize, kit.list$dam.age,x  )
+  #                                   , MakePhenotypesBWFemalesOct(mean.body.size.female.sept , kit.list$bw.sept , kit.list$perm.env.bw.sept,kit.list$own_littersize,x ))
+  # kit.list$phenotype.live.qual <- kit.list$live.qual  + rnorm(nrow(kit.list))*sqrt(var.live.qual.res)
+  kit.list[, `:=`(
+    phenotype.bw.oct = ifelse(
+      kit.list$sex == 1,
+      MakePhenotypesBWMalesOct(
+        mean.body.size.male.oct ,
+        kit.list$bw.oct ,
+        kit.list$perm.env.bw.oct ,
+        kit.list$own_littersize,
+        kit.list$dam.age,
+        x
+      )
+      ,
+      MakePhenotypesBWFemalesOct(
+        mean.body.size.female.oct ,
+        kit.list$bw.oct ,
+        kit.list$perm.env.bw.oct,
+        kit.list$own_littersize,
+        x
+      )
+    ),
+    phenotype.bw.sept = ifelse(
+      kit.list$sex == 1,
+      MakePhenotypesBWMalesSept(
+        mean.body.size.male.sept ,
+        kit.list$bw.sept ,
+        kit.list$perm.env.bw.sept ,
+        kit.list$own_littersize,
+        kit.list$dam.age,
+        x
+      )
+      ,
+      MakePhenotypesBWFemalesOct(
+        mean.body.size.female.sept ,
+        kit.list$bw.sept ,
+        kit.list$perm.env.bw.sept,
+        kit.list$own_littersize,
+        x
+      )
+    ),
+    phenotype.live.qual = live.qual  + rnorm(nrow(kit.list)) *
+      sqrt(var.live.qual.res),
+    perm.env.bw.sept = ifelse(
+      sex == 1,
+      rnorm(sum(x$obs_fert)) * sqrt(var.c.bw.sept.male),
+      rnorm(sum(x$obs_fert)) * sqrt(var.c.bw.sept.female)
+    ),
+    perm.env.bw.oct = ifelse(
+      sex == 1,
+      rnorm(sum(x$obs_fert)) * sqrt(var.c.bw.oct.male),
+      rnorm(sum(x$obs_fert)) * sqrt(var.c.bw.oct.female)
+    )
+  )]
   # generate phenotype for body size
   
-  gen1[,`:=`(perm.env.bw.sept = ifelse(sex==1, rnorm(sum(x$obs_fert))*sqrt(var.c.bw.sept.male),
-                                       rnorm(sum(x$obs_fert))*sqrt(var.c.bw.sept.female)),
-             perm.env.bw.oct = ifelse(sex==1, rnorm(sum(x$obs_fert))*sqrt(var.c.bw.oct.male),
-                                      rnorm(sum(x$obs_fert))*sqrt(var.c.bw.oct.female)))] # generate specific env. for body size
-  
-  set( gen1, j=which(colnames(gen1) %in% c(
+  # kit.list[,`:=`(perm.env.bw.sept = ifelse(sex==1, rnorm(sum(x$obs_fert))*sqrt(var.c.bw.sept.male),
+  #                                      rnorm(sum(x$obs_fert))*sqrt(var.c.bw.sept.female)),
+  #            perm.env.bw.oct = ifelse(sex==1, rnorm(sum(x$obs_fert))*sqrt(var.c.bw.oct.male),
+  #                                     rnorm(sum(x$obs_fert))*sqrt(var.c.bw.oct.female)))] # generate specific env. for body size
+  # 
+  set( kit.list, j=which(colnames(kit.list) %in% c(
     "sire.fert.1st",
     "sire.bw.oct.1st",
     "sire.bw.sept.1st",
@@ -810,7 +846,6 @@ MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
     "sire.bw.sept.1st",
     "perm.env.bw.oct",
     "perm.env.bw.sept",
-    "birthyear.dam",
     "sire.fert.2nd",
     "sire.bw.oct.2nd",
     "sire.bw.sept.2nd",
@@ -835,13 +870,13 @@ MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
   if (qual.classes == 5) {
     truncs <- qnorm(
       p = c(0.05, 0.3, 0.7, 0.95),
-      mean = mean(gen1$live.qual),
+      mean = mean(kit.list$live.qual),
                   sd = sqrt(var(
-                    gen1$live.qual
+                    kit.list$live.qual
                   )),
       lower.tail = TRUE
     )
-    gen1[, `:=`(live.score = ifelse(
+    kit.list[, `:=`(live.score = ifelse(
       live.qual >= truncs[4],
       5,
       ifelse(
@@ -863,13 +898,13 @@ MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
     truncs <-
       qnorm(
         p = c(0.01, 0.05, 0.15, 0.3, 0.5, 0.7, 0.85, 0.95, 0.99),
-        mean = mean(gen1$live.qual),
+        mean = mean(kit.list$live.qual),
                     sd = sqrt(var(
-                      gen1$live.qual
+                      kit.list$live.qual
                     )),
         lower.tail = TRUE
       )
-    gen1[, `:=`(live.score =
+    kit.list[, `:=`(live.score =
                       ifelse(
                         live.qual >= truncs[9],
                         10,
@@ -909,7 +944,7 @@ MakeKitsGen0 <- function (x,y, z) { #x = mating.list, y= effgen0.males, z = year
                         )
                       ))]
   }
-  return(gen1)
+  return(kit.list)
 }
 ############### Phenotypic Selection of old females ###############################################
 # currently they are only truncated on their litter size phenotype
@@ -1269,17 +1304,17 @@ PrepareMalesForMating <- function (x) { # x = next.gen.males
   #   next.gen.males[next.gen.males,mating.willingness:=rZIP( nrow(next.gen.males),  mu = male.ratio,  sigma = 0.05 )]
   x[,`:=`( semen.quality.1st=  rbinom( nrow(x),  1,  male.inf ),  
                         mating.willingness.1st = rZIP( nrow(x),  mu = male.ratio,  sigma = 0.05 ),
-                        mating.willingness.2nd = rZIP( nrow(x), mu = male.ratio, sigma = 0.05),
-                        can.remate = rep(1, times=nrow(x)))]
-  truncation.point <- quantile(x$live.score, probs= 1/3 )
+                        mating.willingness.2nd = rZIP( nrow(x), mu = 7.5, sigma = 0.05),
+                        can.remate = rep(0, times=nrow(x)))]
+  # truncation.point <- quantile(x$live.score, probs= 1/3 )
   x[,`:=`(semen.quality.2nd = semen.quality.1st)]
   if (weighing.method == sept){
     setorder(x,live.score,phenotype.bw.sept) 
   } else if (weighing.method == oct) {
-    setorder(x,live.score,phenotype.bw.oct)
+    setorder(x,-live.score,-phenotype.bw.oct)
   } 
-for (i in 1:ceiling(intensity.remating*nrow(x))) {
-  x$can.remate[i] <- 0
+for (i in 1:ceiling((1-intensity.remating)*nrow(x))) {
+  x$can.remate[i] <- 1
 }
   x <- subset( x, mating.willingness.1st > 0 ) 
   return(x)
@@ -1582,13 +1617,25 @@ MakeKitsGenN <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big
       )
     ),
     phenotype.live.qual = live.qual  + rnorm(nrow(kit.list)) *
-      sqrt(var.live.qual.res)
+      sqrt(var.live.qual.res),
+    
+    perm.env.bw.sept = ifelse(
+        sex == 1,
+        rnorm(sum(x$obs_fert)) * sqrt(var.c.bw.sept.male),
+        rnorm(sum(x$obs_fert)) *
+          sqrt(var.c.bw.sept.female)
+      ),
+    perm.env.bw.oct = ifelse(
+      sex == 1,
+      rnorm(sum(x$obs_fert)) * sqrt(var.c.bw.oct.male),
+      rnorm(sum(x$obs_fert)) * sqrt(var.c.bw.oct.female)
+    )
   )]
   
-  kit.list[,`:=`(perm.env.bw.sept = ifelse(sex==1, rnorm(sum(x$obs_fert))*sqrt(var.c.bw.sept.male),
-                                           rnorm(sum(x$obs_fert))*sqrt(var.c.bw.sept.female)),
-                 perm.env.bw.oct = ifelse(sex==1, rnorm(sum(x$obs_fert))*sqrt(var.c.bw.oct.male),
-                                          rnorm(sum(x$obs_fert))*sqrt(var.c.bw.oct.female)))] # generate specific env. for body size
+  # kit.list[,`:=`(perm.env.bw.sept = ifelse(sex==1, rnorm(sum(x$obs_fert))*sqrt(var.c.bw.sept.male),
+  #                                          rnorm(sum(x$obs_fert))*sqrt(var.c.bw.sept.female)),
+  #                perm.env.bw.oct = ifelse(sex==1, rnorm(sum(x$obs_fert))*sqrt(var.c.bw.oct.male),
+  #                                         rnorm(sum(x$obs_fert))*sqrt(var.c.bw.oct.female)))] # generate specific env. for body size
   
   set( kit.list, j=which(colnames(kit.list) %in% c(
     "sire.fert.1st",
@@ -1606,7 +1653,6 @@ MakeKitsGenN <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big
     "dam.live.qual",
     "perm.env.bw.oct",
     "perm.env.bw.sept",
-    "birthyear.dam",
     "sire.fert.2nd",
     "sire.bw.oct.2nd",
     "sire.bw.sept.2nd",
@@ -1638,7 +1684,7 @@ MakeKitsGenN <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big
       lower.tail = TRUE
     )
     kit.list[, `:=`(live.score = ifelse(
-      live.qual >= truncs[4],
+      phenotype.live.qual >= truncs[4],
       5,
       ifelse(
         truncs[3] < phenotype.live.qual & phenotype.live.qual <= truncs[4],
@@ -1878,12 +1924,20 @@ return (solutions.bw)
    
    # bw modification
    dirfile <- readLines("bw_nov.DIR")
-   dirfile[8] <- c(paste("$DATA  ASCII (4,2,-9999) Phenotypes",p, sep="")) 
+   dirfile[8] <- c(paste("$DATA  ASCII (5,2,-9999) Phenotypes",p, sep="")) 
    # change the input file for BLUP so it uses the next outputfile
    writeLines(dirfile, "bw_nov.DIR")
    dirfile[25] <- c(paste("$VAR_STR 2 PED 2 ASCII Big_pedigree_",p, sep="")) 
    # change the input file for BLUP so it uses the next pedigree
    writeLines(dirfile,"bw_nov.DIR")
+   # quality
+   dirfile <- readLines("qual.DIR")
+   dirfile[8] <- c(paste("$DATA  ASCII (5,2,-9999) Phenotypes",p, sep="")) 
+   # change the input file for BLUP so it uses the next outputfile
+   writeLines(dirfile, "qual.DIR")
+   dirfile[25] <- c(paste("$VAR_STR 1 PED 2 ASCII Big_pedigree_",p, sep="")) 
+   # change the input file for BLUP so it uses the next pedigree
+   writeLines(dirfile,"qual.DIR")
    } else if (trace.ped == 1) {
    dirfile <- readLines("trace.DIR")
    dirfile[1] <- c(paste("Big_pedigree_",p, sep=""))
@@ -1896,6 +1950,10 @@ return (solutions.bw)
     dirfile <- readLines("bw_nov.DIR")
     dirfile[25] <- c(paste("$VAR_STR 1 PED 2 ASCII trace.PRUNE")) # change the input file for BLUP so it uses the next pedigree
     writeLines(dirfile,"bw_nov.DIR")
+  # dir file for prune
+    dirfile <- readLines("qual.DIR")
+    dirfile[25] <- c(paste("$VAR_STR 1 PED 2 ASCII trace.PRUNE")) # change the input file for BLUP so it uses the next pedigree
+    writeLines(dirfile,"qual.DIR")
     
    }
    
@@ -1904,6 +1962,8 @@ return (solutions.bw)
 ############### Create observation file for phenotypes #################
 # currently only size
 WriteObservationFileBodyWeight <- function (x,year,p,solutions) {
+  inter <- as.integer(rep(1, times=nrow(x))) # intercept for the quality regression
+  x<- cbind(x, inter)
   x[, c("id","dam.id","own_littersize","sex")
               :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("id","dam.id","own_littersize","sex")]
   # x[,`:=`(prodyear=as.integer(ifelse( sex == 1, year*(sex+6),year*(sex+8))))]
@@ -1918,36 +1978,44 @@ WriteObservationFileBodyWeight <- function (x,year,p,solutions) {
                           "sex",
                           "phenotype.bw.oct",
                           "phenotype.bw.sept",
-                          "live.score"))
+                          "live.score",
+                          "inter"))
   }
   if (year  == 1 ) {phenotypes <- file(description = paste("Phenotypes",p, sep=""), open="w")
   if (weighing.method == oct){
-    x[, c("id","dam.id","own_littersize","sex")
-      :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("id","dam.id","own_littersize","sex")]
+    x[, c("id","dam.id","own_littersize","sex","inter")
+      :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("id","dam.id","own_littersize","sex","inter")]
     
-    write.table(format(x[,.(id,dam.id,sex,own_littersize,phenotype.bw.oct,live.score)], nsmall=1, digits=2), 
+    write.table(format(x[,.(id,dam.id,sex,own_littersize,inter,phenotype.bw.oct,live.score)], nsmall=1, digits=2), 
                 file= phenotypes, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
   } else if (weighing.method == sept ) {
-    x[, c("id","dam.id","own_littersize","sex")
-      :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("id","dam.id","own_littersize","sex")]
+    x[, c("id","dam.id","own_littersize","sex","inter")
+      :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("id","dam.id","own_littersize","sex","inter")]
     
-    write.table(format(x[,.(id,dam.id,sex,own_littersize,phenotype.bw.sept,live.score)], nsmall=1, digits=2), 
+    write.table(format(x[,.(id,dam.id,sex,own_littersize,inter,phenotype.bw.sept,live.score)], nsmall=1, digits=2), 
                 file= phenotypes, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
   }
   close(con=phenotypes)
    } else if (year > 1) {
-     x[, c("id","dam.id","own_littersize","sex")
-       :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("id","dam.id","own_littersize","sex")]
+     x[, c("id","dam.id","own_littersize","sex","inter")
+       :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("id","dam.id","own_littersize","sex","inter")]
      
      phenotypes <- file(description = paste("Phenotypes",p, sep=""), open="a")
      if (weighing.method == oct){
-      write.table(format(x[,.(id,dam.id,sex,own_littersize,phenotype.bw.oct,live.score)], nsmall=1, digits=2), 
+      write.table(format(x[,.(id,dam.id,sex,own_littersize,inter,phenotype.bw.oct,live.score)], nsmall=1, digits=2), 
                   file= phenotypes, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
      } else if (weighing.method == sept ) {
-       write.table(format(x[,.(id,dam.id,sex,own_littersize,phenotype.bw.sept,live.score)], nsmall=1, digits=2), 
+       write.table(format(x[,.(id,dam.id,sex,own_littersize,inter,phenotype.bw.sept,live.score)], nsmall=1, digits=2), 
                    file= phenotypes, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
 }
   close(con=phenotypes)
+  
+   }
+  if (year == 4) {
+    quality <- file(description = "quality", open="w")
+    write.table(format(x[,.(id,dam.id,sex,own_littersize,inter,phenotype.bw.oct,live.score)], nsmall=1, digits=2), 
+                file= quality,append= TRUE ,col.names = FALSE, row.names = FALSE, quote = FALSE)
+    close(quality)
     }
   }
 
@@ -1956,8 +2024,8 @@ WriteObservationFileBodyWeight <- function (x,year,p,solutions) {
 #     :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("id")]
 #   
 # }
-############### Make gen1 big.pedfile ##################################
-WriteBigPedigree <- function (x,y,year,p) { # x = gen1 or kit.list , y = pedfile, year = year
+############### Make kit.list big.pedfile ##################################
+WriteBigPedigree <- function (x,y,year,p) { # x = kit.list or kit.list , y = pedfile, year = year
   if (year == 1){
     big.pedfile <- copy(y)
     big.pedfile[,`:=`(true.sire = sire.id)]

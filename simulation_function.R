@@ -68,12 +68,24 @@ Simulation <- function (
     "Gvar",
     "Fis",
     "Obs.fert",
-    "mean.phenotype.bs.females",
+    "mean.phenotype.bw.females",
     "gen.value.bs",
-    "mean.phenotype.bs.males",
+    "mean.phenotype.bw.males",
     "bw.var",
     "cor.bw.to.blup",
     "cor.bw.phenotype",
+    "skin.length.mean",
+    "skin.length.var",
+    "skin.qual.mean",
+    "skin.qual.var",
+    "cor.ls.blup",
+    "cor.ls.own.to.ls",
+    "mated.females",
+    "barren.females",
+    "numb.false.sires",
+    "numb.kits",
+    "remating.perc",
+    "perc.single.mat",
     sep = "\t",
     file = con
   )
@@ -90,6 +102,17 @@ Simulation <- function (
       "mean.phenotype.bw.males",
       "bw.var",
       "cor.bw.phenotype",
+      "skin.length.mean",
+      "skin.length.var",
+      "skin.qual.mean",
+      "skin.qual.var",
+      "cor.ls.own.to.ls",
+      "mated.females",
+      "barren.females",
+      "numb.false.sires",
+      "numb.kits",
+      "remating.perc",
+      "perc.single.mat",
       sep = "\t",
       file = con
     )
@@ -105,7 +128,7 @@ Simulation <- function (
       l <- RunSimulation(l, year, p)
       
     }
-    print("reached end", p)
+    # print("reached end", p)
     
   }
   

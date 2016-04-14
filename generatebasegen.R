@@ -5,6 +5,8 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   #cat("ID","prodyear","damage","obs.fert", sep="\t", file=output) 
   #cat("\n", file= output) 
   p <- p
+  stat.crate <- c(0,0,0,0,0,0)
+  
   
   if (make.obs.file == 1) {
     pedigree <- file(description = paste("pedigree_",p, sep=""), open="w")
@@ -30,21 +32,28 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   # 
   set( mating.list, j=which(colnames(mating.list) %in% c("semen.quality","dam.age")) , value=NULL )
   # 
-  # # if (runcounter == 1 ) {
-  # #   # stat.crate[1,2] <- nrow(mating.list)
-  # # } else if (runcounter > 1) { 
-  #   # stat.crate[year+(runcounter -1)*(n+1),2] <- nrow(mating.list)}
+  # if (runcounter == 1 ) {
+  #   # stat.crate[1,2] <- nrow(mating.list)
+  # } else if (runcounter > 1) {
+  # stat.crate[year+(runcounter -1)*(n+1),2] <- nrow(mating.list)}
+  stat.crate[1] <- nrow(mating.list)
   mating.list <-  subset( mating.list,  obs_fert >  0 ) # remove females who are barren or mated with barren male
+  stat.crate[2] <- (stat.crate[1] - nrow(mating.list))
+  stat.crate[5] <- mean(mating.list$sire.id.1st == mating.list$sire.id.2nd) # percentage of females mated with 1st male
+  stat.crate[6] <- ( mean(mating.list$sire.id.2nd == 0)) # percentage of single mated females
   # # it is important to get rid of negative litter sizes! otherwise code crashes at many points
   # ############### Breeding value of offspring ###############################
   # # put in dam id's and make genetic value of each kit for fertility
   # # see utility functions for bv function
-  gen1 <- MakeKitsGen0(mating.list, effgen0.males,year)
+  kit.list <- MakeKitsGen0(mating.list, effgen0.males,year)
   # 
+  stat.crate[3] <- mean(kit.list$true.sire == kit.list$sire.assumed)
+  stat.crate[4] <-nrow(kit.list)
   pedfile <- MakePedfileGen0(gen0.females,effgen0.males)
   if (selection.method == blup) {
-    big.pedfile <- WriteBigPedigree(gen1, pedfile,year,p)
-    WriteObservationFileBodyWeight (gen1, year,p)}
+    big.pedfile <- WriteBigPedigree(kit.list, pedfile,year,p)
+    WriteObservationFileBodyWeight (kit.list, year,p)}
+  kit.list$birthyear.dam <- NULL
   # # At this point I think it is safe to delete some stuff from memory
   # # Note that I skip the construction of pedfile1 here. I don't think it is needed. Will check on that later
   # ############### Selection of first generation #########################################
@@ -54,47 +63,74 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   # 
   # 
   old.females <- PhenoSelectionOldFemales ( gen0.females,mating.list,year)
-  next.gen <- PhenoSelectionFemaleKits (gen1, old.females)
-  next.gen.males <- PhenoSelectionMaleKits (gen1)
+  next.gen <- PhenoSelectionFemaleKits (kit.list, old.females)
+  next.gen.males <- PhenoSelectionMaleKits (kit.list)
   if("f0.dam" %in% colnames(old.females)) {
     set( old.females, j=which(colnames(old.females) %in%
                                 "f0.dam")  , value=NULL )
   }
   next.gen <- rbind(next.gen, old.females,fill=TRUE)
-  # # add in next gen and gen1 to big pedigree
+  # # add in next gen and kit.list to big pedigree
   if (selection.method ==blup){
     big.pedfile <- update.big.pedigree (big.pedfile, next.gen, next.gen.males)
   }
   # ############## First year statistics #######################
   con <- file(description="results",open="a")
   if (selection.method == blup) {
+    stat <- summaryBy(phenotype.bw.oct ~ sex, data = kit.list, FUN= c(mean))
+    
   cat (
     year,
     mean(mating.list$dam.fert),
     var(mating.list$dam.fert),
     0,
     mean(mating.list$obs_fert),
-    mean(next.gen$phenotype.bw.oct),
-    mean(next.gen$bw.oct),
-    mean(next.gen.males$phenotype.bw.oct),
-    var(next.gen$bw.oct),
+    stat[2,2],
+    mean(kit.list$bw.oct),
+    stat[1,2],
+    var(kit.list$bw.oct),
     0,
     cor(next.gen$bw.oct, next.gen$phenotype.bw.oct),
+    mean(kit.list$skin.length),
+    var(kit.list$skin.length),
+    mean(kit.list$skin.qual),
+    var(kit.list$skin.qual),
+    0,
+    0,
+    stat.crate[1],
+    stat.crate[2],
+    stat.crate[3],
+    stat.crate[4],
+    stat.crate[5],
+    stat.crate[6],
     sep = "\t",
     file = con
   )
   } else if (selection.method == phenotypic) {
+    stat <- summaryBy(phenotype.bw.oct ~ sex, data = kit.list, FUN= c(mean))
+    stat1 <- subset(kit.list, sex==1)#males
     cat (
       year,
       mean(mating.list$dam.fert),
       var(mating.list$dam.fert),
       0,
       mean(mating.list$obs_fert),
-      mean(next.gen$phenotype.bw.oct),
-      mean(next.gen$bw.oct),
-      mean(next.gen.males$phenotype.bw.oct),
-      var(next.gen$bw.oct),
-      cor(next.gen$bw.oct, next.gen$phenotype.bw.oct),
+      stat[[2,2]],
+      mean(kit.list$bw.oct),
+      stat[[1,2]],
+      var(kit.list$bw.oct),
+      cor(stat1$bw.oct, stat1$phenotype.bw.oct),
+      mean(kit.list$skin.length),
+      var(kit.list$skin.length),
+      mean(kit.list$skin.qual),
+      var(kit.list$skin.qual),
+      0,
+      stat.crate[1],
+      stat.crate[2],
+      stat.crate[3],
+      stat.crate[4],
+      stat.crate[5],
+      stat.crate[6],
       sep = "\t",
       file = con
     )
@@ -104,17 +140,17 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   close(con=con)
   # 
   # # if (runcounter == 1) {
-  # #   # stat.crate[[1,1]] <- (mean(gen1$true.sire == gen1$sire.assumed))
-  # #   # stat.crate[1,3] <- nrow(gen1)
+  # #   # stat.crate[[1,1]] <- (mean(kit.list$true.sire == kit.list$sire.assumed))
+  # #   # stat.crate[1,3] <- nrow(kit.list)
   # # } else if (runcounter > 1) {
-  #   # stat.crate[[year+(runcounter -1)*(n+1),1]] <- (mean(gen1$true.sire == gen1$sire.assumed))
-  #   # stat.crate[year+(runcounter -1)*(n+1),3] <-nrow(gen1)
+  #   # stat.crate[[year+(runcounter -1)*(n+1),1]] <- (mean(kit.list$true.sire == kit.list$sire.assumed))
+  #   # stat.crate[year+(runcounter -1)*(n+1),3] <-nrow(kit.list)
   # # }
   if (make.obs.file == 1) {
     WriteFertObservations(mating.list,year,p)
   }
   # 
-  # remove(mating.list,gen0.females,gen1,effgen0.males,old.females) #remove all the stuff I don't need anymore
+  # remove(mating.list,gen0.females,kit.list,effgen0.males,old.females) #remove all the stuff I don't need anymore
   # return( list(next.gen, next.gen.males,mating.list))
   if (selection.method == phenotypic){ 
   return( list(next.gen,next.gen.males,pedfile))

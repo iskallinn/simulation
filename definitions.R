@@ -3,6 +3,8 @@ library(gamlss.dist) # for making zero inflated poisson random deviates for mati
 library(pedigree)    # for calculating inbreeding and trimming pedigree
 library(data.table)  # faster then data frames
 library(mvtnorm)     # generating random deviates from a multivariate normal distribution
+library(doBy)
+
 ############## Index weights ############
 # weights must sum to 1
 weight.fert.old.females <- 0.35
@@ -21,16 +23,16 @@ sept <- 1 # weigh kits in september
 oct <- 0  # weigh kits in october
 ############### Controls for simulation ############
 n.females <-  1000             # NUMBER OF FEMALES
-nruns <- 2                    # how many replicates of the simulation
-n <- 3                        # number of generation per replicate
+nruns <- 1                    # how many replicates of the simulation
+n <- 4                        # number of generation per replicate
 mating.method <- assortative   # mating method, random or assortative
-selection.method <- phenotypic  # selection mating, 
-weighing.method <- sept         # control for when to weigh kits for selection cands
+selection.method <- blup  # selection mating, 
+weighing.method <- oct         # control for when to weigh kits for selection cands
 qual.classes <- 5              # quality classes, 5 or 10 are supported
-intensity.remating <- 0.20      # this controls how many males are chosen not to be remated
+intensity.remating <- 0.2      # this controls how many males are chosen not to be remated
 # selection = truncation,  no selection = next gen is chosen at random
 make.obs.file <- 1 # 1 = make observation file, 0 otherwise
-use.true.sire <- 0 # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
+use.true.sire <- 1 # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
 ############# Mean settings for traits   #####################
 mean.body.size.male.oct <- 3000
 mean.body.size.female.oct <- 1650
@@ -66,12 +68,12 @@ n.males <-  ceiling( n.females/male.ratio ) # calculates needed amount of males
 variance.fertility     <-  0.0122738     # Genetic variance of fertility, live born
 var.perm.env.ls        <-  0.0004464     # Variance of permanent environment of litter size of dam
 # october body weight
-var.bw.oct.female      <-  9062          # Genetic variance of body size, direct effect 
-var.bw.oct.male        <-  33685         # from hansen et al 1992, ass h^2 = 0.51
-var.c.bw.oct.male      <-  4491          # from hansen et al 1992, ass c^2 = 0.068
-var.c.bw.oct.female    <-  1208          # from hansen et al 1992, ass c^2 = 0.068
-var.res.bw.oct.female  <-  7465          # from hansen et al 1992, ass c^2 andh^2 as above
-var.res.bw.oct.male    <-  27873         # from hansen et al 1992, ass c^2 andh^2 as above
+var.bw.oct.female      <-  26116          # Genetic variance of body size, direct effect 
+var.bw.oct.male        <-  83389         # from hansen et al 1992, ass h^2 = 0.51
+var.c.bw.oct.male      <-  13036          # common env. from hansen et al 1992, ass c^2 = 0.068
+var.c.bw.oct.female    <-  3306          # from hansen et al 1992, ass c^2 = 0.068
+var.res.bw.oct.female  <-  9040          # from hansen et al 1992, ass c^2 andh^2 as above
+var.res.bw.oct.male    <-  39021         # from hansen et al 1992, ass c^2 andh^2 as above
 # september body weight
 var.bw.sept.female      <-  7101         # from hansen et al 1992, ass h^2 = 0.51
 var.bw.sept.male        <-  22705        # from hansen et al 1992, ass h^2 = 0.51
@@ -98,8 +100,8 @@ bw.eff.damage           <-  34.5          # effect of dam age on weight of males
 # lactation and growth perios, correlations to fur properties and heritability
 # estimation, by Hansen, Lohi & Berg, 1992
 sigma <- matrix(
-  c(  1,    0.9, -0.5, -0.08,   -0.41,  0.73,
-     0.9,  1,    -0.28,   0,     -0.4,   0.7,
+  c(  1,    0.84, -0.5, -0.08,   -0.41,  0.73,
+     0.84,  1,    -0.28,   0,     -0.4,   0.7,
     -0.5, -0.28,   1,     0,      0,     0,
     -0.08, 0,     0,     1,      0.6,   0,
     -0.41, -0.4, 0,     0.6,     1,     0,
