@@ -301,6 +301,16 @@ GenerateBaseMales <- function () {
 
 mate <- function (x, y, year) {
   # x = males, y = females
+  if (year >2 & use.blup.to.assort.mat == 1 & selection.method ==blup) {
+    setorder(x, -comb.ind)
+    setorder(y, -comb.ind)
+  }
+  if (year <= 2) {
+    x$comb.ind <- 0
+  } else if( selection.method == phenotypic) {
+    x$comb.ind <- 0
+    
+  }
   mating.list <-
     x[rep(seq(nrow(x)), mating.willingness.1st),  #expands the male list into a mating list, based on mat.will.1st
       c(
@@ -316,7 +326,8 @@ mate <- function (x, y, year) {
         "can.remate",
         "mating.willingness.1st",
         "mating.willingness.2nd",
-        "live.score"
+        "live.score",
+        "comb.ind"
       )
       , with = F] #specify which columns to incl.
   if (nrow(mating.list) > sum(y$mating.will.1st.round)) {
@@ -457,7 +468,10 @@ mate <- function (x, y, year) {
   
   # here I should reorder the dams that are leftovers to prioritize younger dams and the ones mated with shitty males
   setkey(mating.list.leftover, dam.id)
-  setorder(mating.list.leftover, -birthyear.dam, -dam.live.score)
+  if (year >2 & use.blup.to.assort.mat == 1 & selection.method ==blup) {
+    setorder(mating.list.leftover, -comb.ind)
+  } else if (use.blup.to.assort.mat == 0) {
+  setorder(mating.list.leftover, -birthyear.dam, -dam.live.score)}
   myvars <- c("dam.id",
               "sire.id.2nd",
               "semen.quality.2nd",
@@ -496,8 +510,11 @@ mate <- function (x, y, year) {
               "live.score",
               "matings.left")
   setkey(x, id)
-  setorder(x, -live.score)
-  
+  if (year >2 & use.blup.to.assort.mat == 1 & selection.method ==blup) {
+    setorder(x, -comb.ind)
+  } else if (use.blup.to.assort.mat == 0 ) {
+    setorder(x, -live.score)
+  }
   x <- as.matrix(x[,myvars, with=FALSE])
   
   for (i in 1:nrow(x))  { #number of mating males 
@@ -1195,8 +1212,8 @@ nosel.males <- function (x) {
   }
 ############### Index selection of old females ###############################################
 # currently they are only truncated on their litter size phenotype
-IndSelectionOldFemales <- function (x,y,z,year) { # x = next.gen, y = solutions, z = solutions.bw
-   
+IndSelectionOldFemales <- function (x,y,z,solqual,year) { # x = next.gen, y = solutions, z = solutions.bw
+   # delete last years index
    if("blup.fert" %in% colnames(x)) {
      set( x, j=which(colnames(x) %in% 
                               c("blup.fert", "sem.blup.fert"))  , value=NULL )
@@ -1205,14 +1222,23 @@ IndSelectionOldFemales <- function (x,y,z,year) { # x = next.gen, y = solutions,
     set( x, j=which(colnames(x) %in% 
                              c("blup.bwnov", "sep.blup.bwnov"))  , value=NULL )
   }
+  if("blup.qual" %in% colnames(x)) {
+    set( x, j=which(colnames(x) %in% 
+                      c("blup.qual", "sep.blup.qual"))  , value=NULL )
+  }
+  
   
    
    x <- merge(x, y, by ="id", all.x=TRUE) # merge solutions from blup to data.table containing the old females
    setkey(x, blup.fert)
    x <-merge(x, z, by="id", all.x=TRUE) # merge solutions from blup to data.table containing the old females
-   x[, `:=`(index.bw = 100+ (blup.bwnov-mean(x$blup.bwnov))/(sqrt(var(x$blup.bwnov)))*10,
-                   index.fert =100+ (blup.fert-mean(x$blup.fert))/(sqrt(var(x$blup.fert)))*10)]
-   x <- transform(x, comb.ind = index.bw*weight.bw.old.females+index.fert*weight.fert.old.females)
+   x <- merge(x, solqual, by="id",all.x=TRUE)
+   x[, `:=`(index.bw   = 100+ (blup.bwnov-mean(x$blup.bwnov))/(sqrt(var(x$blup.bwnov)))*10,
+            index.fert = 100+ (blup.fert-mean(x$blup.fert))/(sqrt(var(x$blup.fert)))*10,
+            index.qual = 100+ (blup.qual-mean(x$blup.qual))/(sqrt(var(x$blup.qual)))*10) ]
+   x <- transform(x, comb.ind = index.bw*weight.bw.old.females+
+                    index.fert*weight.fert.old.females+
+                    weight.qual.old.females*index.qual)
    x <- subset(x, year -birthyear < max.age.females) 
    setkey(x, comb.ind)
       setorder(x, -comb.ind)
@@ -1229,12 +1255,16 @@ IndSelectionOldFemales <- function (x,y,z,year) { # x = next.gen, y = solutions,
  }  
  
 ############### Index selection for females ################
-IndSelFemaleKits <- function (x,y,z,q) { # x = kit.list , y = solutions.fert, z = solutions.bw, q = old.females 
+IndSelFemaleKits <- function (x,y,z,solqual,q) { # x = kit.list , y = solutions.fert, z = solutions.bw, q = old.females 
    x <- merge(x, y, by= "id", all.x=TRUE) # merge to solutions of blup of fertility
    x <- merge(x, z, by="id", all.x=TRUE)
-   x[, `:=`(index.bw = 100+ (blup.bwnov-mean(x$blup.bwnov))/(sqrt(var(x$blup.bwnov)))*10,
-                   index.fert =100+ (blup.fert-mean(x$blup.fert))/(sqrt(var(x$blup.fert)))*10)]
-   x <- transform(x, comb.ind = index.bw*weight.bw.kits+index.fert*weight.fert.kits)
+   x <- merge(x, solqual, by="id",all.x=TRUE)
+   x[, `:=`(index.bw   = 100+ (blup.bwnov-mean(x$blup.bwnov))/(sqrt(var(x$blup.bwnov)))*10,
+            index.fert = 100+ (blup.fert-mean(x$blup.fert))/(sqrt(var(x$blup.fert)))*10,
+            index.qual = 100+ (blup.qual-mean(x$blup.qual))/(sqrt(var(x$blup.qual)))*10) ]
+   x <- transform(x, comb.ind = index.bw*weight.bw.kits+
+                    index.fert*weight.fert.kits+
+                    weight.qual.kits*index.qual)
    
    truncation.point <-  quantile( x$blup.fert,  probs =  quantile.setting ) 
    selection.candidates.females <- subset(x, blup.fert >= truncation.point) # throw away the smallest litters
@@ -1264,12 +1294,16 @@ IndSelFemaleKits <- function (x,y,z,q) { # x = kit.list , y = solutions.fert, z 
    return (next.gen)
  }
 ############### Index selection for males ##############
- IndSelMaleKits <- function (x,y,z) { # x = kit.list, y = solutions, z = solutions.bw
+ IndSelMaleKits <- function (x,y,z,solqual) { # x = kit.list, y = solutions, z = solutions.bw
    x <- merge(x, y, by= "id", all.x=TRUE) # merge to solutions of blup of fertility
    x <- merge(x, z, by="id", all.x=TRUE)
-   x[, `:=`(index.bw = 100+ (blup.bwnov-mean(x$blup.bwnov))/(sqrt(var(x$blup.bwnov)))*10,
-            index.fert =100+ (blup.fert-mean(x$blup.fert))/(sqrt(var(x$blup.fert)))*10)]
-   x <- transform(x, comb.ind = index.bw*weight.bw.kits+index.fert*weight.fert.kits)
+   x <- merge(x, solqual, by="id",all.x=TRUE)
+   x[, `:=`(index.bw   = 100+ (blup.bwnov-mean(x$blup.bwnov))/(sqrt(var(x$blup.bwnov)))*10,
+            index.fert = 100+ (blup.fert-mean(x$blup.fert))/(sqrt(var(x$blup.fert)))*10,
+            index.qual = 100+ (blup.qual-mean(x$blup.qual))/(sqrt(var(x$blup.qual)))*10) ]
+   x <- transform(x, comb.ind = index.bw*weight.bw.kits+
+                    index.fert*weight.fert.kits+
+                    weight.qual.kits*index.qual)
    truncation.point <-  quantile( x$blup.fert,  probs =  quantile.setting ) 
    selection.candidates.males <- subset(x, blup.fert >= truncation.point) # throw away the smallest litters
    selection.candidates.males <-  subset( selection.candidates.males,  sex  ==   1  ) # take the female kits
@@ -1298,7 +1332,7 @@ IndSelFemaleKits <- function (x,y,z,q) { # x = kit.list , y = solutions.fert, z 
  
  
 ############### Make barren males ##################
-PrepareMalesForMating <- function (x) { # x = next.gen.males 
+PrepareMalesForMating <- function (x,year) { # x = next.gen.males 
   setkey(x, id)
   #   next.gen.males[next.gen.males,semen.quality:=rbinom( nrow(next.gen.males),  1,  male.inf )]
   #   next.gen.males[next.gen.males,mating.willingness:=rZIP( nrow(next.gen.males),  mu = male.ratio,  sigma = 0.05 )]
@@ -1308,9 +1342,11 @@ PrepareMalesForMating <- function (x) { # x = next.gen.males
                         can.remate = rep(0, times=nrow(x)))]
   # truncation.point <- quantile(x$live.score, probs= 1/3 )
   x[,`:=`(semen.quality.2nd = semen.quality.1st)]
-  if (weighing.method == sept){
-    setorder(x,live.score,phenotype.bw.sept) 
-  } else if (weighing.method == oct) {
+  if (use.comb.ind.for.males == 1 & year > 2 & selection.method ==blup) {
+  setorder(x, -comb.ind)  
+  } else if (use.comb.ind.for.males == 0 & weighing.method == sept){
+    setorder(x,-live.score,-phenotype.bw.sept) 
+  } else if (use.comb.ind.for.males == 0 & weighing.method == oct) {
     setorder(x,-live.score,-phenotype.bw.oct)
   } 
 for (i in 1:ceiling((1-intensity.remating)*nrow(x))) {
@@ -1522,16 +1558,24 @@ MakeKitsGenN <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big
   kit.list$mend.bw.sept <-  ifelse(kit.list$sex==1, kit.list$mend.bw.sept*sqrt(0.5*var.bw.sept.male),
                                    kit.list$mend.bw.oct*sqrt(0.5*var.bw.sept.female))
   
-  kit.list[, `:=`(litter.size = 0.5*(dam.fert + true.sire.fert) + 
-                    mend.litter.size*(sqrt(0.5*variance.fertility)*(1-f0)) # Breeding value of offspring, littersize
-                  , perm.env.ls = rnorm(sum(x$obs_fert))*sqrt(var.perm.env.ls) # perm env for litter size
-                  , bw.oct = 0.5*(dam.bw.oct + true.sire.bw.oct) + 
-                    mend.bw.oct*(1-f0),
-                  bw.sept = 0.5*(dam.bw.sept + true.sire.bw.sept) + 
-                    mend.bw.oct*(1-f0),
-                  live.qual = 0.5*(dam.live.qual + true.sire.live.qual)+ sqrt(0.5*var.live.qual.gen)*(mend.live.qual)*(1-f0),
-                  skin.qual = 0.5*(dam.skin.qual + true.sire.skin.qual)+ sqrt(0.5)*(mend.skin.qual)*(1-f0),
-                  skin.length = 0.5*(dam.skin.length + true.sire.skin.length)+ sqrt(0.5)*(mend.skin.length)*(1-f0))]# Breeding value of offspring, body size
+  kit.list[, `:=`(
+    litter.size = 0.5 * (dam.fert + true.sire.fert) +
+      mend.litter.size * (sqrt(0.5 * variance.fertility) *
+                            (1 - f0)) # Breeding value of offspring, littersize
+    ,
+    perm.env.ls = rnorm(sum(x$obs_fert)) * sqrt(var.perm.env.ls) # perm env for litter size
+    ,
+    bw.oct = 0.5 * (dam.bw.oct + true.sire.bw.oct) +
+      mend.bw.oct * (1 - f0),
+    bw.sept = 0.5 * (dam.bw.sept + true.sire.bw.sept) +
+      mend.bw.oct * (1 - f0),
+    live.qual = 0.5 * (dam.live.qual + true.sire.live.qual) + sqrt(0.5 *
+         var.live.qual.gen) * (mend.live.qual) * (1 - f0),
+    skin.qual = 0.5 * (dam.skin.qual + true.sire.skin.qual) + sqrt(0.5) *
+      (mend.skin.qual) * (1 - f0),
+    skin.length = 0.5 * (dam.skin.length + true.sire.skin.length) + sqrt(0.5) *
+      (mend.skin.length) * (1 - f0)
+  )]# Breeding value of offspring, body size
   
   setnames(kit.list, "obs_fert", "own_littersize") # changes obs fert into the littersize of the kit
   kit.list$dam.age <- ifelse( year - kit.list$birthyear.dam > 1, 1,0 )
@@ -1866,6 +1910,11 @@ count.sex.siblings <- function (x) {
 CalculateBLUPLitterSize <- function () {
    system2("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/run_dmu4.bat", " bl_ass")
    # read the solutions and only keep the predictions of BV (they're not that right)
+   if ( !file.exists('fort.70')) {
+  now <-as.numeric(Sys.time()); howlong<-1; delt<-0; while(delt < howlong)
+    { delt<-as.numeric(Sys.time())-now }
+  }
+  
    solutions <- as.matrix(read.table(file="bl_ass.SOL"))
    solutions <- as.data.table(solutions)
    solutions <- subset(solutions, V1 == 4 ) # throw away the estimation of permanent environment
@@ -1889,16 +1938,16 @@ CalculateBLUPLitterSize <- function () {
    
    return(solutions)
  }
-CalulateBLUPBodyWeightNov <- function () {
+CalculateBLUPBodyWeightNov <- function () {
 # run reml and then use the output as priors in BLUP
   # system2("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/run_dmuai.bat", " reml_bwnov")
   # run blup on BW  
 system2("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/run_dmu4.bat", " bw_nov")
 # read the solutions and only keep the predictions of BV (they're not that right)
-  #  if ( !file.exists('fort.70')) {
-  # now <-as.numeric(Sys.time()); howlong<-1; delt<-0; while(delt < howlong) 
-  #   { delt<-as.numeric(Sys.time())-now }
-  # }
+   if ( !file.exists('fort.70')) {
+  now <-as.numeric(Sys.time()); howlong<-1; delt<-0; while(delt < howlong)
+    { delt<-as.numeric(Sys.time())-now }
+  }
   solutions.bw <- as.matrix(read.table(file="C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/bw_nov.SOL"))
   # }
 solutions.bw <- as.data.table(solutions.bw)
@@ -1907,6 +1956,25 @@ set (solutions.bw, j=c("V1","V2","V3", "V4", "V6", "V7"), value= NULL)
 setnames(solutions.bw, c("V5","V8", "V9"),c("id", "blup.bwnov", "sep.blup.bwnov"))
 return (solutions.bw)
 }
+CalculateBLUPQuality <- function () {
+  # run reml and then use the output as priors in BLUP
+  # system2("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/run_dmuai.bat", " reml_bwnov")
+  # run blup on BW  
+  system2("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/run_dmu4.bat", " qual")
+  # read the solutions and only keep the predictions of BV (they're not that right)
+   if ( !file.exists('fort.70')) {
+  now <-as.numeric(Sys.time()); howlong<-1; delt<-0; while(delt < howlong)
+    { delt<-as.numeric(Sys.time())-now }
+  }
+  solutions.qual <- as.matrix(read.table(file="C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/qual.SOL"))
+  # }
+  solutions.qual <- as.data.table(solutions.qual)
+  solutions.qual <- subset(solutions.qual, V1 == 4, select= c("V5","V8", "V9")) # throw away the estimation of permanent environment
+  # set (solutions.bw, j=c("V1","V2","V3", "V4", "V6", "V7"), value= NULL)
+  setnames(solutions.qual, c("V5","V8", "V9"),c("id", "blup.qual", "sep.blup.qual"))
+  return (solutions.qual)
+}
+
 ############### Modify Dir file for fertility ################
  # this function changes the .DIR file for fertility and BW
 # So it takes in the replicate from the current replicate of the simulation
@@ -2011,12 +2079,12 @@ WriteObservationFileBodyWeight <- function (x,year,p,solutions) {
   close(con=phenotypes)
   
    }
-  if (year == 4) {
-    quality <- file(description = "quality", open="w")
-    write.table(format(x[,.(id,dam.id,sex,own_littersize,inter,phenotype.bw.oct,live.score)], nsmall=1, digits=2), 
-                file= quality,append= TRUE ,col.names = FALSE, row.names = FALSE, quote = FALSE)
-    close(quality)
-    }
+  # if (year == 4) {
+  #   quality <- file(description = "quality", open="w")
+  #   write.table(format(x[,.(id,dam.id,sex,own_littersize,inter,phenotype.bw.oct,live.score)], nsmall=1, digits=2), 
+  #               file= quality,append= TRUE ,col.names = FALSE, row.names = FALSE, quote = FALSE)
+  #   close(quality)
+  #   }
   }
 
 # WriteObservationFileQuality <- function (kit.list, year, p, solutions) {

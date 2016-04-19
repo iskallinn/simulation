@@ -17,7 +17,7 @@ RunSimulation <- function (x, year, p) {
   t <- rbind(next.gen.males, temp, fill = T) # needed down the road
   remove(temp)
   ############### Make barren males ##########################
-  next.gen.males <- PrepareMalesForMating(next.gen.males)
+  next.gen.males <- PrepareMalesForMating(next.gen.males,year)
   next.gen <- PrepareFemalesForMating(next.gen, year)
   # ############### assign each female a male,  based on his mating willingness #####
   mating.list <- mate(next.gen.males, next.gen, year)
@@ -71,8 +71,11 @@ RunSimulation <- function (x, year, p) {
     if(trace.ped == 1 ){TracePed(kit.list,next.gen)}
     solutions.littersize <- CalculateBLUPLitterSize ()
     WriteObservationFileBodyWeight (kit.list, year, p, solutions.littersize)
-    solutions.bw.nov     <- CalulateBLUPBodyWeightNov ()
+    solutions.bw.nov     <- CalculateBLUPBodyWeightNov ()
+    solutions.qual <- CalculateBLUPQuality ()
   }
+  stat.crate[3] <- mean(kit.list$true.sire == kit.list$sire.assumed)
+  stat.crate[4] <-nrow(kit.list)
   kit.list$birthyear.dam <- NULL
   # ############### Selection of next generation    #############
   # # See utility functions for method
@@ -86,11 +89,11 @@ RunSimulation <- function (x, year, p) {
     big.pedfile    <-
       update.big.pedigree (big.pedfile, next.gen, next.gen.males)
     old.females    <-
-      IndSelectionOldFemales (next.gen, solutions.littersize, solutions.bw.nov, year)
+      IndSelectionOldFemales (next.gen, solutions.littersize, solutions.bw.nov,solutions.qual, year)
     next.gen       <-
-      IndSelFemaleKits (kit.list, solutions.littersize, solutions.bw.nov, old.females)
+      IndSelFemaleKits (kit.list, solutions.littersize, solutions.bw.nov,solutions.qual ,old.females)
     next.gen.males <-
-      IndSelMaleKits (kit.list, solutions.littersize, solutions.bw.nov)
+      IndSelMaleKits (kit.list, solutions.littersize, solutions.bw.nov,solutions.qual)
   }
   if ("f0.dam" %in% colnames(old.females)) {
     set(old.females,
@@ -112,18 +115,22 @@ RunSimulation <- function (x, year, p) {
   if (selection.method == blup) {
     kit.list <- merge(kit.list, solutions.littersize, by= "id", all.x=TRUE) # merge to solutions of blup of fertility
     kit.list <- merge(kit.list, solutions.bw.nov, by="id", all.x=TRUE)
+    kit.list <- merge(kit.list, solutions.qual, by="id", all.x=TRUE)
+    stat <- summaryBy(phenotype.bw.oct ~ sex, data = kit.list, FUN= c(mean))
+    stat1 <- subset(kit.list, sex==1)#males
+    
     cat (
     year,
-    mean(next.gen$litter.size),
-    var(next.gen$litter.size),
-    mean(mating.list$f0.dam),
+    mean(kit.list$litter.size),
+    var(kit.list$litter.size),
+    mean(kit.list$f0),
     mean(mating.list$obs_fert),
-    mean(next.gen$phenotype.bw.oct),
-    mean(next.gen$bw.oct),
-    mean(next.gen.males$phenotype.bw.oct),
-    var(next.gen$bw.oct),
-    cor(next.gen$bw.oct, next.gen$blup.bwnov),
-    cor(next.gen$bw.oct, next.gen$phenotype.bw.oct),
+    stat[[2,2]],
+    mean(kit.list$bw.oct),
+    stat[[1,2]],
+    var(kit.list$bw.oct),
+    cor(kit.list$bw.oct, kit.list$blup.bwnov),
+    cor(stat1$bw.oct, stat1$phenotype.bw.oct), #only males
     mean(kit.list$skin.length),
     var(kit.list$skin.length),
     mean(kit.list$skin.qual),
@@ -136,6 +143,11 @@ RunSimulation <- function (x, year, p) {
     stat.crate[4],
     stat.crate[5],
     stat.crate[6],
+    mean(kit.list$live.qual),
+    var(kit.list$live.qual),
+    cor(kit.list$blup.qual, kit.list$live.qual),
+    cor(kit.list$blup.qual, kit.list$live.score),
+    cor(kit.list$blup.qual, kit.list$skin.qual),
     sep = "\t",
     file = con
   )
@@ -165,6 +177,10 @@ RunSimulation <- function (x, year, p) {
       stat.crate[4],
       stat.crate[5],
       stat.crate[6],
+      mean(kit.list$live.qual),
+      var(kit.list$live.qual),
+      cor(kit.list$skin.qual, kit.list$blup.qual),
+      cor(kit.list$live.score, kit.list$skin.qual),
       sep = "\t",
       file = con
     )

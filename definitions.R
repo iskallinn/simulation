@@ -8,9 +8,11 @@ library(doBy)
 ############## Index weights ############
 # weights must sum to 1
 weight.fert.old.females <- 0.35
-weight.bw.old.females   <- 0.65
+weight.bw.old.females   <- 0.35
+weight.qual.old.females <- 0.3
 weight.fert.kits        <- 0.35
-weight.bw.kits          <- 0.65
+weight.bw.kits          <- 0.35
+weight.qual.kits        <- 0.3
 ##############Switches, best left alone ###########
 assortative <- 1
 random <- 0
@@ -21,6 +23,11 @@ trace.ped <- 0
 mask.phenotypes <- 1 # 0 no masking, 1 mask phenotypes of kits from small litters
 sept <- 1 # weigh kits in september
 oct <- 0  # weigh kits in october
+use.blup.to.assort.mat <- 0 # if 1 then the males and females will be sorted on 
+#their combined index before mating
+use.comb.ind.for.males <- 0 # if 1 then the usage of the males will depend on 
+# their combined index, not quality
+
 ############### Controls for simulation ############
 n.females <-  1000             # NUMBER OF FEMALES
 nruns <- 1                    # how many replicates of the simulation
@@ -28,7 +35,7 @@ n <- 4                        # number of generation per replicate
 mating.method <- assortative   # mating method, random or assortative
 selection.method <- blup  # selection mating, 
 weighing.method <- oct         # control for when to weigh kits for selection cands
-qual.classes <- 5              # quality classes, 5 or 10 are supported
+qual.classes <- 10              # quality classes, 5 or 10 are supported
 intensity.remating <- 0.2      # this controls how many males are chosen not to be remated
 # selection = truncation,  no selection = next gen is chosen at random
 make.obs.file <- 1 # 1 = make observation file, 0 otherwise
@@ -110,3 +117,22 @@ sigma <- matrix(
   "live.qual", "skin.qual", "skin.length" ),
   c("bw.oct", "bw.sept", "litter.size", "live.qual", "skin.qual", "skin.length" )))
 
+sigma.new <- matrix( 
+  # qual velv   wMale wFemale sk.qual s.sm   s.sf    ls wsept.m  wsept.fe mat.w weaning
+  c( 1,   0.86, -0.13,  0.18,   0.74,  -0.15, 0.12,   0,  -0.13,   0.18, 0,   0,           # qual
+    0.86, 1,     0,     0,      0.55,   0,    0,      0,   0,      0,    0,   0,           # velv
+   -0.13, 0,     1,     0.83,  -0.52,   0.79, 0.77,  -0.5, 0.84,   0.83, 0,   0.3,           # wMale
+    0.18, 0,     0.83,  1,     -0.38,   0.64, 0.8,    0,   0.83,   0.94,-0.2, 0.3,           # wFemale
+    0.74, 0.55, -0.52, -0.38,   1,     -0.55,-0.42,   0,   0,      0,    0,  -0.25,           # sk.qual
+   -0.15, 0,     0.79,  0.64,  -0.55,  1,     0.89,   0,   0.7,    0.7,  0,   0.45,           # sk.size.male
+    0.12, 0,     0.77,  0.8,   -0.42,  0.89,  1,      0,   0.7,    0.7,  0,   0.45,           # sk.size.fema
+    0,    0,     0,    -0.5,    0,     0,     0,      1,  -0.28,  -0.28, 0,   0,           # litter.size
+   -0.13, 0,     0.84,  0.83,  0,     0.7,   0.7,   -0.28,1,       0.83, 0,   0.57,           # bw.sept
+    0.18, 0,     0.84,  0.83,  0,     0.7,   0.7,   -0.28,0.83,    1,    0,   0.57,           # bw.sept
+    0,    0,    0,    -0.2,     0,     0,     0,      0,   0,      0,    1,   0,           # maternal 
+    0,    0,    0,    -0.2,     0,     0,     0,      0,   0,      0,    0,   1              # weaning 
+    
+    ), nrow=12, ncol=12)
+
+var.maternal <- matrix(c(25.8, 45, 35, 23,16,28,22,14),nrow=4,ncol=2,dimnames = list(
+        c("maternal","additive","specific", "residual"),c("male","female")))

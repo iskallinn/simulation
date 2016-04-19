@@ -79,34 +79,38 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   if (selection.method == blup) {
     stat <- summaryBy(phenotype.bw.oct ~ sex, data = kit.list, FUN= c(mean))
     
-  cat (
-    year,
-    mean(mating.list$dam.fert),
-    var(mating.list$dam.fert),
-    0,
-    mean(mating.list$obs_fert),
-    stat[2,2],
-    mean(kit.list$bw.oct),
-    stat[1,2],
-    var(kit.list$bw.oct),
-    0,
-    cor(next.gen$bw.oct, next.gen$phenotype.bw.oct),
-    mean(kit.list$skin.length),
-    var(kit.list$skin.length),
-    mean(kit.list$skin.qual),
-    var(kit.list$skin.qual),
-    0,
-    0,
-    stat.crate[1],
-    stat.crate[2],
-    stat.crate[3],
-    stat.crate[4],
-    stat.crate[5],
-    stat.crate[6],
-    sep = "\t",
-    file = con
-  )
-  } else if (selection.method == phenotypic) {
+    cat (
+      year, #simulation year
+      mean(kit.list$litter.size), #avg genetic value of litter size
+      var(kit.list$litter.size), # variance of genetic value of litter size
+      0, #avg inbreeding
+      mean(mating.list$obs_fert), #observed fertility
+      stat[[2,2]], #avg phenotype, october females
+      mean(kit.list$bw.oct), #avg gen val oct weight
+      stat[[1,2]], #avg phenotype oct males
+      var(kit.list$bw.oct), #variance oct weight
+      0, #correlation bw blup and phenotype
+      cor(kit.list$bw.oct, kit.list$phenotype.bw.oct), #correlation bw phenotype and genetic value
+      mean(kit.list$skin.length), # avg genetic value for skin length
+      var(kit.list$skin.length),  # var of skin length
+      mean(kit.list$skin.qual), # avg genetic value of skin qual
+      var(kit.list$skin.qual), # var of skin qual
+      0, # correlation of gen value litter size to blup
+      0, # correlation of own litter size to genetic value 
+      stat.crate[1], # number of mated females
+      stat.crate[2], # number of barren females
+      stat.crate[3], # proportion of kits with true sires
+      stat.crate[4], # number of kits
+      stat.crate[5], # percentages of females mated with "own" male
+      stat.crate[6], # number of females mated once
+      mean(kit.list$live.qual), # avg live quality
+      var(kit.list$live.qual),  #variance of live quality
+      0, # correlation bw blup and gen value live qual
+      0,
+      0,
+      sep = "\t",
+      file = con
+    )  } else if (selection.method == phenotypic) {
     stat <- summaryBy(phenotype.bw.oct ~ sex, data = kit.list, FUN= c(mean))
     stat1 <- subset(kit.list, sex==1)#males
     cat (
@@ -131,6 +135,8 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       stat.crate[4],
       stat.crate[5],
       stat.crate[6],
+      mean(kit.list$live.qual), # avg live quality
+      var(kit.list$live.qual),  #variance of live quality
       sep = "\t",
       file = con
     )
