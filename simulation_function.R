@@ -13,8 +13,8 @@ Simulation <- function (
   n.females =  1000,             # NUMBER OF FEMALES
   nruns = 2,                    # how many replicates of the simulation
   n = 3 ,                       # number of generation per replicate
-  mating.method = assortative,   # mating method, random or assortative
-  selection.method = blup,  # selection mating, 
+  # mating.method = assortative,   # mating method, random or assortative
+  # selection.method = blup,  # selection mating, 
   # selection = truncation,  no selection = next gen is chosen at random
   make.obs.file = 1, # 1 = make observation file, 0 otherwise
   use.true.sire = 0, # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
@@ -45,13 +45,13 @@ Simulation <- function (
   
   
   ############# Variance settings for traits ###################
-  variance.fertility     =  0.0122738,     # Genetic variance of fertility, live born
-  var.perm.env.ls        =  0.0004464 ,    # Variance of permanent environment of litter size of dam
-  var.body.size.direct   =  40000 ,        # Genetic variance of body size, direct effect 
-  var.body.size.spec.env =  5300  ,        # variance of specific environment (litter) on body size
-  var.res.body.size      =  32500  ,       # residual variance of body size
-  roof.body.size         =  2400   ,       # Maximum body weight of females to be allowed for selection
-  bw.eff.damage          =  34.5    ,      # effect of dam age on weight of males
+  # variance.fertility     =  0.0122738,     # Genetic variance of fertility, live born
+  # var.perm.env.ls        =  0.0004464 ,    # Variance of permanent environment of litter size of dam
+  # var.bw.oct             =  40000 ,        # Genetic variance of body size, direct effect 
+  # var.body.size.spec.env =  5300  ,        # variance of specific environment (litter) on body size
+  # var.res.body.size      =  32500  ,       # residual variance of body size
+  # roof.body.size         =  2400   ,       # Maximum body weight of females to be allowed for selection
+  # bw.eff.damage          =  34.5    ,      # effect of dam age on weight of males
   ############# Genetic (co) variance ##########################
   sigma =  matrix( 
     c(1, -0.5, -0.5, 1), # genetic correlations of traits
@@ -59,6 +59,9 @@ Simulation <- function (
     ncol=2, dimnames = list(c("body.size.direct","litter.size"),
                             c("body.size.direct","litter.size")))
 ) { 
+  if (selection.method == phenotypic) {
+    use.blup.to.assort.mat <- 0
+  }
   setwd("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
   if (selection.method == blup) {
   con <- file(description = "results", open = "w")
@@ -68,16 +71,32 @@ Simulation <- function (
     "Gvar",
     "Fis",
     "Obs.fert",
-    "mean.phenotype.bs.females",
+    "mean.phenotype.bw.females",
     "gen.value.bs",
-    "mean.phenotype.bs.males",
+    "mean.phenotype.bw.males",
     "bw.var",
     "cor.bw.to.blup",
     "cor.bw.phenotype",
+    "skin.length.mean",
+    "skin.length.var",
+    "skin.qual.mean",
+    "skin.qual.var",
+    "cor.ls.blup",
+    "cor.ls.own.to.ls",
+    "mated.females",
+    "barren.females",
+    "numb.false.sires",
+    "numb.kits",
+    "remating.perc",
+    "perc.single.mat",
+    "mean.gen.val.qual",
+    "var.gen.val.qual",
+    "cor.blup.qual.gen.val.qual",
+    "cor.live.score.skin.qa",
+    "cor.blup.qual.to.skin.qual",
     sep = "\t",
     file = con
-  )
-  } else if (selection.method == phenotypic) {
+  )  } else if (selection.method == phenotypic) {
     con <- file(description = "results", open = "w")
     cat(
       "Gen",
@@ -85,11 +104,24 @@ Simulation <- function (
       "Gvar",
       "Fis",
       "Obs.fert",
-      "mean.phenotype.bs.females",
+      "mean.phenotype.bw.females",
       "gen.value.bs",
-      "mean.phenotype.bs.males",
+      "mean.phenotype.bw.males",
       "bw.var",
       "cor.bw.phenotype",
+      "skin.length.mean",
+      "skin.length.var",
+      "skin.qual.mean",
+      "skin.qual.var",
+      "cor.ls.own.to.ls",
+      "mated.females",
+      "barren.females",
+      "numb.false.sires",
+      "numb.kits",
+      "remating.perc",
+      "perc.single.mat",
+      "mean.gen.val.qual",
+      "var.gen.val.qual",
       sep = "\t",
       file = con
     )
@@ -105,7 +137,7 @@ Simulation <- function (
       l <- RunSimulation(l, year, p)
       
     }
-    print("reached end")
+    # print("reached end", p)
     
   }
   
