@@ -59,15 +59,15 @@ RunSimulation <- function (x, year, p) {
   if (selection.method == blup) {
     big.pedfile <- WriteBigPedigree (kit.list, big.pedfile, year, p)
     # this makes the big pedigree with all animals in the pedigree
-    dirfile <- readLines("reml_bwnov.PAROUT")
-    if (weighing.method == oct ) {
-    dirfile[2] <- c(paste("  2  1  1    ",var(next.gen$bw.oct),sep=""))
-    } else if (weighing.method == sept) {
-      dirfile[2] <- c(paste("  2  1  1    ",var(next.gen$bw.sept),sep=""))
-    }
+    # dirfile <- readLines("reml_bwnov.PAROUT")
+    # if (weighing.method == oct ) {
+    # dirfile[2] <- c(paste("  2  1  1    ",var(next.gen$bw.oct),sep=""))
+    # } else if (weighing.method == sept) {
+    #   dirfile[2] <- c(paste("  2  1  1    ",var(next.gen$bw.sept),sep=""))
+    # }
     stat.crate[3] <- mean(kit.list$true.sire == kit.list$sire.assumed)
     stat.crate[4] <-nrow(kit.list)
-    writeLines(dirfile,"reml_bwnov.PAROUT")
+    # writeLines(dirfile,"reml_bwnov.PAROUT")
     if(trace.ped == 1 ){TracePed(kit.list,next.gen)}
     solutions.littersize <- CalculateBLUPLitterSize ()
     WriteObservationFileBodyWeight (kit.list, year, p, solutions.littersize)
@@ -126,13 +126,13 @@ RunSimulation <- function (x, year, p) {
     mean(kit.list$f0),
     mean(mating.list$obs_fert),
     stat[[2,2]],
-    mean(kit.list$bw.oct),
+    mean(kit.list$bw.oct.male),
     stat[[1,2]],
-    var(kit.list$bw.oct),
-    cor(kit.list$bw.oct, kit.list$blup.bwnov),
-    cor(stat1$bw.oct, stat1$phenotype.bw.oct), #only males
-    mean(kit.list$skin.length),
-    var(kit.list$skin.length),
+    var(kit.list$bw.oct.male),
+    cor(kit.list$bw.oct.male, kit.list$blup.bwnov),
+    cor(stat1$bw.oct.male, stat1$phenotype.bw.oct), #only males
+    mean(kit.list$skin.length.male),
+    var(kit.list$skin.length.male),
     mean(kit.list$skin.qual),
     var(kit.list$skin.qual),
     cor(kit.list$blup.fert, kit.list$litter.size),
@@ -162,12 +162,12 @@ RunSimulation <- function (x, year, p) {
       mean(mating.list$f0.dam),
       mean(mating.list$obs_fert),
       stat[[2,2]], # avg oct weight of females
-      mean(kit.list$bw.oct),
+      mean(kit.list$bw.oct.male),
       stat[[1,2]], # avg oct weight of males
-      var(kit.list$bw.oct),
-      cor(stat1$bw.oct, stat1$phenotype.bw.oct),
-      mean(kit.list$skin.length),
-      var(kit.list$skin.length),
+      var(kit.list$bw.oct.male),
+      cor(stat1$bw.oct.male, stat1$phenotype.bw.oct),
+      mean(kit.list$skin.length.male),
+      var(kit.list$skin.length.male),
       mean(kit.list$skin.qual),
       var(kit.list$skin.qual),
       cor(kit.list$own_littersize, kit.list$litter.size),

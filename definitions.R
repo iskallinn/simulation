@@ -57,6 +57,9 @@ sib.effect.male <- -13.4       # Effect on body size of (male) one extra kit in 
 sib.effect.female <- -18.6      # Effect on body size of (female) one extra kit in litter, Hansen(1997)
 sib.effect.male.sept   <- -21.5 # Effect on body size of (female) one extra kit in litter, Hansen(1997)
 sib.effect.female.sept <- -12.6 # Effect on body size of (female) one extra kit in litter, Hansen(1997)
+sib.effect.male.june   <- -19.9       
+sib.effect.female.june <- -15.9
+eff.dam.age.june       <- 29
 quantile.setting <- 0.4        # amount of kits to throw away because of too low littersize
 quantile.setting.bw <- 0.4    # prop of kits to disqualify due to weight
 mating.will.yearling.1st          <- 0.95 # probability of yearling being mated
@@ -110,14 +113,14 @@ var.skin.length.res.female <- 9.29
 var.maternal.male       <- 26
 var.maternal.female     <- 16
 # weaning weight
-mean.june.male          <- 685
-mean.june.female        <- 534
-var.june.add.male       <- 45.15
-var.june.add.female     <- 28
-var.june.c.male         <- 34.83
-var.june.c.female       <- 21.6
-var.june.res.male       <- 23.22
-var.june.res.female     <- 14.4
+mean.bw.june.male          <- 685
+mean.bw.june.female        <- 534
+var.bw.june.male       <- 45.15
+var.bw.june.female     <- 28
+var.bw.june.c.male         <- 34.83
+var.bw.june.c.female       <- 21.6
+var.bw.june.res.male       <- 23.22
+var.bw.june.res.female     <- 14.4
 
 
 # misc

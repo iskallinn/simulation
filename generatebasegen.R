@@ -77,7 +77,7 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   # ############## First year statistics #######################
   con <- file(description="results",open="a")
   if (selection.method == blup) {
-    stat <- summaryBy(phenotype.bw.oct.male ~ sex, data = kit.list, FUN= c(mean))
+    stat <- summaryBy(phenotype.bw.oct ~ sex, data = kit.list, FUN= c(mean))
     
     cat (
       year, #simulation year
