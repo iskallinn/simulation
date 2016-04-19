@@ -41,10 +41,10 @@ intensity.remating <- 0.2      # this controls how many males are chosen not to 
 make.obs.file <- 1 # 1 = make observation file, 0 otherwise
 use.true.sire <- 1 # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
 ############# Mean settings for traits   #####################
-mean.body.size.male.oct <- 3000
-mean.body.size.female.oct <- 1650
-mean.body.size.male.sept <- 2750
-mean.body.size.female.sept <- 1450
+mean.body.size.male.oct <- 3750
+mean.body.size.female.oct <- 1960
+mean.body.size.male.sept <- 2270
+mean.body.size.female.sept <- 1280
 ############### Innter settings, change at own risk##########
 male.ratio <-  6               # MALE TO FEMALE RATIO
 male.inf <-  0.98              # % ODDS OF MALE BEING NOT BARREN
@@ -75,12 +75,12 @@ n.males <-  ceiling( n.females/male.ratio ) # calculates needed amount of males
 variance.fertility     <-  0.0122738     # Genetic variance of fertility, live born
 var.perm.env.ls        <-  0.0004464     # Variance of permanent environment of litter size of dam
 # october body weight
-var.bw.oct.female      <-  26116          # Genetic variance of body size, direct effect 
-var.bw.oct.male        <-  83389         # from hansen et al 1992, ass h^2 = 0.51
-var.c.bw.oct.male      <-  13036          # common env. from hansen et al 1992, ass c^2 = 0.068
-var.c.bw.oct.female    <-  3306          # from hansen et al 1992, ass c^2 = 0.068
-var.res.bw.oct.female  <-  9040          # from hansen et al 1992, ass c^2 andh^2 as above
-var.res.bw.oct.male    <-  39021         # from hansen et al 1992, ass c^2 andh^2 as above
+var.bw.oct.female      <-  36198         # Genetic variance of body size, direct effect 
+var.bw.oct.male        <-  121036         # from hansen et al 1992, ass h^2 = 0.51
+var.c.bw.oct.male      <-  35977          # common env. from hansen et al 1992, ass c^2 = 0.068
+var.c.bw.oct.female    <-  10295          # from hansen et al 1992, ass c^2 = 0.068
+var.res.bw.oct.female  <-  36818          # from hansen et al 1992, ass c^2 andh^2 as above
+var.res.bw.oct.male    <-  96300         # from hansen et al 1992, ass c^2 andh^2 as above
 # september body weight
 var.bw.sept.female      <-  7101         # from hansen et al 1992, ass h^2 = 0.51
 var.bw.sept.male        <-  22705        # from hansen et al 1992, ass h^2 = 0.51
@@ -89,8 +89,37 @@ var.c.bw.sept.female    <-  947          # from hansen et al 1992, ass c^2 = 0.0
 var.res.bw.sept.female  <-  5876         # from hansen et al 1992, ass c^2 andh^2 as above
 var.res.bw.sept.male    <-  18788        # from hansen et al 1992, ass c^2 andh^2 as above
 # quality variances
-var.live.qual.gen       <- 24.0
-var.live.qual.res       <- 60.0
+var.live.qual.gen       <- 0.12
+var.live.qual.res       <- 0.41
+# skin quality
+var.skin.qual.gen       <- 1.53
+var.skin.qual.res       <- 3.42
+# guard hair length
+var.h.length            <- 0.07
+var.h.length.res        <- 0.41
+# skin sizes
+mean.skin.length.male   <- 95.59
+var.skin.length.male    <- 11.6
+var.skin.length.c.male  <- 3.14
+var.skin.length.res.male<- 26
+mean.skin.length.female <- 75.62
+var.skin.length.female  <- 8.94
+var.skin.length.c.female<- 1.49
+var.skin.length.res.female <- 9.29
+# maternal effect
+var.maternal.male       <- 26
+var.maternal.female     <- 16
+# weaning weight
+mean.june.male          <- 685
+mean.june.female        <- 534
+var.june.add.male       <- 45.15
+var.june.add.female     <- 28
+var.june.c.male         <- 34.83
+var.june.c.female       <- 21.6
+var.june.res.male       <- 23.22
+var.june.res.female     <- 14.4
+
+
 # misc
 roof.body.size          <-  2400          # Maximum body weight of females to be allowed for selection
 bw.eff.damage           <-  34.5          # effect of dam age on weight of males
@@ -108,31 +137,33 @@ bw.eff.damage           <-  34.5          # effect of dam age on weight of males
 # estimation, by Hansen, Lohi & Berg, 1992
 sigma <- matrix(
   c(  1,    0.84, -0.5, -0.08,   -0.41,  0.73,
-     0.84,  1,    -0.28,   0,     -0.4,   0.7,
-    -0.5, -0.28,   1,     0,      0,     0,
-    -0.08, 0,     0,     1,      0.6,   0,
-    -0.41, -0.4, 0,     0.6,     1,     0,
-    0.73,  0.7,  0,     0,       0,     1),
+      0.84,  1,    -0.28,   0,     -0.4,   0.7,
+      -0.5, -0.28,   1,     0,      0,     0,
+      -0.08, 0,     0,     1,      0.6,   0,
+      -0.41, -0.4, 0,     0.6,     1,     0,
+      0.73,  0.7,  0,     0,       0,     1),
   nrow=6, ncol=6, dimnames= list(c("bw.oct", "bw.sept", "litter.size", 
-  "live.qual", "skin.qual", "skin.length" ),
-  c("bw.oct", "bw.sept", "litter.size", "live.qual", "skin.qual", "skin.length" )))
+                                   "live.qual", "skin.qual", "skin.length" ),
+                                 c("bw.oct", "bw.sept", "litter.size", "live.qual", "skin.qual", "skin.length" )))
 
 sigma.new <- matrix( 
   # qual velv   wMale wFemale sk.qual s.sm   s.sf    ls wsept.m  wsept.fe mat.w weaning
   c( 1,   0.86, -0.13,  0.18,   0.74,  -0.15, 0.12,   0,  -0.13,   0.18, 0,   0,           # qual
-    0.86, 1,     0,     0,      0.55,   0,    0,      0,   0,      0,    0,   0,           # velv
-   -0.13, 0,     1,     0.83,  -0.52,   0.79, 0.77,  -0.5, 0.84,   0.83, 0,   0.3,           # wMale
-    0.18, 0,     0.83,  1,     -0.38,   0.64, 0.8,    0,   0.83,   0.94,-0.2, 0.3,           # wFemale
-    0.74, 0.55, -0.52, -0.38,   1,     -0.55,-0.42,   0,   0,      0,    0,  -0.25,           # sk.qual
-   -0.15, 0,     0.79,  0.64,  -0.55,  1,     0.89,   0,   0.7,    0.7,  0,   0.45,           # sk.size.male
-    0.12, 0,     0.77,  0.8,   -0.42,  0.89,  1,      0,   0.7,    0.7,  0,   0.45,           # sk.size.fema
-    0,    0,     0,    -0.5,    0,     0,     0,      1,  -0.28,  -0.28, 0,   0,           # litter.size
-   -0.13, 0,     0.84,  0.83,  0,     0.7,   0.7,   -0.28,1,       0.83, 0,   0.57,           # bw.sept
-    0.18, 0,     0.84,  0.83,  0,     0.7,   0.7,   -0.28,0.83,    1,    0,   0.57,           # bw.sept
-    0,    0,    0,    -0.2,     0,     0,     0,      0,   0,      0,    1,   0,           # maternal 
-    0,    0,    0,    -0.2,     0,     0,     0,      0,   0,      0,    0,   1              # weaning 
-    
-    ), nrow=12, ncol=12)
-
-var.maternal <- matrix(c(25.8, 45, 35, 23,16,28,22,14),nrow=4,ncol=2,dimnames = list(
-        c("maternal","additive","specific", "residual"),c("male","female")))
+     0.86, 1,     0,     0,      0.55,   0,    0,      0,   0,      0,    0,   0,           # velv
+     -0.13, 0,     1,     0.83,  -0.52,   0.79, 0.77,  -0.5, 0.84,   0.83, 0,   0.3,           # wMale
+     0.18, 0,     0.83,  1,     -0.38,   0.64, 0.8,   -0.5, 0.83,   0.94,-0.2, 0.3,           # wFemale
+     0.74, 0.55, -0.52, -0.38,   1,     -0.55,-0.42,   0,   0,      0,    0,  -0.25,           # sk.qual
+     -0.15, 0,     0.79,  0.64,  -0.55,   1,     0.89,   0,   0.7,    0.7, 0,   0.45,           # sk.size.male
+     0.12, 0,     0.77,  0.8,   -0.42,   0.89,  1,      0,   0.7,    0.7, 0,   0.45,           # sk.size.fema
+     0,    0,    -0.5,  -0.5,    0,      0,     0,      1,  -0.28,  -0.28,0,   0,           # litter.size
+     -0.13, 0,     0.84,  0.83,   0,      0.7,   0.7,   -0.28,1,      0.83,0,   0.57,           # bw.sept
+     0.18, 0,     0.83,  0.94,   0,      0.7,   0.7,   -0.28,0.83,    1,  0,   0.57,           # bw.sept
+     0,    0,    0,     -0.2,    0,      0,     0,      0,   0,      0,   1,   0,           # maternal 
+     0,    0,    0.3,    0.3,   -0.25,   0.45,  0.45,   0,   0.57,   0.57,0,   1              # weaning 
+     
+  ), nrow=12, ncol=12,byrow=TRUE,
+  list(c("live.qual", "h.length", "bw.oct.male", "bw.oct.female", "skin.qual", "skin.length.male",
+         "skin.length.female", "litter.size", "bw.sept.male", "bw.sept.female", "bw.june.maternal","bw.june"),
+       c("live.qual", "h.length", "bw.oct.male", "bw.oct.female", "skin.qual", "skin.length.male",
+         "skin.length.female", "litter.size", "bw.sept.male", "bw.sept.female", "bw.june.maternal","bw.june")
+  ))

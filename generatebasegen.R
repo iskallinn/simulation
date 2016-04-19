@@ -77,7 +77,7 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   # ############## First year statistics #######################
   con <- file(description="results",open="a")
   if (selection.method == blup) {
-    stat <- summaryBy(phenotype.bw.oct ~ sex, data = kit.list, FUN= c(mean))
+    stat <- summaryBy(phenotype.bw.oct.male ~ sex, data = kit.list, FUN= c(mean))
     
     cat (
       year, #simulation year
@@ -86,13 +86,13 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       0, #avg inbreeding
       mean(mating.list$obs_fert), #observed fertility
       stat[[2,2]], #avg phenotype, october females
-      mean(kit.list$bw.oct), #avg gen val oct weight
+      mean(kit.list$bw.oct.male), #avg gen val oct weight
       stat[[1,2]], #avg phenotype oct males
-      var(kit.list$bw.oct), #variance oct weight
+      var(kit.list$bw.oct.male), #variance oct weight
       0, #correlation bw blup and phenotype
-      cor(kit.list$bw.oct, kit.list$phenotype.bw.oct), #correlation bw phenotype and genetic value
-      mean(kit.list$skin.length), # avg genetic value for skin length
-      var(kit.list$skin.length),  # var of skin length
+      cor(kit.list$bw.oct.male, kit.list$phenotype.bw.oct), #correlation bw phenotype and genetic value
+      mean(kit.list$skin.length.male), # avg genetic value for skin length
+      var(kit.list$skin.length.male),  # var of skin length
       mean(kit.list$skin.qual), # avg genetic value of skin qual
       var(kit.list$skin.qual), # var of skin qual
       0, # correlation of gen value litter size to blup
@@ -120,12 +120,12 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       0,
       mean(mating.list$obs_fert),
       stat[[2,2]],
-      mean(kit.list$bw.oct),
+      mean(kit.list$bw.oct.male),
       stat[[1,2]],
-      var(kit.list$bw.oct),
-      cor(stat1$bw.oct, stat1$phenotype.bw.oct),
-      mean(kit.list$skin.length),
-      var(kit.list$skin.length),
+      var(kit.list$bw.oct.male),
+      cor(stat1$bw.oct.male, stat1$phenotype.bw.oct),
+      mean(kit.list$skin.length.male),
+      var(kit.list$skin.length.male),
       mean(kit.list$skin.qual),
       var(kit.list$skin.qual),
       0,
