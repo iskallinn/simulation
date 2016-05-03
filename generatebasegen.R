@@ -49,6 +49,10 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   # 
   stat.crate[3] <- mean(kit.list$true.sire == kit.list$sire.assumed)
   stat.crate[4] <-nrow(kit.list)
+  kit.list <- RandCull(kit.list)
+  stat.crate[7] <- nrow(kit.list)
+  kit.list <- MaskKits(kit.list)
+  
   pedfile <- MakePedfileGen0(gen0.females,effgen0.males)
   if (selection.method == blup) {
     big.pedfile <- WriteBigPedigree(kit.list, pedfile,year,p)
@@ -77,7 +81,7 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   # ############## First year statistics #######################
   con <- file(description="results",open="a")
   if (selection.method == blup) {
-    stat <- summaryBy(phenotype.bw.oct ~ sex, data = kit.list, FUN= c(mean))
+    stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
     
     cat (
       year, #simulation year
@@ -86,13 +90,13 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       0, #avg inbreeding
       mean(mating.list$obs_fert), #observed fertility
       stat[[2,2]], #avg phenotype, october females
-      mean(kit.list$bw.oct), #avg gen val oct weight
+      mean(kit.list$bw.oct.male), #avg gen val oct weight
       stat[[1,2]], #avg phenotype oct males
-      var(kit.list$bw.oct), #variance oct weight
+      var(kit.list$bw.oct.male), #variance oct weight
       0, #correlation bw blup and phenotype
-      cor(kit.list$bw.oct, kit.list$phenotype.bw.oct), #correlation bw phenotype and genetic value
-      mean(kit.list$skin.length), # avg genetic value for skin length
-      var(kit.list$skin.length),  # var of skin length
+      cor(kit.list$bw.oct.male, kit.list$phenotype.bw.oct), #correlation bw phenotype and genetic value
+      mean(kit.list$skin.length.male), # avg genetic value for skin length
+      var(kit.list$skin.length.male),  # var of skin length
       mean(kit.list$skin.qual), # avg genetic value of skin qual
       var(kit.list$skin.qual), # var of skin qual
       0, # correlation of gen value litter size to blup
@@ -103,16 +107,19 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       stat.crate[4], # number of kits
       stat.crate[5], # percentages of females mated with "own" male
       stat.crate[6], # number of females mated once
+      stat.crate[7], # survived kits
       mean(kit.list$live.qual), # avg live quality
       var(kit.list$live.qual),  #variance of live quality
       0, # correlation bw blup and gen value live qual
       0,
       0,
+      stat[[1,3]], # skin length phenotype, male
+      stat[[2,3]], # skin length phenotype, female
       sep = "\t",
       file = con
     )  } else if (selection.method == phenotypic) {
-    stat <- summaryBy(phenotype.bw.oct ~ sex, data = kit.list, FUN= c(mean))
-    stat1 <- subset(kit.list, sex==1)#males
+      stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
+      stat1 <- subset(kit.list, sex==1)#males
     cat (
       year,
       mean(mating.list$dam.fert),
@@ -120,12 +127,12 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       0,
       mean(mating.list$obs_fert),
       stat[[2,2]],
-      mean(kit.list$bw.oct),
+      mean(kit.list$bw.oct.male),
       stat[[1,2]],
-      var(kit.list$bw.oct),
-      cor(stat1$bw.oct, stat1$phenotype.bw.oct),
-      mean(kit.list$skin.length),
-      var(kit.list$skin.length),
+      var(kit.list$bw.oct.male),
+      cor(stat1$bw.oct.male, stat1$phenotype.bw.oct),
+      mean(kit.list$skin.length.male),
+      var(kit.list$skin.length.male),
       mean(kit.list$skin.qual),
       var(kit.list$skin.qual),
       0,
@@ -135,8 +142,11 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       stat.crate[4],
       stat.crate[5],
       stat.crate[6],
+      stat.crate[7], # survived kits
       mean(kit.list$live.qual), # avg live quality
       var(kit.list$live.qual),  #variance of live quality
+      stat[[1,3]], # skin length phenotype, male
+      stat[[2,3]],
       sep = "\t",
       file = con
     )
