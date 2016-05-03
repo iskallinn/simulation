@@ -7,12 +7,12 @@ library(doBy)
 
 ############## Index weights ############
 # weights must sum to 1
-weight.fert.old.females <- 0.35
-weight.bw.old.females   <- 0.35
-weight.qual.old.females <- 0.3
-weight.fert.kits        <- 0.35
-weight.bw.kits          <- 0.35
-weight.qual.kits        <- 0.3
+weight.fert.old.females <- 0.40
+weight.bw.old.females   <- 0.20
+weight.qual.old.females <- 0.40
+weight.fert.kits        <- 0.40
+weight.bw.kits          <- 0.20
+weight.qual.kits        <- 0.40
 ##############Switches, best left alone ###########
 assortative <- 1
 random <- 0
@@ -23,11 +23,11 @@ trace.ped <- 0
 mask.phenotypes <- 1 # 0 no masking, 1 mask phenotypes of kits from small litters
 sept <- 1 # weigh kits in september
 oct <- 0  # weigh kits in october
-use.blup.to.assort.mat <- 0 # if 1 then the males and females will be sorted on 
+use.blup.to.assort.mat <- 1 # if 1 then the males and females will be sorted on 
 #their combined index before mating
-use.comb.ind.for.males <- 0 # if 1 then the usage of the males will depend on 
+use.comb.ind.for.males <- 1 # if 1 then the usage of the males will depend on 
 # their combined index, not quality
-
+result <- "test"
 ############### Controls for simulation ############
 n.females <-  1000             # NUMBER OF FEMALES
 nruns <- 1                    # how many replicates of the simulation
@@ -35,11 +35,11 @@ n <- 4                        # number of generation per replicate
 mating.method <- assortative   # mating method, random or assortative
 selection.method <- blup  # selection mating, 
 weighing.method <- oct         # control for when to weigh kits for selection cands
-qual.classes <- 10              # quality classes, 5 or 10 are supported
+qual.classes <- 5              # quality classes, 5 or 10 are supported
 intensity.remating <- 0.2      # this controls how many males are chosen not to be remated
 # selection = truncation,  no selection = next gen is chosen at random
 make.obs.file <- 1 # 1 = make observation file, 0 otherwise
-use.true.sire <- 1 # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
+use.true.sire <- 0 # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
 ############# Mean settings for traits   #####################
 mean.body.size.male.oct <- 3750
 mean.body.size.female.oct <- 1960
@@ -69,9 +69,9 @@ mating.will.old.2nd               <- 0.98 # probability of old female being rema
 pr.barren.one.mating.yearling     <- 0.8 # probability of single mated yearling being barren
 pr.barren.double.mating.yearling  <- 0.9 # probability of double mated yearling being barren
 pr.barren.one.mating.old          <- 0.9 # probability of single mated old female being barren
-pr.barren.double.mating.old       <- 0.95 # probaility of double mated old female being barren
+pr.barren.double.mating.old       <- 0.95 # probability of double mated old female being barren
 n.males <-  ceiling( n.females/male.ratio ) # calculates needed amount of males 
-
+cull.ratio                       <- 0.825 # survival rate of kits, farmwise from 2nd cnt to pelting
 
 ############# Variance settings for traits ###################
 # fertility
@@ -150,15 +150,15 @@ sigma <- matrix(
                                  c("bw.oct", "bw.sept", "litter.size", "live.qual", "skin.qual", "skin.length" )))
 
 sigma.new <- matrix( 
-  # qual velv   wMale wFemale sk.qual s.sm   s.sf    ls wsept.m  wsept.fe mat.w weaning
-  c( 1,   0.86, -0.13,  0.18,   0.74,  -0.15, 0.12,   0,  -0.13,   0.18, 0,   0,           # qual
+  # qual velv   wMale wFemale sk.qual s.sm   s.sf    ls     wsept.m  wsept.fe mat.w weaning
+  c( 1,   0.86, -0.13,  0.18,   0.74,  -0.15, 0.12,   -0.53,  -0.13,   0.18, 0,   0,           # qual
      0.86, 1,     0,     0,      0.55,   0,    0,      0,   0,      0,    0,   0,           # velv
-     -0.13, 0,     1,     0.83,  -0.52,   0.79, 0.77,  -0.5, 0.84,   0.83, 0,   0.3,           # wMale
-     0.18, 0,     0.83,  1,     -0.38,   0.64, 0.8,   -0.5, 0.83,   0.94,-0.2, 0.3,           # wFemale
-     0.74, 0.55, -0.52, -0.38,   1,     -0.55,-0.42,   0,   0,      0,    0,  -0.25,           # sk.qual
-     -0.15, 0,     0.79,  0.64,  -0.55,   1,     0.89,   0,   0.7,    0.7, 0,   0.45,           # sk.size.male
-     0.12, 0,     0.77,  0.8,   -0.42,   0.89,  1,      0,   0.7,    0.7, 0,   0.45,           # sk.size.fema
-     0,    0,    -0.5,  -0.5,    0,      0,     0,      1,  -0.28,  -0.28,0,   0,           # litter.size
+     -0.13, 0,     1,     0.83,  -0.52,   0.79, 0.77,  -0.58, 0.84,   0.83, 0,   0.3,           # wMale
+     0.18, 0,     0.83,  1,     -0.38,   0.64, 0.8,   -0.58, 0.83,   0.94,-0.2, 0.3,           # wFemale
+     0.74, 0.55, -0.52, -0.38,   1,     -0.55,-0.42,   -0.26,   0,      0,    0,  -0.25,           # sk.qual
+     -0.15, 0,     0.79,  0.64,  -0.55,   1,     0.89,   -0.66,   0.7,    0.7, 0,   0.45,           # sk.size.male
+     0.12, 0,     0.77,  0.8,   -0.42,   0.89,  1,      -0.66,   0.7,    0.7, 0,   0.45,           # sk.size.fema
+     -0.53,    0,    -0.58,  -0.58,    -0.26,      -0.66,     -0.66,      1,  -0.28,  -0.28,0,   0,           # litter.size
      -0.13, 0,     0.84,  0.83,   0,      0.7,   0.7,   -0.28,1,      0.83,0,   0.57,           # bw.sept
      0.18, 0,     0.83,  0.94,   0,      0.7,   0.7,   -0.28,0.83,    1,  0,   0.57,           # bw.sept
      0,    0,    0,     -0.2,    0,      0,     0,      0,   0,      0,   1,   0,           # maternal 

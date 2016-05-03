@@ -1,6 +1,6 @@
 RunSimulation <- function (x, year, p) {
   # x = output from gen0
-  stat.crate <- c(0,0,0,0,0,0)
+  stat.crate <- c(0,0,0,0,0,0,0)
   next.gen <- rbindlist(x[1])
   next.gen.males <- rbindlist(x[2])
   if (selection.method == blup) {
@@ -52,10 +52,17 @@ RunSimulation <- function (x, year, p) {
   #
   if (selection.method == blup) {
     kit.list <- MakeKitsGenN(mating.list, pedfile, big.pedfile, year, p)
-    
-  } else if (selection.method == phenotypic) {
+    stat.crate[4] <-nrow(kit.list)
+    kit.list <- RandCull(kit.list)
+    stat.crate[7] <- nrow(kit.list)
+    kit.list <- MaskKits(kit.list)
+    } else if (selection.method == phenotypic) {
     kit.list <- MakeKitsGenN(mating.list, pedfile, pedfile, year, p)
-  }
+    stat.crate[4] <-nrow(kit.list)
+    kit.list <- RandCull(kit.list)
+    stat.crate[7] <- nrow(kit.list)
+    kit.list <- MaskKits(kit.list)
+    }
   if (selection.method == blup) {
     big.pedfile <- WriteBigPedigree (kit.list, big.pedfile, year, p)
     # this makes the big pedigree with all animals in the pedigree
@@ -66,7 +73,6 @@ RunSimulation <- function (x, year, p) {
     #   dirfile[2] <- c(paste("  2  1  1    ",var(next.gen$bw.sept),sep=""))
     # }
     stat.crate[3] <- mean(kit.list$true.sire == kit.list$sire.assumed)
-    stat.crate[4] <-nrow(kit.list)
     # writeLines(dirfile,"reml_bwnov.PAROUT")
     if(trace.ped == 1 ){TracePed(kit.list,next.gen)}
     solutions.littersize <- CalculateBLUPLitterSize ()
@@ -75,7 +81,6 @@ RunSimulation <- function (x, year, p) {
     solutions.qual <- CalculateBLUPQuality ()
   }
   stat.crate[3] <- mean(kit.list$true.sire == kit.list$sire.assumed)
-  stat.crate[4] <-nrow(kit.list)
   kit.list$birthyear.dam <- NULL
   # ############### Selection of next generation    #############
   # # See utility functions for method
@@ -116,7 +121,7 @@ RunSimulation <- function (x, year, p) {
     kit.list <- merge(kit.list, solutions.littersize, by= "id", all.x=TRUE) # merge to solutions of blup of fertility
     kit.list <- merge(kit.list, solutions.bw.nov, by="id", all.x=TRUE)
     kit.list <- merge(kit.list, solutions.qual, by="id", all.x=TRUE)
-    stat <- summaryBy(phenotype.bw.oct ~ sex, data = kit.list, FUN= c(mean))
+    stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
     stat1 <- subset(kit.list, sex==1)#males
     
     cat (
@@ -143,16 +148,19 @@ RunSimulation <- function (x, year, p) {
     stat.crate[4],
     stat.crate[5],
     stat.crate[6],
+    stat.crate[7],
     mean(kit.list$live.qual),
     var(kit.list$live.qual),
     cor(kit.list$blup.qual, kit.list$live.qual),
     cor(kit.list$blup.qual, kit.list$live.score),
     cor(kit.list$blup.qual, kit.list$skin.qual),
+    stat[[1,3]],
+    stat[[2,3]],
     sep = "\t",
     file = con
   )
   } else if (selection.method == phenotypic) {
-    stat <- summaryBy(phenotype.bw.oct ~ sex, data = kit.list, FUN= c(mean))
+    stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
     stat1 <- subset(kit.list, sex==1)#males
     
         cat (
@@ -177,10 +185,11 @@ RunSimulation <- function (x, year, p) {
       stat.crate[4],
       stat.crate[5],
       stat.crate[6],
+      stat.crate[7],
       mean(kit.list$live.qual),
       var(kit.list$live.qual),
-      cor(kit.list$skin.qual, kit.list$blup.qual),
-      cor(kit.list$live.score, kit.list$skin.qual),
+      stat[[1,3]],
+      stat[[2,3]],
       sep = "\t",
       file = con
     )

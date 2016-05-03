@@ -49,6 +49,10 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   # 
   stat.crate[3] <- mean(kit.list$true.sire == kit.list$sire.assumed)
   stat.crate[4] <-nrow(kit.list)
+  kit.list <- RandCull(kit.list)
+  stat.crate[7] <- nrow(kit.list)
+  kit.list <- MaskKits(kit.list)
+  
   pedfile <- MakePedfileGen0(gen0.females,effgen0.males)
   if (selection.method == blup) {
     big.pedfile <- WriteBigPedigree(kit.list, pedfile,year,p)
@@ -77,7 +81,7 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   # ############## First year statistics #######################
   con <- file(description="results",open="a")
   if (selection.method == blup) {
-    stat <- summaryBy(phenotype.bw.oct ~ sex, data = kit.list, FUN= c(mean))
+    stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
     
     cat (
       year, #simulation year
@@ -103,16 +107,19 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       stat.crate[4], # number of kits
       stat.crate[5], # percentages of females mated with "own" male
       stat.crate[6], # number of females mated once
+      stat.crate[7], # survived kits
       mean(kit.list$live.qual), # avg live quality
       var(kit.list$live.qual),  #variance of live quality
       0, # correlation bw blup and gen value live qual
       0,
       0,
+      stat[[1,3]], # skin length phenotype, male
+      stat[[2,3]], # skin length phenotype, female
       sep = "\t",
       file = con
     )  } else if (selection.method == phenotypic) {
-    stat <- summaryBy(phenotype.bw.oct ~ sex, data = kit.list, FUN= c(mean))
-    stat1 <- subset(kit.list, sex==1)#males
+      stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
+      stat1 <- subset(kit.list, sex==1)#males
     cat (
       year,
       mean(mating.list$dam.fert),
@@ -135,8 +142,11 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       stat.crate[4],
       stat.crate[5],
       stat.crate[6],
+      stat.crate[7], # survived kits
       mean(kit.list$live.qual), # avg live quality
       var(kit.list$live.qual),  #variance of live quality
+      stat[[1,3]], # skin length phenotype, male
+      stat[[2,3]],
       sep = "\t",
       file = con
     )

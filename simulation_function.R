@@ -42,8 +42,7 @@ Simulation <- function (
   pr.barren.one.mating.old          = 0.9, # probability of single mated old female being barren
   pr.barren.double.mating.old       = 0.95, # probaility of double mated old female being barren
   n.males =  ceiling( n.females/male.ratio ), # calculates needed amount of males 
-  
-  
+  selection.method = blup,
   ############# Variance settings for traits ###################
   # variance.fertility     =  0.0122738,     # Genetic variance of fertility, live born
   # var.perm.env.ls        =  0.0004464 ,    # Variance of permanent environment of litter size of dam
@@ -89,11 +88,14 @@ Simulation <- function (
     "numb.kits",
     "remating.perc",
     "perc.single.mat",
+    "survived.kits",
     "mean.gen.val.qual",
     "var.gen.val.qual",
     "cor.blup.qual.gen.val.qual",
     "cor.live.score.skin.qa",
     "cor.blup.qual.to.skin.qual",
+    "avg.skin.length.male",
+    "avg.skin.length.female", 
     sep = "\t",
     file = con
   )  } else if (selection.method == phenotypic) {
@@ -120,8 +122,11 @@ Simulation <- function (
       "numb.kits",
       "remating.perc",
       "perc.single.mat",
+      "survived.kits",
       "mean.gen.val.qual",
       "var.gen.val.qual",
+      "avg.skin.length.male",
+      "avg.skin.length.female",
       sep = "\t",
       file = con
     )
