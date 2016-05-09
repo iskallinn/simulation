@@ -51,16 +51,17 @@ RunSimulation <- function (x, year, p) {
   }
   #
   if (selection.method == blup) {
-    kit.list <- MakeKitsGenN(mating.list, pedfile, big.pedfile, year, p)
+    kit.list <- MakeKitsGenN(mating.list, pedfile, big.pedfile, year, p, leg2, t)
     stat.crate[4] <-nrow(kit.list)
     kit.list <- RandCull(kit.list)
     stat.crate[7] <- nrow(kit.list)
     kit.list <- MaskKits(kit.list)
     } else if (selection.method == phenotypic) {
-    kit.list <- MakeKitsGenN(mating.list, pedfile, pedfile, year, p)
+    kit.list <- MakeKitsGenN(mating.list, pedfile, pedfile, year, p, leg2, t)
     stat.crate[4] <-nrow(kit.list)
     kit.list <- RandCull(kit.list)
     stat.crate[7] <- nrow(kit.list)
+    kit.list <- RFI(kit.list, leg2, leg1, t)
     kit.list <- MaskKits(kit.list)
     }
   if (selection.method == blup) {
@@ -75,10 +76,6 @@ RunSimulation <- function (x, year, p) {
     stat.crate[3] <- mean(kit.list$true.sire == kit.list$sire.assumed)
     # writeLines(dirfile,"reml_bwnov.PAROUT")
     if(trace.ped == 1 ){TracePed(kit.list,next.gen)}
-    # solutions.littersize <- CalculateBLUPLitterSize ()
-    # WriteObservationFileBodyWeight (kit.list, year, p, solutions.littersize)
-    # solutions.bw.nov     <- CalculateBLUPBodyWeightNov ()
-    # solutions.qual <- CalculateBLUPQuality ()
     WriteObservations(mating.list, next.gen,next.gen.males,kit.list,year,p)
     solutions <- CalculateBLUP ()
   }
@@ -118,8 +115,8 @@ RunSimulation <- function (x, year, p) {
         j = which(colnames(next.gen) %in% c("obs_fert","dam.age"))  ,
         value = NULL)
   }
-  
-  next.gen <- rbind(next.gen, old.females)
+  next.gen$FI <- NULL
+  next.gen <- rbind(next.gen, old.females, fill = T)
   # # gather up mean number of true sires
   # stat.crate[year+(runcounter -1)*(n+1),1] <- c(mean(kit.list$true.sire == kit.list$sire.assumed))
   # stat.crate[year+(runcounter -1)*(n+1),3] <- nrow(kit.list)
@@ -127,8 +124,7 @@ RunSimulation <- function (x, year, p) {
   if (selection.method == blup) {
     kit.list <- merge(kit.list, solutions, by= "id", all.x=TRUE) # merge to solutions of blup of fertility
     stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
-    stat1 <- subset(kit.list, sex==1)#males
-    
+
     cat (
     year,
     mean(kit.list$litter.size),
@@ -136,11 +132,11 @@ RunSimulation <- function (x, year, p) {
     mean(kit.list$f0),
     mean(mating.list$obs_fert),
     stat[[2,2]],
-    mean(kit.list$bw.oct.male),
+    mean(kit.list$add.gen.bw.m),
     stat[[1,2]],
-    var(kit.list$bw.oct.male),
-    cor(kit.list$bw.oct.male, kit.list$blup.bwnov),
-    cor(stat1$bw.oct.male, stat1$phenotype.bw.oct), #only males
+    var(kit.list$add.gen.bw.m),
+    cor(kit.list$add.gen.bw.m, kit.list$blup.bwnov),
+    cor(stat1$add.gen.bw.m, stat1$phenotype.bw.oct), #only males
     mean(kit.list$skin.length.male),
     var(kit.list$skin.length.male),
     mean(kit.list$skin.qual),
@@ -161,6 +157,7 @@ RunSimulation <- function (x, year, p) {
     cor(kit.list$blup.qual, kit.list$skin.qual),
     stat[[1,3]],
     stat[[2,3]],
+    sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males))*feed.price, # feed usage 
     sep = "\t",
     file = con
   )
@@ -175,10 +172,10 @@ RunSimulation <- function (x, year, p) {
       mean(mating.list$f0.dam),
       mean(mating.list$obs_fert),
       stat[[2,2]], # avg oct weight of females
-      mean(kit.list$bw.oct.male),
+      mean(kit.list$add.gen.bw.m),
       stat[[1,2]], # avg oct weight of males
-      var(kit.list$bw.oct.male),
-      cor(stat1$bw.oct.male, stat1$phenotype.bw.oct),
+      var(kit.list$add.gen.bw.m),
+      cor(stat1$add.gen.bw.m, stat1$phenotype.bw.oct),
       mean(kit.list$skin.length.male),
       var(kit.list$skin.length.male),
       mean(kit.list$skin.qual),
@@ -195,6 +192,7 @@ RunSimulation <- function (x, year, p) {
       var(kit.list$live.qual),
       stat[[1,3]],
       stat[[2,3]],
+      sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males))*feed.price, # feed usage 
       sep = "\t",
       file = con
     )

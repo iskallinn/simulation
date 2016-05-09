@@ -45,12 +45,13 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   # ############### Breeding value of offspring ###############################
   # # put in dam id's and make genetic value of each kit for fertility
   # # see utility functions for bv function
-  kit.list <- MakeKitsGen0(mating.list, effgen0.males,year)
+  kit.list <- MakeKitsGen0(mating.list, effgen0.males,year,leg2)
   # 
   stat.crate[3] <- mean(kit.list$true.sire == kit.list$sire.assumed)
   stat.crate[4] <-nrow(kit.list)
   kit.list <- RandCull(kit.list)
   stat.crate[7] <- nrow(kit.list)
+  kit.list <- RFI(kit.list, leg2, leg1, t)
   kit.list <- MaskKits(kit.list)
   
   pedfile <- MakePedfileGen0(gen0.females,effgen0.males)
@@ -75,6 +76,7 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
     set( old.females, j=which(colnames(old.females) %in%
                                 "f0.dam")  , value=NULL )
   }
+
   next.gen <- rbind(next.gen, old.females,fill=TRUE)
   # # add in next gen and kit.list to big pedigree
   if (selection.method ==blup){
@@ -92,11 +94,11 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       0, #avg inbreeding
       mean(mating.list$obs_fert), #observed fertility
       stat[[2,2]], #avg phenotype, october females
-      mean(kit.list$bw.oct.male), #avg gen val oct weight
+      mean(kit.list$add.gen.bw.m), #avg gen val oct weight
       stat[[1,2]], #avg phenotype oct males
-      var(kit.list$bw.oct.male), #variance oct weight
+      var(kit.list$add.gen.bw.m), #variance oct weight
       0, #correlation bw blup and phenotype
-      cor(kit.list$bw.oct.male, kit.list$phenotype.bw.oct), #correlation bw phenotype and genetic value
+      cor(kit.list$add.gen.bw.m, kit.list$phenotype.bw.oct), #correlation bw phenotype and genetic value
       mean(kit.list$skin.length.male), # avg genetic value for skin length
       var(kit.list$skin.length.male),  # var of skin length
       mean(kit.list$skin.qual), # avg genetic value of skin qual
@@ -117,6 +119,7 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       0,
       stat[[1,3]], # skin length phenotype, male
       stat[[2,3]], # skin length phenotype, female
+      sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
       sep = "\t",
       file = con
     )  } else if (selection.method == phenotypic) {
@@ -129,10 +132,10 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       0,
       mean(mating.list$obs_fert),
       stat[[2,2]],
-      mean(kit.list$bw.oct.male),
+      mean(kit.list$add.gen.bw.m),
       stat[[1,2]],
-      var(kit.list$bw.oct.male),
-      cor(stat1$bw.oct.male, stat1$phenotype.bw.oct),
+      var(kit.list$add.gen.bw.m),
+      cor(stat1$add.gen.bw.m, stat1$phenotype.bw.oct),
       mean(kit.list$skin.length.male),
       var(kit.list$skin.length.male),
       mean(kit.list$skin.qual),
@@ -149,6 +152,7 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       var(kit.list$live.qual),  #variance of live quality
       stat[[1,3]], # skin length phenotype, male
       stat[[2,3]],
+      sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males))*feed.price, # feed usage 
       sep = "\t",
       file = con
     )

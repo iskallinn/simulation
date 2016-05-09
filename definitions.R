@@ -41,6 +41,7 @@ intensity.remating <- 0.2      # this controls how many males are chosen not to 
 # selection = truncation,  no selection = next gen is chosen at random
 make.obs.file <- 1 # 1 = make observation file, 0 otherwise
 use.true.sire <- 0 # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
+feed.price    <- 70 # feed price per kg feed
 ############# Mean settings for traits   #####################
 mean.body.size.male.oct <- 3750
 mean.body.size.female.oct <- 1960
@@ -79,19 +80,19 @@ cull.ratio                       <- 0.825 # survival rate of kits, farmwise from
 variance.fertility     <-  0.0122738     # Genetic variance of fertility, live born
 var.perm.env.ls        <-  0.0004464     # Variance of permanent environment of litter size of dam
 # october body weight
-var.bw.oct.female      <-  36198         # Genetic variance of body size, direct effect 
-var.bw.oct.male        <-  121036         # from hansen et al 1992, ass h^2 = 0.51
-var.c.bw.oct.male      <-  35977          # common env. from hansen et al 1992, ass c^2 = 0.068
-var.c.bw.oct.female    <-  10295          # from hansen et al 1992, ass c^2 = 0.068
-var.res.bw.oct.female  <-  36818          # from hansen et al 1992, ass c^2 andh^2 as above
-var.res.bw.oct.male    <-  96300         # from hansen et al 1992, ass c^2 andh^2 as above
+# var.bw.oct.female      <-  36198         # Genetic variance of body size, direct effect 
+# var.bw.oct.male        <-  121036         # from hansen et al 1992, ass h^2 = 0.51
+# var.c.bw.oct.male      <-  35977          # common env. from hansen et al 1992, ass c^2 = 0.068
+# var.c.bw.oct.female    <-  10295          # from hansen et al 1992, ass c^2 = 0.068
+# var.res.bw.oct.female  <-  36818          # from hansen et al 1992, ass c^2 andh^2 as above
+# var.res.bw.oct.male    <-  96300         # from hansen et al 1992, ass c^2 andh^2 as above
 # september body weight
-var.bw.sept.female      <-  7101         # from hansen et al 1992, ass h^2 = 0.51
-var.bw.sept.male        <-  22705        # from hansen et al 1992, ass h^2 = 0.51
-var.c.bw.sept.male      <-  3027         # from hansen et al 1992, ass c^2 = 0.068
-var.c.bw.sept.female    <-  947          # from hansen et al 1992, ass c^2 = 0.068
-var.res.bw.sept.female  <-  5876         # from hansen et al 1992, ass c^2 andh^2 as above
-var.res.bw.sept.male    <-  18788        # from hansen et al 1992, ass c^2 andh^2 as above
+# var.bw.sept.female      <-  7101         # from hansen et al 1992, ass h^2 = 0.51
+# var.bw.sept.male        <-  22705        # from hansen et al 1992, ass h^2 = 0.51
+# var.c.bw.sept.male      <-  3027         # from hansen et al 1992, ass c^2 = 0.068
+# var.c.bw.sept.female    <-  947          # from hansen et al 1992, ass c^2 = 0.068
+# var.res.bw.sept.female  <-  5876         # from hansen et al 1992, ass c^2 andh^2 as above
+# var.res.bw.sept.male    <-  18788        # from hansen et al 1992, ass c^2 andh^2 as above
 # quality variances
 var.live.qual.gen       <- 0.12
 var.live.qual.res       <- 0.41
@@ -111,71 +112,29 @@ var.skin.length.female  <- 8.94
 var.skin.length.c.female<- 1.49
 var.skin.length.res.female <- 9.29
 # maternal effect
-var.maternal.male       <- 26
-var.maternal.female     <- 16
+# var.maternal.male       <- 26
+# var.maternal.female     <- 16
 # weaning weight
-mean.bw.june.male          <- 685
-mean.bw.june.female        <- 534
-var.bw.june.male       <- 45.15
-var.bw.june.female     <- 28
-var.bw.june.c.male         <- 34.83
-var.bw.june.c.female       <- 21.6
-var.bw.june.res.male       <- 23.22
-var.bw.june.res.female     <- 14.4
+# mean.bw.june.male          <- 685
+# mean.bw.june.female        <- 534
+# var.bw.june.male       <- 45.15
+# var.bw.june.female     <- 28
+# var.bw.june.c.male         <- 34.83
+# var.bw.june.c.female       <- 21.6
+# var.bw.june.res.male       <- 23.22
+# var.bw.june.res.female     <- 14.4
 
 
 # misc
 roof.body.size          <-  2400          # Maximum body weight of females to be allowed for selection
 bw.eff.damage           <-  34.5          # effect of dam age on weight of males
-############# (Co)Variance matrix ############################
-# sigma <-  matrix( 
-#   c(1, -0.5, -0.5, 1), # genetic correlations of traits
-#   nrow=2, 
-#   ncol=2) 
-# colnames(sigma) <- c("bw.oct","litter.size")
-# rownames(sigma)<- c("bw.oct","litter.size")
 
-# bigger sigma matrix for more traits
-# values are found in "Correlation between the development of mink kits in the
-# lactation and growth perios, correlations to fur properties and heritability
-# estimation, by Hansen, Lohi & Berg, 1992
-# sigma <- matrix(
-#   c(  1,    0.84, -0.5, -0.08,   -0.41,  0.73,
-#       0.84,  1,    -0.28,   0,     -0.4,   0.7,
-#       -0.5, -0.28,   1,     0,      0,     0,
-#       -0.08, 0,     0,     1,      0.6,   0,
-#       -0.41, -0.4, 0,     0.6,     1,     0,
-#       0.73,  0.7,  0,     0,       0,     1),
-#   nrow=6, ncol=6, dimnames= list(c("bw.oct", "bw.sept", "litter.size", 
-#                                    "live.qual", "skin.qual", "skin.length" ),
-#                                  c("bw.oct", "bw.sept", "litter.size", "live.qual", "skin.qual", "skin.length" )))
-
-# sigma.new <- matrix( 
-#   # qual velv   wMale wFemale sk.qual s.sm   s.sf    ls     wsept.m  wsept.fe mat.w weaning
-#   c( 1,   0.86, -0.13,  0.18,   0.74,  -0.15, 0.12,   -0.53,  -0.13,   0.18, 0,   0,           # qual
-#      0.86, 1,     0,     0,      0.55,   0,    0,      0,   0,      0,    0,   0,           # velv
-#      -0.13, 0,     1,     0.83,  -0.52,   0.79, 0.77,  -0.58, 0.84,   0.83, 0,   0.3,           # wMale
-#      0.18, 0,     0.83,  1,     -0.38,   0.64, 0.8,   -0.58, 0.83,   0.94,-0.2, 0.3,           # wFemale
-#      0.74, 0.55, -0.52, -0.38,   1,     -0.55,-0.42,   -0.26,   0,      0,    0,  -0.25,           # sk.qual
-#      -0.15, 0,     0.79,  0.64,  -0.55,   1,     0.89,   -0.66,   0.7,    0.7, 0,   0.45,           # sk.size.male
-#      0.12, 0,     0.77,  0.8,   -0.42,   0.89,  1,      -0.66,   0.7,    0.7, 0,   0.45,           # sk.size.fema
-#      -0.53,    0,    -0.58,  -0.58,    -0.26,      -0.66,     -0.66,      1,  -0.28,  -0.28,0,   0,           # litter.size
-#      -0.13, 0,     0.84,  0.83,   0,      0.7,   0.7,   -0.28,1,      0.83,0,   0.57,           # bw.sept
-#      0.18, 0,     0.83,  0.94,   0,      0.7,   0.7,   -0.28,0.83,    1,  0,   0.57,           # bw.sept
-#      0,    0,    0,     -0.2,    0,      0,     0,      0,   0,      0,   1,   0,           # maternal 
-#      0,    0,    0.3,    0.3,   -0.25,   0.45,  0.45,   0,   0.57,   0.57,0,   1              # weaning 
-#      
-#   ), nrow=12, ncol=12,byrow=TRUE,
-#   list(c("live.qual", "h.length", "bw.oct.male", "bw.oct.female", "skin.qual", "skin.length.male",
-#          "skin.length.female", "litter.size", "bw.sept.male", "bw.sept.female", "bw.june.maternal","bw.june"),
-#        c("live.qual", "h.length", "bw.oct.male", "bw.oct.female", "skin.qual", "skin.length.male",
-#          "skin.length.female", "litter.size", "bw.sept.male", "bw.sept.female", "bw.june.maternal","bw.june")
-#   ))
 ################# RR parameters ###################
 
 G_BWF <- as.matrix(read.table("G_BWF.txt"))
 P_BWF <- as.matrix(read.table("P_BWF.txt"))
 P_BWM <- as.matrix(read.table("P_BWM.txt"))
+P_RFI <- as.matrix(read.table("P_RFI.txt"))
 # new sigma matrix
 G_sigma <- as.matrix(read.table("G_sigma.txt"),header=T, row.names = 1)
 # make a vector of the variances to quicken calculations later
@@ -203,6 +162,14 @@ pe.var.bw.male <-
   c(0.140998088558170E-01, 0.310587884472959E-02, 0.721913463410233E-03)
 bw.res.male <- as.matrix(read.table(file="RES_BWM.txt"))
 bw.res.female <- as.matrix(read.table(file="RES_BWF.txt"))
+pe.var.rfi <- c(
+  0.686214714336812,
+  0.744536664027022 ,
+  0.660456914599594, 
+  0.467616097053697 
+)
+
+FR.RFI <- c(15.4, 11.1) # this is the adjusted fixed regression from Shirali et. al (2016)
 
 # function to make standardized time, kept here since this is sourced before the functions
 StandardTime <- function (t) {
@@ -212,10 +179,15 @@ StandardTime <- function (t) {
 # solutions for fixed regression BW
 FR.females <- c(1, 0.3, -0.12)
 FR.males <- c(1, .94, 1.05)
-# 2nd order legendre polynomials
-leg2 <- legendre.polynomials(2, normalized = T)
-q <- as.matrix(as.data.frame(polynomial.values(polynomials = leg2, x =t)))
 # standardized time vector for use in bw and rfi
 t <- c(63,84,105,126,147,168,189,210)
 t <- StandardTime(t)
 t <- t[3:8]
+# 2nd order legendre polynomials
+leg2 <- legendre.polynomials(2, normalized = T)
+leg1 <- legendre.polynomials(1, normalized = T)
+
+######### regression coefficients
+b.bw.male   <- 1.86
+b.bw.female <- 1.43
+res.rfi <-  as.matrix(read.table("RES_RFI.txt"))/2

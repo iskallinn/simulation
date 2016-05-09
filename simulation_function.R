@@ -96,6 +96,7 @@ Simulation <- function (
     "cor.blup.qual.to.skin.qual",
     "avg.skin.length.male",
     "avg.skin.length.female", 
+    "feed.per.skin",
     sep = "\t",
     file = con
   )  } else if (selection.method == phenotypic) {
@@ -127,6 +128,7 @@ Simulation <- function (
       "var.gen.val.qual",
       "avg.skin.length.male",
       "avg.skin.length.female",
+      "feed per skin",
       sep = "\t",
       file = con
     )
