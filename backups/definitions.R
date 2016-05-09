@@ -24,9 +24,9 @@ trace.ped <- 0
 mask.phenotypes <- 1 # 0 no masking, 1 mask phenotypes of kits from small litters
 sept <- 1 # weigh kits in september
 oct <- 0  # weigh kits in october
-use.blup.to.assort.mat <- 0 # if 1 then the males and females will be sorted on 
+use.blup.to.assort.mat <- 1 # if 1 then the males and females will be sorted on 
 #their combined index before mating
-use.comb.ind.for.males <- 0 # if 1 then the usage of the males will depend on 
+use.comb.ind.for.males <- 1 # if 1 then the usage of the males will depend on 
 # their combined index, not quality
 result <- "test"
 ############### Controls for simulation ############

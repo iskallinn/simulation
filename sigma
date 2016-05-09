@@ -1,0 +1,13 @@
+"live.qual" "h.length" "bw.oct.male" "bw.oct.female" "skin.qual" "skin.length.male" "skin.length.female" "litter.size" "bw.sept.male" "bw.sept.female" "bw.june.maternal" "bw.june"
+"live.qual" 1 0.86 -0.13 0.18 0.74 -0.15 0.12 -0.53 -0.13 0.18 0 0
+"h.length" 0.86 1 0 0 0.55 0 0 0 0 0 0 0
+"bw.oct.male" -0.13 0 1 0.83 -0.52 0.79 0.77 -0.58 0.84 0.83 0 0.3
+"bw.oct.female" 0.18 0 0.83 1 -0.38 0.64 0.8 -0.58 0.83 0.94 -0.2 0.3
+"skin.qual" 0.74 0.55 -0.52 -0.38 1 -0.55 -0.42 -0.26 0 0 0 -0.25
+"skin.length.male" -0.15 0 0.79 0.64 -0.55 1 0.89 -0.66 0.7 0.7 0 0.45
+"skin.length.female" 0.12 0 0.77 0.8 -0.42 0.89 1 -0.66 0.7 0.7 0 0.45
+"litter.size" -0.53 0 -0.58 -0.58 -0.26 -0.66 -0.66 1 -0.28 -0.28 0 0
+"bw.sept.male" -0.13 0 0.84 0.83 0 0.7 0.7 -0.28 1 0.83 0 0.57
+"bw.sept.female" 0.18 0 0.83 0.94 0 0.7 0.7 -0.28 0.83 1 0 0.57
+"bw.june.maternal" 0 0 0 -0.2 0 0 0 0 0 0 1 0
+"bw.june" 0 0 0.3 0.3 -0.25 0.45 0.45 0 0.57 0.57 0 1
