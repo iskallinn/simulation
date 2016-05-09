@@ -56,7 +56,9 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   pedfile <- MakePedfileGen0(gen0.females,effgen0.males)
   if (selection.method == blup) {
     big.pedfile <- WriteBigPedigree(kit.list, pedfile,year,p)
-    WriteObservationFileBodyWeight (kit.list, year,p)}
+    # WriteObservationFileBodyWeight (kit.list, year,p)
+    WriteObservations(mating.list, gen0.females,effgen0.males,kit.list,year,p)
+    }
   kit.list$birthyear.dam <- NULL
   # # At this point I think it is safe to delete some stuff from memory
   # # Note that I skip the construction of pedfile1 here. I don't think it is needed. Will check on that later

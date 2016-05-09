@@ -145,5 +145,5 @@ Simulation <- function (
     # print("reached end", p)
     
   }
-  
+  closeAllConnections()
 }

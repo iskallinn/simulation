@@ -381,6 +381,7 @@ mate <- function (x, y, year) {
     x$comb.ind <- 0
   } else if( selection.method == phenotypic) {
     x$comb.ind <- 0
+    y[sample(nrow(y)),]
     
   }
   mating.list <-
@@ -637,9 +638,10 @@ mate <- function (x, y, year) {
   # here I should reorder the dams that are leftovers to prioritize younger dams and the ones mated with shitty males
   setkey(mating.list.leftover, dam.id)
   if (year >2 & use.blup.to.assort.mat == 1 & selection.method ==blup) {
-    setorder(mating.list.leftover, -comb.ind)
+    # setorder(mating.list.leftover, -comb.ind)
   } else if (use.blup.to.assort.mat == 0) {
-    setorder(mating.list.leftover, -birthyear.dam, -dam.live.score)}
+    # setorder(mating.list.leftover, -birthyear.dam, -dam.live.score)
+    }
   myvars <- c("dam.id",
               "sire.id.2nd",
               "semen.quality.2nd",
@@ -1938,6 +1940,12 @@ MakeKitsGenN <- function (x,y,z,year,p) { #x = mating.list, y = pedfile, z = big
                            kit.list$sire.bw.june.maternal.2nd, kit.list$sire.bw.june.maternal.1st)
                   
   )]
+  kit.list$sire.id.2nd <-
+    ifelse(
+      kit.list$sire.id.2nd == 0,
+      kit.list$sire.id.1st,
+      kit.list$sire.id.2nd
+    )
   
   setnames(kit.list, "sire.id.2nd", "sire.assumed")
   pedfile1 <- rbind(y, # orginal pedfile
@@ -2640,7 +2648,6 @@ MaskKits <- function (kitlist) {
   
   return(kitlist)
 }
-
 ############ Random Culling ##############
 # random culling is implemented since survival is not very heritable and a lot of effort
 # TODO make more variability in 
@@ -2650,3 +2657,4 @@ RandCull <- function (kitlist) {
   return(kitlist)
 }
 
+ 
