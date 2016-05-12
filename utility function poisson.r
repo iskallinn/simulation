@@ -35,7 +35,7 @@ GenerateBaseFemales <- function (leg2,t) {
     rbinom(n.females, 1, mating.will.yearling.1st)
   mating.will.2nd.round <- numeric(n.females)
   perm.env.bw <- rmvnorm(n.females, sigma = P_BWF,method="svd" )
-  perm.env.bw <- t(t(perm.env.bw)*pe.var.bw.female)
+  perm.env.bw <- t(t(perm.env.bw)*sqrt(pe.var.bw.female))
   colnames(perm.env.bw) <- c("pe1.bw.f", "pe2.bw.f", "pe3.bw.f")
   #create breeding value of fertility for females
   
@@ -188,7 +188,7 @@ GenerateBaseMales <- function (leg2,t) {
   birthyear          <-  numeric( n.males ) 
   can.remate         <-  rep(0,times=n.males) 
   perm.env.bw <- rmvnorm(n.males, sigma = P_BWM,method="svd" )
-  perm.env.bw <- t(t(perm.env.bw)*pe.var.bw.male)
+  perm.env.bw <- t(t(perm.env.bw)*sqrt(pe.var.bw.male))
   colnames(perm.env.bw) <- c("pe1.bw.f", "pe2.bw.f", "pe3.bw.f")
   
   
@@ -2513,8 +2513,8 @@ WriteObservations <- function (mating.list, next.gen, next.gen.males,kit.list,ye
   temp <- next.gen.males[, c("id","dam.id", "phenotype.bw.oct", "live.score", "dam.age","sex", "birthyear", "obs_fert","own_littersize"),with=F]
   writefile <- rbind(writefile, temp) #rbind the males first
   if (year >1) { # this is to "remove" the body weight and quality measurement for females so they do not appear twice
-    writefile$phenotype.bw.oct <- as.integer(-9999)
-    writefile$live.score <- as.integer(-9999)
+    # writefile$phenotype.bw.oct <- as.integer(-9999)
+    # writefile$live.score <- as.integer(-9999)
     
   }
   kit.list[,`:=`(dam.age= as.integer(0),obs_fert = as.integer(-9999))] 
@@ -2537,11 +2537,6 @@ WriteObservations <- function (mating.list, next.gen, next.gen.males,kit.list,ye
   
 }
 
-# WriteObservationFileQuality <- function (kit.list, year, p, solutions) {
-#   x[, c("id")
-#     :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("id")]
-#   
-# }
 ############### Make kit.list big.pedfile ##################################
 WriteBigPedigree <- function (x,y,year,p) { # x = kit.list or kit.list , y = pedfile, year = year
   if (year == 1){
@@ -2643,14 +2638,25 @@ RandCull <- function (kitlist) {
    const.m <- q %*% FR.males
    const.f <- 0.9 + q %*% FR.females # this 0.9 is to get the body weight to a "realistic" level
    
-   # this step makes the 6 needed BW for the RFI
+   # this step makes the 6 needed BW for the RFI 
+   # note the commented version has permanent environment 
+   # temp[,`:=`( 
+   #   phenotype.bw.oct = ifelse(sex==1, const.m[6] + bw1_m*q[[6,1]]+bw2_m*q[[6,2]]+bw3_m*q[[6,3]]+
+   #                               pe1.bw.m*q[[6,1]]+pe2.bw.m*q[[6,2]]+pe3.bw.m*q[[6,3]]+rnorm(nrow(temp))*sqrt(bw.res.male[8]),
+   #                             const.f[6] + bw1_f*q[[6,1]]+bw2_f*q[[6,2]]+bw3_f*q[[6,3]]+
+   #                               pe1.bw.f*q[[6,1]]+pe2.bw.f*q[[6,2]]+pe3.bw.f*q[[6,3]]+rnorm(nrow(temp))*sqrt(bw.res.female[8])),
+   #   perm.env = ifelse( sex == 1, pe1.bw.m*q[[6,1]]+pe2.bw.m*q[[6,2]]+pe3.bw.m*q[[6,3]], pe1.bw.f*q[[6,1]]+pe2.bw.f*q[[6,2]]+pe3.bw.f*q[[6,3]])
+   #   
+   # )]  
    temp[,`:=`( 
      phenotype.bw.oct = ifelse(sex==1, const.m[6] + bw1_m*q[[6,1]]+bw2_m*q[[6,2]]+bw3_m*q[[6,3]]+
-                                 pe1.bw.m*q[[6,1]]+pe2.bw.m*q[[6,2]]+pe3.bw.m*q[[6,3]]+rnorm(nrow(temp))*sqrt(bw.res.male[7]),
+                                 rnorm(nrow(temp))*sqrt(bw.res.male[8]),
                                const.f[6] + bw1_f*q[[6,1]]+bw2_f*q[[6,2]]+bw3_f*q[[6,3]]+
-                                 pe1.bw.f*q[[6,1]]+pe2.bw.f*q[[6,2]]+pe3.bw.f*q[[6,3]]+rnorm(nrow(temp))*sqrt(bw.res.female[7]))
+                                 rnorm(nrow(temp))*sqrt(bw.res.female[8])),
+     perm.env = ifelse( sex == 1, pe1.bw.m*q[[6,1]]+pe2.bw.m*q[[6,2]]+pe3.bw.m*q[[6,3]], pe1.bw.f*q[[6,1]]+pe2.bw.f*q[[6,2]]+pe3.bw.f*q[[6,3]])
      
    )]  
+   
    temp <- temp[,c("id","sex","phenotype.bw.oct"),with=F]
    temp <- merge(temp, 
                  kit.list[,
@@ -2679,7 +2685,7 @@ RandCull <- function (kitlist) {
    kit.list <- merge(kit.list,temp[,c("id",
                                       "phenotype.bw.oct",
                                       "FI"), with=FALSE], by="id")
-   kit.list$phenotype.bw.oct <- kit.list$phenotype.bw.oct*1000
+   # kit.list$phenotype.bw.oct <- kit.list$phenotype.bw.oct*1000
    set( kit.list, j=which(colnames(kit.list) %in% 
                      c("pe1.rfi.m",
                        "pe2.rfi.m",
@@ -2695,3 +2701,43 @@ RandCull <- function (kitlist) {
    
    return(kit.list) 
  }
+ 
+ WriteObservationFileBodyWeight <- function (x,year,p) {
+   inter <- as.integer(rep(1, times=nrow(x))) # intercept for the quality regression
+   x<- cbind(x, inter)
+   x[, c("id","dam.id","sex")
+     :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("id","dam.id","sex")]
+   # x[,`:=`(prodyear=as.integer(ifelse( sex == 1, year*(sex+6),year*(sex+8))))]
+   # NOTE if simulation runs to 81 years, then year*sex will be the same for year 63 for dams and 81 for males
+   if (year  == 1 ) {test <- file(description = paste("Test",p, sep=""), open="w")
+   if (weighing.method == oct){
+     x[, c("id","dam.id","own_littersize","sex","inter")
+       :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("id","dam.id","own_littersize","sex","inter")]
+     
+     write.table(format(x[,.(id,dam.id,sex,inter,phenotype.bw.oct)], nsmall=1, digits=2), 
+                 file= test, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
+   } else if (weighing.method == sept ) {
+     x[, c("id","dam.id","own_littersize","sex","inter")
+       :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("id","dam.id","own_littersize","sex","inter")]
+     
+     write.table(format(x[,.(id,dam.id,sex,inter,phenotype.bw.sept)], nsmall=1, digits=2), 
+                 file= test, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
+   }
+   close(con=test)
+   } else if (year > 1) {
+     x[, c("id","dam.id","own_littersize","sex","inter")
+       :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("id","dam.id","own_littersize","sex","inter")]
+     
+     test <- file(description = paste("Test",p, sep=""), open="a")
+     if (weighing.method == oct){
+       write.table(format(x[,.(id,dam.id,sex,inter,phenotype.bw.oct)], nsmall=1, digits=2), 
+                   file= test, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
+     } else if (weighing.method == sept ) {
+       write.table(format(x[,.(id,dam.id,sex,inter,phenotype.bw.sept)], nsmall=1, digits=2), 
+                   file= test, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
+     }
+     close(con=test)
+     
+   }
+ }
+ 

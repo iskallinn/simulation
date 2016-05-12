@@ -161,7 +161,9 @@ pe.var.bw.female <- c(0.463272591471770E-02, 0.110671108702861E-02, 0.2952901732
 pe.var.bw.male <-
   c(0.140998088558170E-01, 0.310587884472959E-02, 0.721913463410233E-03)
 bw.res.male <- as.matrix(read.table(file="RES_BWM.txt"))
+bw.res.male[8] <- bw.res.male[8] *32 # this is the adjustment needed to get the proper heritability
 bw.res.female <- as.matrix(read.table(file="RES_BWF.txt"))
+bw.res.female[8] <- bw.res.female[8]*54 # this is the adjustment needed to get the proper heritability
 pe.var.rfi <- c(
   0.686214714336812,
   0.744536664027022 ,

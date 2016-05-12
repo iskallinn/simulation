@@ -59,6 +59,8 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
     big.pedfile <- WriteBigPedigree(kit.list, pedfile,year,p)
     # WriteObservationFileBodyWeight (kit.list, year,p)
     WriteObservations(mating.list, gen0.females,effgen0.males,kit.list,year,p)
+    WriteObservationFileBodyWeight(kit.list, year,p)
+    
     }
   kit.list$birthyear.dam <- NULL
   # # At this point I think it is safe to delete some stuff from memory
@@ -86,6 +88,7 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   con <- file(description="results",open="a")
   if (selection.method == blup) {
     stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
+    stat1 <- subset(kit.list, sex==1)#males
     
     cat (
       year, #simulation year
@@ -98,7 +101,7 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       stat[[1,2]], #avg phenotype oct males
       var(kit.list$add.gen.bw.m), #variance oct weight
       0, #correlation bw blup and phenotype
-      cor(kit.list$add.gen.bw.m, kit.list$phenotype.bw.oct), #correlation bw phenotype and genetic value
+      cor(stat1$add.gen.bw.m, stat1$phenotype.bw.oct), #correlation bw phenotype and genetic value
       mean(kit.list$skin.length.male), # avg genetic value for skin length
       var(kit.list$skin.length.male),  # var of skin length
       mean(kit.list$skin.qual), # avg genetic value of skin qual
@@ -120,6 +123,8 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       stat[[1,3]], # skin length phenotype, male
       stat[[2,3]], # skin length phenotype, female
       sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
+      var(subset(kit.list, sex==1)$perm.env),
+      var(subset(kit.list, sex==2)$add.gen.bw.f),
       sep = "\t",
       file = con
     )  } else if (selection.method == phenotypic) {
@@ -153,6 +158,8 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       stat[[1,3]], # skin length phenotype, male
       stat[[2,3]],
       sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males))*feed.price, # feed usage 
+      var(subset(kit.list, sex==1)$perm.env),
+      var(subset(kit.list, sex==2)$add.gen.bw.f),
       sep = "\t",
       file = con
     )
