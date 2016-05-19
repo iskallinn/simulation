@@ -56,7 +56,7 @@ RunSimulation <- function (x, year, p) {
     kit.list <- RandCull(kit.list)
     stat.crate[7] <- nrow(kit.list)
     kit.list <- RFI(kit.list, leg2, leg1, t)
-    
+    kit.list.nomasked <- kit.list
     kit.list <- MaskKits(kit.list)
     } else if (selection.method == phenotypic) {
     kit.list <- MakeKitsGenN(mating.list, pedfile, pedfile, year, p, leg2, t)
@@ -64,6 +64,7 @@ RunSimulation <- function (x, year, p) {
     kit.list <- RandCull(kit.list)
     stat.crate[7] <- nrow(kit.list)
     kit.list <- RFI(kit.list, leg2, leg1, t)
+    kit.list.nomasked <- kit.list
     kit.list <- MaskKits(kit.list)
     }
   if (selection.method == blup) {
@@ -79,8 +80,8 @@ RunSimulation <- function (x, year, p) {
     # writeLines(dirfile,"reml_bwnov.PAROUT")
     if(trace.ped == 1 ){TracePed(kit.list,next.gen)}
     WriteObservations(mating.list, next.gen,next.gen.males,kit.list,year,p)
-    WriteObservationFileBodyWeight(kit.list, year,p)
-    solutions <- CalculateBLUP ()
+    WriteMBLUPObservations(mating.list, next.gen, next.gen.males, kit.list, year,p)
+        solutions <- CalculateBLUP ()
   }
   stat.crate[3] <- mean(kit.list$true.sire == kit.list$sire.assumed)
   kit.list$birthyear.dam <- NULL
@@ -120,6 +121,7 @@ RunSimulation <- function (x, year, p) {
   }
   next.gen$FI <- NULL
   next.gen <- rbind(next.gen, old.females, fill = T)
+  kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males)
   # # gather up mean number of true sires
   # stat.crate[year+(runcounter -1)*(n+1),1] <- c(mean(kit.list$true.sire == kit.list$sire.assumed))
   # stat.crate[year+(runcounter -1)*(n+1),3] <- nrow(kit.list)
@@ -138,14 +140,14 @@ RunSimulation <- function (x, year, p) {
     stat[[2,2]],
     mean(kit.list$add.gen.bw.m),
     stat[[1,2]],
-    var(kit.list$add.gen.bw.m),
-    cor(kit.list$add.gen.bw.m, kit.list$blup.bwnov),
+    var(kit.list$add.gen.bw.m,na.rm=T),
+    cor(kit.list$add.gen.bw.m, kit.list$blup.bwnov,use="complete"),
     cor(stat1$add.gen.bw.m, stat1$phenotype.bw.oct), #only males
     mean(kit.list$skin.length.male),
     var(kit.list$skin.length.male),
     mean(kit.list$skin.qual),
     var(kit.list$skin.qual),
-    cor(kit.list$blup.fert, kit.list$litter.size),
+    cor(kit.list$blup.fert, kit.list$litter.size, use="complete"),
     cor(kit.list$own_littersize, kit.list$litter.size),
     stat.crate[1],
     stat.crate[2],
@@ -156,14 +158,14 @@ RunSimulation <- function (x, year, p) {
     stat.crate[7],
     mean(kit.list$live.qual),
     var(kit.list$live.qual),
-    cor(kit.list$blup.qual, kit.list$live.qual),
-    cor(kit.list$blup.qual, kit.list$live.score),
-    cor(kit.list$blup.qual, kit.list$skin.qual),
+    cor(kit.list$blup.qual, kit.list$live.qual, use="complete"),
+    cor(kit.list$blup.qual, kit.list$live.score, use="complete"),
+    cor(kit.list$blup.qual, kit.list$skin.qual, use="complete"),
     stat[[1,3]],
     stat[[2,3]],
-    sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males))*feed.price, # feed usage 
-    var(subset(kit.list, sex==1)$perm.env),
-    var(subset(kit.list, sex==2)$add.gen.bw.f),
+    #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
+    sum(kit.list$FI)/n.females,
+    sum(kit.list$skin.price, na.rm =T)/n.females,
     sep = "\t",
     file = con
   )
@@ -198,9 +200,9 @@ RunSimulation <- function (x, year, p) {
       var(kit.list$live.qual),
       stat[[1,3]],
       stat[[2,3]],
-      sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males))*feed.price, # feed usage 
-      var(subset(kit.list, sex==1)$perm.env),
-      var(subset(kit.list, sex==2)$add.gen.bw.f),
+      #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
+      sum(kit.list$FI)/n.females,
+      sum(kit.list$skin.price, na.rm =T)/n.females,
       sep = "\t",
       file = con
     )

@@ -8,12 +8,12 @@ library(orthopolynom) # for the random regression model for BW and RFI
 
 ############## Index weights ############
 # weights must sum to 1
-weight.fert.old.females <- 0.40
-weight.bw.old.females   <- 0.20
-weight.qual.old.females <- 0.40
-weight.fert.kits        <- 0.40
-weight.bw.kits          <- 0.20
-weight.qual.kits        <- 0.40
+weight.fert.old.females <- 1
+weight.bw.old.females   <- 0
+weight.qual.old.females <- 0
+weight.fert.kits        <- 1
+weight.bw.kits          <- 0
+weight.qual.kits        <- 0
 ##############Switches, best left alone ###########
 assortative <- 1
 random <- 0
@@ -41,7 +41,8 @@ intensity.remating <- 0.2      # this controls how many males are chosen not to 
 # selection = truncation,  no selection = next gen is chosen at random
 make.obs.file <- 1 # 1 = make observation file, 0 otherwise
 use.true.sire <- 0 # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
-feed.price    <- 70 # feed price per kg feed
+feed.price    <- 2.85 # feed price per kg feed
+use.MBLUP     <-  1
 ############# Mean settings for traits   #####################
 mean.body.size.male.oct <- 3750
 mean.body.size.female.oct <- 1960
@@ -79,20 +80,6 @@ cull.ratio                       <- 0.825 # survival rate of kits, farmwise from
 # fertility
 variance.fertility     <-  0.0122738     # Genetic variance of fertility, live born
 var.perm.env.ls        <-  0.0004464     # Variance of permanent environment of litter size of dam
-# october body weight
-# var.bw.oct.female      <-  36198         # Genetic variance of body size, direct effect 
-# var.bw.oct.male        <-  121036         # from hansen et al 1992, ass h^2 = 0.51
-# var.c.bw.oct.male      <-  35977          # common env. from hansen et al 1992, ass c^2 = 0.068
-# var.c.bw.oct.female    <-  10295          # from hansen et al 1992, ass c^2 = 0.068
-# var.res.bw.oct.female  <-  36818          # from hansen et al 1992, ass c^2 andh^2 as above
-# var.res.bw.oct.male    <-  96300         # from hansen et al 1992, ass c^2 andh^2 as above
-# september body weight
-# var.bw.sept.female      <-  7101         # from hansen et al 1992, ass h^2 = 0.51
-# var.bw.sept.male        <-  22705        # from hansen et al 1992, ass h^2 = 0.51
-# var.c.bw.sept.male      <-  3027         # from hansen et al 1992, ass c^2 = 0.068
-# var.c.bw.sept.female    <-  947          # from hansen et al 1992, ass c^2 = 0.068
-# var.res.bw.sept.female  <-  5876         # from hansen et al 1992, ass c^2 andh^2 as above
-# var.res.bw.sept.male    <-  18788        # from hansen et al 1992, ass c^2 andh^2 as above
 # quality variances
 var.live.qual.gen       <- 0.12
 var.live.qual.res       <- 0.41
@@ -111,18 +98,6 @@ mean.skin.length.female <- 75.62
 var.skin.length.female  <- 8.94
 var.skin.length.c.female<- 1.49
 var.skin.length.res.female <- 9.29
-# maternal effect
-# var.maternal.male       <- 26
-# var.maternal.female     <- 16
-# weaning weight
-# mean.bw.june.male          <- 685
-# mean.bw.june.female        <- 534
-# var.bw.june.male       <- 45.15
-# var.bw.june.female     <- 28
-# var.bw.june.c.male         <- 34.83
-# var.bw.june.c.female       <- 21.6
-# var.bw.june.res.male       <- 23.22
-# var.bw.june.res.female     <- 14.4
 
 
 # misc
@@ -193,3 +168,17 @@ leg1 <- legendre.polynomials(1, normalized = T)
 b.bw.male   <- 1.86
 b.bw.female <- 1.43
 res.rfi <-  as.matrix(read.table("RES_RFI.txt"))/2
+
+################ Skin price constants ################
+truncs <- c(-4.11, -0.47, 4.25) # for size categories
+              # 50 40 30 00 0 1 2
+p.size.male <- c(300,265,227,175,119,61,0)
+              # 00 0 1 2 3 4 5
+p.size.female <- c(283,252,208,158,110,55,0)
+                # purple plat, burg, ivory
+p.qual.male <- c(95,44,29,0)
+p.qual.female <- c(41,37,28,0)
+                    # kl v1 v2 v3 lh
+p.h.length.male <- c(10,38,66,38,0)
+p.h.length.female <- c(41,71,81,42,0)
+htruncs <- c(-2.21672259, -0.74, 0.457, 1.723) # hair length categories

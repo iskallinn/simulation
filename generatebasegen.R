@@ -52,6 +52,7 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   kit.list <- RandCull(kit.list)
   stat.crate[7] <- nrow(kit.list)
   kit.list <- RFI(kit.list, leg2, leg1, t)
+  kit.list.nomasked <- kit.list
   kit.list <- MaskKits(kit.list)
   
   pedfile <- MakePedfileGen0(gen0.females,effgen0.males)
@@ -59,10 +60,9 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
     big.pedfile <- WriteBigPedigree(kit.list, pedfile,year,p)
     # WriteObservationFileBodyWeight (kit.list, year,p)
     WriteObservations(mating.list, gen0.females,effgen0.males,kit.list,year,p)
-    WriteObservationFileBodyWeight(kit.list, year,p)
-    
+    WriteMBLUPObservations(mating.list, gen0.females, effgen0.males, kit.list, year,p)
     }
-  kit.list$birthyear.dam <- NULL
+  kit.list$birthyear.dam <- NULL # to  do figure out error
   # # At this point I think it is safe to delete some stuff from memory
   # # Note that I skip the construction of pedfile1 here. I don't think it is needed. Will check on that later
   # ############### Selection of first generation #########################################
@@ -80,6 +80,8 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
   }
 
   next.gen <- rbind(next.gen, old.females,fill=TRUE)
+  kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males)
+  
   # # add in next gen and kit.list to big pedigree
   if (selection.method ==blup){
     big.pedfile <- update.big.pedigree (big.pedfile, next.gen, next.gen.males)
@@ -122,9 +124,9 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       0,
       stat[[1,3]], # skin length phenotype, male
       stat[[2,3]], # skin length phenotype, female
-      sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
-      var(subset(kit.list, sex==1)$perm.env),
-      var(subset(kit.list, sex==2)$add.gen.bw.f),
+      #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
+      sum(kit.list$FI)/n.females,
+      sum(kit.list$skin.price, na.rm =T)/n.females,
       sep = "\t",
       file = con
     )  } else if (selection.method == phenotypic) {
@@ -157,9 +159,9 @@ RunFirstYear <- function (p,year)  { # p = is the loopcounter for the replicates
       var(kit.list$live.qual),  #variance of live quality
       stat[[1,3]], # skin length phenotype, male
       stat[[2,3]],
-      sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males))*feed.price, # feed usage 
-      var(subset(kit.list, sex==1)$perm.env),
-      var(subset(kit.list, sex==2)$add.gen.bw.f),
+      #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
+      sum(kit.list$FI)/n.females,
+      sum(kit.list$skin.price, na.rm =T)/n.females,
       sep = "\t",
       file = con
     )

@@ -68,7 +68,9 @@ GenerateBaseFemales <- function (leg2,t) {
                       rnorm(nrow(gen0.females))*sqrt(var.skin.length.c.female)+
                     rnorm(nrow(gen0.females))*sqrt(var.skin.length.res.female),
                     phenotype.skin.qual = skin.qual + rnorm(nrow(gen0.females))*
-                      sqrt(var.skin.qual.res)
+                      sqrt(var.skin.qual.res),
+                    phenotype.h.length = h.length+ rnorm(nrow(gen0.females))*
+                      sqrt(var.h.length.res)
   )] 
   if (qual.classes == 5) {
     truncs <- qnorm(
@@ -228,7 +230,9 @@ GenerateBaseMales <- function (leg2,t) {
                      rnorm(nrow(gen0.males))*sqrt(var.skin.length.c.male)+
                      rnorm(nrow(gen0.males))*sqrt(var.skin.length.res.male),
                    phenotype.skin.qual = skin.qual + rnorm(nrow(gen0.males))*
-                     sqrt(var.skin.qual.res)
+                     sqrt(var.skin.qual.res),
+                   phenotype.h.length = h.length+ rnorm(nrow(gen0.males))*
+                     sqrt(var.h.length.res)
   )]
   
   if (qual.classes == 5) {
@@ -1207,7 +1211,9 @@ kit.list[, `:=`(add.gen.bw.f =  q[1]*bw1_f+q[2]*bw2_f+q[3]*bw3_f,
       mean.skin.length.female + skin.length.female + rnorm(1)*sqrt(var.skin.length.res.female)+
         specific.env.skin*sqrt(var.skin.length.c.female) ),
     phenotype.skin.qual = 
-      skin.qual + rnorm(nrow(kit.list))*sqrt(var.skin.qual.res)
+      skin.qual + rnorm(nrow(kit.list))*sqrt(var.skin.qual.res),
+    phenotype.h.length = h.length+ rnorm(nrow(kit.list))*
+      sqrt(var.h.length.res)
     )
   ]  
 
@@ -2081,24 +2087,24 @@ MakeKitsGenN <- function (x,y,z,year,p, leg2, t) { #x = mating.list, y = pedfile
 
   kit.list[, `:=`(litter.size = 0.5*(dam.fert + true.sire.fert) + 
                     mend.litter.size,  # Breeding value of offspring, littersize
-                  bw1_f = 0.5*(true.sire.bw1_f + dam.bw1_f) + mend.bw1_f,
-                  bw2_f = 0.5*(true.sire.bw2_f + dam.bw2_f) + mend.bw2_f,
-                  bw3_f = 0.5*(true.sire.bw3_f + dam.bw3_f) + mend.bw3_f,
-                  bw1_m = 0.5*(true.sire.bw1_m + dam.bw1_m) + mend.bw1_m,
-                  bw2_m = 0.5*(true.sire.bw2_m + dam.bw2_m) + mend.bw2_m,
-                  bw3_m = 0.5*(true.sire.bw3_m + dam.bw3_m) + mend.bw3_m,
-                  rfi1_m = 0.5*(true.sire.rfi1_m + dam.rfi1_m) + mend.rfi1_m,
-                  rfi2_m = 0.5*(true.sire.rfi2_m + dam.rfi2_m) + mend.rfi2_m,
-                  rfi1_f = 0.5*(true.sire.rfi1_f + dam.rfi1_f) + mend.rfi1_f,
-                  rfi2_f = 0.5*(true.sire.rfi2_f + dam.rfi2_f) + mend.rfi2_f,
+                  bw1_f = 0.5*(true.sire.bw1_f + dam.bw1_f) + mend.bw1_f*(1-f0),
+                  bw2_f = 0.5*(true.sire.bw2_f + dam.bw2_f) + mend.bw2_f*(1-f0),
+                  bw3_f = 0.5*(true.sire.bw3_f + dam.bw3_f) + mend.bw3_f*(1-f0),
+                  bw1_m = 0.5*(true.sire.bw1_m + dam.bw1_m) + mend.bw1_m*(1-f0),
+                  bw2_m = 0.5*(true.sire.bw2_m + dam.bw2_m) + mend.bw2_m*(1-f0),
+                  bw3_m = 0.5*(true.sire.bw3_m + dam.bw3_m) + mend.bw3_m*(1-f0),
+                  rfi1_m = 0.5*(true.sire.rfi1_m + dam.rfi1_m) + mend.rfi1_m*(1-f0),
+                  rfi2_m = 0.5*(true.sire.rfi2_m + dam.rfi2_m) + mend.rfi2_m*(1-f0),
+                  rfi1_f = 0.5*(true.sire.rfi1_f + dam.rfi1_f) + mend.rfi1_f*(1-f0),
+                  rfi2_f = 0.5*(true.sire.rfi2_f + dam.rfi2_f) + mend.rfi2_f*(1-f0),
                   perm.env.ls = rnorm(sum(x$obs_fert))*sqrt(var.perm.env.ls), # perm env for litter size
                   skin.length.male = 0.5*(dam.skin.length.male + true.sire.skin.length.male) + 
-                    mend.skin.length.male,
+                    mend.skin.length.male*(1-f0),
                   skin.length.female = 0.5*(dam.skin.length.female + true.sire.skin.length.female) + 
-                    mend.skin.length.female,
-                  live.qual = 0.5*(dam.live.qual + true.sire.live.qual)+ (mend.live.qual),
-                  skin.qual = 0.5*(dam.skin.qual + true.sire.skin.qual)+ (mend.skin.qual),
-                  h.length = 0.5*(dam.h.length + true.sire.h.length)+ (mend.h.length)
+                    mend.skin.length.female*(1-f0),
+                  live.qual = 0.5*(dam.live.qual + true.sire.live.qual)+ (mend.live.qual)*(1-f0),
+                  skin.qual = 0.5*(dam.skin.qual + true.sire.skin.qual)+ (mend.skin.qual)*(1-f0),
+                  h.length = 0.5*(dam.h.length + true.sire.h.length)+ (mend.h.length)*(1-f0)
   )]# Breeding value of offspring, body size
   t <- c(63,84,105,126,147,168,189,210)
   t <- StandardTime(t)
@@ -2123,7 +2129,9 @@ MakeKitsGenN <- function (x,y,z,year,p, leg2, t) { #x = mating.list, y = pedfile
       mean.skin.length.female + skin.length.female + rnorm(1)*sqrt(var.skin.length.res.female)+
         specific.env.skin*sqrt(var.skin.length.c.female) ),
     phenotype.skin.qual = 
-      skin.qual + rnorm(nrow(kit.list))*sqrt(var.skin.qual.res)
+      skin.qual + rnorm(nrow(kit.list))*sqrt(var.skin.qual.res),
+    phenotype.h.length = h.length+ rnorm(nrow(kit.list))*
+      sqrt(var.h.length.res)
   )
   ]  
   set( kit.list, j=which(colnames(kit.list) %in% c(
@@ -2357,57 +2365,7 @@ YearlingEffectOnFertility <- function (x,y){ # x = mating.list, y = year
    close(con=pedigree)
      }
  }
-############### Make phenotype for body weight ######
- MakePhenotypesBWMalesOct <- function(x,y,z,t,u,mat) {
-# x = mean, y = additive genetic, z = specific env, t = number of  sibs, mat =mating.list
-   value <- x+ y + z*sqrt(var.c.bw.oct.male) + 
-     rnorm( sum(mat$obs_fert))*(sqrt(var.res.bw.oct.male))+
-     t*sib.effect.male+ u * bw.eff.damage
-   return(value)
- } 
- MakePhenotypesBWFemalesOct <- function(x,y,z,t,mat) {
-  # x = mean, y = additive genetic, z = specific env, t = number of sibs, mat=mating.list
-   value <- x+ y + z*sqrt(var.c.bw.oct.female) + 
-     rnorm( sum(mat$obs_fert))*(sqrt(var.res.bw.oct.female))+
-     t*sib.effect.female 
-   return(value)
- } 
- 
- MakePhenotypesBWMalesSept <- function(x,y,z,t,u,mat) {
-   # x = mean, y = additive genetic, z = specific env, t = number of  sibs, mat =mating.list
-   value <- x+ y + z*sqrt(var.c.bw.sept.male) + 
-     rnorm( sum(mat$obs_fert))*(sqrt(var.res.bw.oct.male))+
-     t*sib.effect.male.sept+ u * bw.eff.damage
-   return(value)
- } 
- MakePhenotypesBWFemalesSept <- function(x,y,z,t,mat) {
-   # x = mean, y = additive genetic, z = specific env, t = number of sibs, mat=mating.list
-   value <- x+ y + z*sqrt(var.c.bw.sept.female) + 
-     rnorm( sum(mat$obs_fert))*(sqrt(var.res.bw.sept.female))+
-     t*sib.effect.female.sept 
-   return(value)
- } 
-
- MakePhenotypesBWMalesJune <- function(mean,a,c,sibs,damage,matinglist,maternal) {
-   # mean = mean, a = additive genetic, c = specific env, sibs = number of  sibs, matinglist =mating.list
-   value <- mean+ a + c*sqrt(var.bw.june.c.male) + 
-     rnorm( sum(matinglist$obs_fert))*(sqrt(var.bw.june.res.male))+
-     sibs*sib.effect.male.june+ damage * eff.dam.age.june +
-     maternal*sqrt(var.maternal.male)
-   return(value)
- } 
- MakePhenotypesBWFemalesJune <-  function(mean,a,c,sibs,damage,matinglist,maternal) {
-   # x = mean, y = additive genetic, z = specific env, t = number of sibs, mat=mating.list
-   value <- mean+ a + c*sqrt(var.bw.june.c.female) + 
-     rnorm( sum(matinglist$obs_fert))*(sqrt(var.bw.june.res.female))+
-     sibs*sib.effect.female.june + damage * eff.dam.age.june +
-     maternal*sqrt(var.maternal.female)
-   
-   return(value)
- } 
- 
- 
- ############ Count sex of siblings ############
+############ Count sex of siblings ############
 ############### Function for counting sex of siblings ###########
 # Currently unused
 count.sex.siblings <- function (x) {
@@ -2741,3 +2699,272 @@ RandCull <- function (kitlist) {
    }
  }
  
+ ################ MBLUP write observation file #####################
+ WriteMBLUPObservations <- function (mating.list, next.gen, next.gen.males,kit.list,year,p) {
+   matinglist <- mating.list[,c("dam.id","obs_fert"),with=FALSE]
+   setnames(matinglist, "dam.id", "id")
+   if("obs_fert" %in% colnames(next.gen)) {
+     set( next.gen, j=which(colnames(next.gen) %in% 
+                              "obs_fert")  , value=NULL )
+   }
+   next.gen <- merge(next.gen, matinglist, by="id",all.x=TRUE)
+   
+   # if (year < 2) {
+   # writefile[,`:=`(dam.id= as.integer(0))] 
+   # }
+   if (year == 1){
+     next.gen.males$own_littersize= as.integer(0)
+     next.gen$own_littersize = as.integer(0)
+   } # make up littersizes for the base gen, probably ok to set it to a constant as it will then be regressed to zero
+   
+   writefile <- next.gen[, c("id","dam.id", "phenotype.bw.oct", "live.score", "sex", "birthyear", "obs_fert","own_littersize"), with=FALSE]
+   writefile[,`:=`(dam.age = ifelse( year-writefile$birthyear == 1, as.integer(1), as.integer(2)))]
+   
+   
+   next.gen.males[,`:=`(dam.age= as.integer(0),obs_fert = as.integer(-9999))] 
+   temp <- next.gen.males[, c("id","dam.id", "phenotype.bw.oct", "live.score", "dam.age","sex", "birthyear", "obs_fert","own_littersize"),with=F]
+   writefile <- rbind(writefile, temp) #rbind the males first
+   if (year >1) { # this is to "remove" the body weight and quality measurement for females so they do not appear twice
+     # writefile$phenotype.bw.oct <- as.integer(-9999)
+     # writefile$live.score <- as.integer(-9999)
+     
+   }
+   kit.list[,`:=`(dam.age= as.integer(0), obs_fert = as.integer(-9999))] 
+   temp <- kit.list[, c("id", "dam.id","phenotype.bw.oct", "live.score", "dam.age","sex", "birthyear","own_littersize" ,"obs_fert"), with=FALSE]
+   writefile <- rbind (writefile, temp)
+   writefile[is.na(writefile)]	=	as.integer(-9999)
+   writefile[,`:=`(inter= as.integer(1), year= as.integer(year))]
+   writefile[, c("dam.id","sex","birthyear","id","own_littersize")
+             :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("dam.id","sex","birthyear","id","own_littersize")]
+   
+   if (year == 1) {
+     MBLUP_Y <- file(description = paste("MBLUP_Y",p, sep=""), open="w")
+   } else if (year > 1) {
+     MBLUP_Y <- file(description = paste("MBLUP_Y",p, sep=""), open="a")
+     
+   }
+   writefile[,`:=`(bw.female = ifelse(sex == 2, phenotype.bw.oct, -9999.0),
+                  phenotype.bw.oct = ifelse(sex ==1, phenotype.bw.oct, -9999.0))]
+   write.table(format(writefile[,.(id,dam.id,year,dam.age,birthyear,sex,own_littersize,inter,phenotype.bw.oct,live.score,obs_fert,bw.female)], nsmall=1, digits=2), 
+               file= MBLUP_Y, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
+   close(con=MBLUP_Y)
+   
+ }
+ 
+ ######################## Skin price function ##############################
+ SkinPrices <- function (kitlist, next.gen, next.gen.males) {
+   sd <-
+     setdiff(kitlist$id, next.gen$id) # remove the next.gen females from kit.list
+   sd <- is.element(kitlist$id, sd)
+   kitlist <- kitlist[sd, ]
+   sd <- setdiff(kitlist$id, next.gen.males$id)
+   sd <- is.element(kitlist$id, sd)
+   kitlist <- kitlist[sd, ]
+   kitlist[, `:=`(hl.class = ifelse(
+     phenotype.h.length < htruncs[1],
+     0,
+     # velv3
+     ifelse(
+       phenotype.h.length > htruncs[1] & phenotype.h.length < htruncs[2],
+       1,
+       # velv2
+       ifelse(
+         phenotype.h.length > htruncs[2] & phenotype.h.length < htruncs[3],
+         2,
+         # vel1
+         ifelse(
+           phenotype.h.length > htruncs[3] & phenotype.h.length < htruncs[4],
+           3,
+           # klassik
+           ifelse(phenotype.h.length > htruncs[4], 4, NA) # long nap
+         )
+       )
+     )
+   ))]
+   kitlist[, `:=`(
+     skin.qual.score = ifelse(
+       phenotype.skin.qual >= trunc[3],
+       4,
+       # purple
+       ifelse(
+         truncs[2] < phenotype.skin.qual & phenotype.skin.qual <= truncs[3],
+         3,
+         # platinum
+         ifelse(
+           phenotype.skin.qual > truncs[1] & phenotype.skin.qual <= truncs[2],
+           2,
+           # burgundy
+           ifelse(phenotype.skin.qual <=
+                    truncs[1], 1, 0) # ivory
+         )
+       )
+     ),
+     skin.size = ifelse (
+       phenotype.skin.length >= 101,
+       9,
+       ifelse(
+         phenotype.skin.length < 101 & phenotype.skin.length >= 95,
+         8,
+         ifelse(
+           phenotype.skin.length < 95 & phenotype.skin.length >= 89,
+           7,
+           ifelse (
+             phenotype.skin.length < 89 & phenotype.skin.length >= 83,
+            6,
+             ifelse(
+               phenotype.skin.length < 83 &
+                 phenotype.skin.length >= 77,
+               5,
+               ifelse(
+                 phenotype.skin.length < 77 & phenotype.skin.length >= 71,
+                 4,
+                 ifelse (
+                   phenotype.skin.length < 71 & phenotype.skin.length >= 65,
+                   3,
+                   ifelse(
+                     phenotype.skin.length < 65 & phenotype.skin.length >= 59,
+                     2,
+                     ifelse(
+                       phenotype.skin.length < 59 &
+                         phenotype.skin.length >= 53,
+                       1,
+                       ifelse(phenotype.skin.length < 53, 0, -999)
+                     )
+                   )
+                 )
+               )
+             )
+           )
+         )
+       )
+     )
+   )]
+   # TODO put in the "small size" prizes from the actual model
+   kitlist.males <- subset(kitlist, sex == 1)
+   kitlist.males[, `:=`(
+     skin.price = ifelse(
+       skin.size == 9,
+       p.size.male[1],
+       ifelse(
+         skin.size == 8,
+         p.size.male[2],
+         ifelse(
+           skin.size == 7,
+           p.size.male[3],
+           ifelse(
+             skin.size == 6,
+             p.size.male[4],
+             ifelse(
+               skin.size == 5,
+               p.size.male[5],
+               ifelse(
+                 skin.size == 4,
+                 p.size.male[6],
+                 ifelse(skin.size == 3, p.size.male[7], NA)
+               )
+             )
+           )
+         )
+       )
+     )
+     + ifelse(
+       skin.qual.score == 1,
+       p.qual.male[1],
+       ifelse(
+         skin.qual.score == 2,
+         p.qual.male[2],
+         ifelse(
+           skin.qual.score == 3,
+           p.qual.male[3],
+           ifelse(skin.qual.score == 4, p.qual.male[4], NA)
+         )
+       )
+     )
+     + ifelse(
+       hl.class == 0,
+       p.h.length.male[2],
+       # velv3
+       ifelse(
+         hl.class == 1,
+         p.h.length.male[3],
+         #velv2
+         ifelse(
+           hl.class == 2,
+           p.h.length.male[4],
+           # velv 1
+           ifelse(
+             hl.class == 3,
+             p.h.length.male[1],
+             ifelse(hl.class ==
+                      4, p.h.length.male[5], NA)
+           )
+         )
+       )
+     )
+   )]
+   
+   kitlist.females <- subset(kitlist, sex == 2)
+   kitlist.females[, `:=`(
+     skin.price = ifelse(
+       skin.size == 6,
+       p.size.female[1],
+       ifelse(
+         skin.size == 5,
+         p.size.female[2],
+         ifelse(
+           skin.size == 4,
+           p.size.female[3],
+           ifelse(
+             skin.size == 3,
+             p.size.female[4],
+             ifelse(
+               skin.size == 2,
+               p.size.female[5],
+               ifelse(
+                 skin.size == 1,
+                 p.size.female[6],
+                 ifelse(skin.size == 0, p.size.female[7], NA)
+               )
+             )
+           )
+         )
+       )
+     )
+     + ifelse(
+       skin.qual.score == 1,
+       p.qual.female[1],
+       ifelse(
+         skin.qual.score == 2,
+         p.qual.female[2],
+         ifelse(
+           skin.qual.score == 3,
+           p.qual.female[3],
+           ifelse(skin.qual.score == 4, p.qual.female[4], NA)
+         )
+       )
+     )
+     + ifelse(
+       hl.class == 0,
+       p.h.length.female[2],
+       # velv3
+       ifelse(
+         hl.class == 1,
+         p.h.length.female[3],
+         #velv2
+         ifelse(
+           hl.class == 2,
+           p.h.length.female[4],
+           # velv 1
+           ifelse(
+             hl.class == 3,
+             p.h.length.female[1],
+             ifelse(hl.class ==
+                      4, p.h.length.female[5], NA)
+           )
+         )
+       )
+     )
+   )]
+   kitlist <- rbind(kitlist.females, kitlist.males)
+   return(kitlist)
+ }
