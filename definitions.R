@@ -26,13 +26,13 @@ sept <- 1 # weigh kits in september
 oct <- 0  # weigh kits in october
 use.blup.to.assort.mat <- 0 # if 1 then the males and females will be sorted on 
 #their combined index before mating
-use.comb.ind.for.males <- 0 # if 1 then the usage of the males will depend on 
+use.comb.ind.for.males <- 1 # if 1 then the usage of the males will depend on 
 # their combined index, not quality
-result <- "test"
+mblup <- 0
 ############### Controls for simulation ############
 n.females <-  1000             # NUMBER OF FEMALES
 nruns <- 1                    # how many replicates of the simulation
-n <- 4                        # number of generation per replicate
+n <- 5                        # number of generation per replicate
 mating.method <- assortative   # mating method, random or assortative
 selection.method <- blup  # selection mating, 
 weighing.method <- oct         # control for when to weigh kits for selection cands
@@ -54,7 +54,7 @@ male.inf <-  0.98              # % ODDS OF MALE BEING NOT BARREN
 female.inf <- 0.9              # % ODDS OF FEMALE BEING NOT BARREN
 prop.oldfemales <-  0.4        # Proportion of older females
 ibd.fertility <- 0.06          # Inbreeding depression on fertility NOTE: not in use atm
-max.age.females <- 3           # define how old the females can be
+max.age.females <- 2           # define how old the females can be
 yearling.effect <- -0.07       # setting for yearling effect, current best guess is -0.07
 sib.effect.male <- -13.4       # Effect on body size of (male) one extra kit in litter, Hansen(1997)
 sib.effect.female <- -18.6      # Effect on body size of (female) one extra kit in litter, Hansen(1997)
@@ -63,18 +63,18 @@ sib.effect.female.sept <- -12.6 # Effect on body size of (female) one extra kit 
 sib.effect.male.june   <- -19.9       
 sib.effect.female.june <- -15.9
 eff.dam.age.june       <- 29
-quantile.setting <- 0.4        # amount of kits to throw away because of too low littersize
-quantile.setting.bw <- 0.4    # prop of kits to disqualify due to weight
+quantile.setting.ls <- 0.6        # amount of kits to throw away because of too low littersize
+quantile.setting.bw <- 0.1    # prop of kits to disqualify due to weight
 mating.will.yearling.1st          <- 0.95 # probability of yearling being mated
-mating.will.yearling.2nd          <- 0.98 # probability of yearling being remated
+mating.will.yearling.2nd          <- 0.92 # probability of yearling being remated
 mating.will.old.1st               <- 0.98 # probability of old female being mated
-mating.will.old.2nd               <- 0.98 # probability of old female being remated
+mating.will.old.2nd               <- 0.93 # probability of old female being remated
 pr.barren.one.mating.yearling     <- 0.8 # probability of single mated yearling being barren
 pr.barren.double.mating.yearling  <- 0.9 # probability of double mated yearling being barren
 pr.barren.one.mating.old          <- 0.9 # probability of single mated old female being barren
 pr.barren.double.mating.old       <- 0.95 # probability of double mated old female being barren
 n.males <-  ceiling( n.females/male.ratio ) # calculates needed amount of males 
-cull.ratio                       <- 0.825 # survival rate of kits, farmwise from 2nd cnt to pelting
+cull.ratio                       <- 0.8 # survival rate of kits, farmwise from 2nd cnt to pelting
 
 ############# Variance settings for traits ###################
 # fertility
@@ -170,15 +170,11 @@ b.bw.female <- 1.43
 res.rfi <-  as.matrix(read.table("RES_RFI.txt"))/2
 
 ################ Skin price constants ################
-truncs <- c(-4.11, -0.47, 4.25) # for size categories
+truncs <- c(-4.11, -0.47, 4.25) # for qual categories
               # 50 40 30 00 0 1 2
-p.size.male <- c(300,265,227,175,119,61,0)
-              # 00 0 1 2 3 4 5
-p.size.female <- c(283,252,208,158,110,55,0)
-                # purple plat, burg, ivory
-p.qual.male <- c(95,44,29,0)
-p.qual.female <- c(41,37,28,0)
-                    # kl v1 v2 v3 lh
-p.h.length.male <- c(10,38,66,38,0)
-p.h.length.female <- c(41,71,81,42,0)
 htruncs <- c(-2.21672259, -0.74, 0.457, 1.723) # hair length categories
+
+intercept.bm <- 419 #intercept plus average of auctions
+prices.bmales <- c(0,-38,-80,-140,-204,-219,-216,-227,-240,-250,119,103,75,44,0,56,22,-33,-25)
+prices.bfemales <- c(200,195,185,175,137,92,43,-7,16,0,113,104,85,42,0,145,129,76,92)
+intercept.bfemales <- 18 #intercept + average of auctions

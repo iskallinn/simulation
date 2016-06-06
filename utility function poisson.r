@@ -1471,7 +1471,7 @@ PhenoSelectionOldFemales <- function (y,x, year) { # y = gen0.females, x = matin
 }  
 ############### Phenotypic Selection of yearling females ############
 PhenoSelectionFemaleKits <- function (x,y) { # x = kit.list, y = y  
-  truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting ) 
+  truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting.ls ) 
   selection.candidates.females <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
   selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
   if (weighing.method == oct){
@@ -1532,7 +1532,7 @@ PhenoSelectionFemaleKits <- function (x,y) { # x = kit.list, y = y
 }
 ############### Selection of yearling males in 1st gen ###############################
 PhenoSelectionMaleKits <- function (x) { # x = kit.list 
-  truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting ) 
+  truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting.ls ) 
   selection.candidates.males <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
   selection.candidates.males <-  subset( selection.candidates.males,  sex  ==   1) # take the male kits
   if (weighing.method == oct){
@@ -1684,7 +1684,7 @@ IndSelFemaleKits <- function (x,y,q) { # x = kit.list , y = solutions q = old.fe
                    index.fert*weight.fert.kits+
                    weight.qual.kits*index.qual)
   
-  truncation.point <-  quantile( x$blup.fert,  probs =  quantile.setting ) 
+  truncation.point <-  quantile( x$blup.fert,  probs =  quantile.setting.ls ) 
   selection.candidates.females <- subset(x, blup.fert >= truncation.point) # throw away the smallest litters
   selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
   setkey(selection.candidates.females, comb.ind)           # in order to speed up ordering 
@@ -1712,7 +1712,7 @@ IndSelMaleKits <- function (x,y) { # x = kit.list, y = solutions,
   x <- transform(x, comb.ind = index.bw*weight.bw.kits+
                    index.fert*weight.fert.kits+
                    weight.qual.kits*index.qual)
-  truncation.point <-  quantile( x$blup.fert,  probs =  quantile.setting ) 
+  truncation.point <-  quantile( x$blup.fert,  probs =  quantile.setting.ls ) 
   selection.candidates.males <- subset(x, blup.fert >= truncation.point) # throw away the smallest litters
   selection.candidates.males <-  subset( selection.candidates.males,  sex  ==   1  ) # take the female kits
   setkey(selection.candidates.males, comb.ind)           # in order to speed up ordering 
@@ -2409,11 +2409,12 @@ CalculateBLUP <- function () {
   
   return(solutions)
 }
-############### Modify Dir file for fertility ################
+############### Modify Dir file  ################
  # this function changes the .DIR file for fertility and BW
 # So it takes in the replicate from the current replicate of the simulation
  ModifyDIRFile <- function (p) {
    # fertility modification
+   if (mblup == 0) {
    if (trace.ped == 0 ){
      
      # bw modification
@@ -2441,8 +2442,37 @@ CalculateBLUP <- function () {
      # change the pedigree name in case of trace being asked for
      
    }
+   } else if (mblup ==1 ) {
+     if (trace.ped == 0 ){
+       
+       # bw modification
+       dirfile <- readLines("MBLUP_full.DIR")
+       dirfile[8] <- c(paste("$DATA  ASCII (8,4,-9999.0) MBLUP_Y",p, sep="")) 
+       # change the input file for BLUP so it uses the next outputfile
+       writeLines(dirfile, "MBLUP_full.DIR")
+       dirfile[36] <- c(paste("$VAR_STR 1 PED 2 ASCII Big_pedigree_",p, sep="")) 
+       # change the input file for BLUP so it uses the next pedigree
+       writeLines(dirfile,"MBLUP_full.DIR")
+       # change the input file for BLUP so it uses the next pedigree
+     } else if (trace.ped == 1) {
+       dirfile <- readLines("MBLUP_full.DIR")
+       dirfile[8] <- c(paste("$DATA  ASCII (8,4,-9999.0) MBLUP_Y",p, sep="")) 
+       # change the input file for BLUP so it uses the next outputfile
+       writeLines(dirfile, "MBLUP_full.DIR")
+       
+       dirfile <- readLines("trace.DIR")
+       dirfile[1] <- c(paste("Big_pedigree_",p, sep=""))
+       writeLines(dirfile,"trace.DIR")
+       # change the pedigree name in the dir file
+       dirfile <- readLines("MBLUP.DIR")
+       dirfile[36] <- c(paste("$VAR_STR 1 PED 2 ASCII trace.PRUNE")) # change the input file for BLUP so it uses the next pedigree
+       writeLines(dirfile,"MBLUP.DIR")
+       # change the pedigree name in case of trace being asked for
+       
+     }
    
- }
+ } 
+} # function
  
 ############### Create observation file for phenotypes #################
 # currently one phenotype file is made
@@ -2551,7 +2581,7 @@ MaskKits <- function (kitlist) {
   setkey(kitlist, id)
   setorder(kitlist, id, sex)
   kitlist[, `:=`(IDX = 1:.N) , by = dam.id]
-  kitlist[,`:=`(mask = ifelse( IDX> 8, 0,1))]
+  kitlist[,`:=`(mask = ifelse( IDX> 9, 0,1))]
   kitlist <- subset(kitlist, mask == 1  )
   kitlist[,c("IDX", "mask"):=NULL]
   
@@ -2725,8 +2755,8 @@ RandCull <- function (kitlist) {
    temp <- next.gen.males[, c("id","dam.id", "phenotype.bw.oct", "live.score", "dam.age","sex", "birthyear", "obs_fert","own_littersize"),with=F]
    writefile <- rbind(writefile, temp) #rbind the males first
    if (year >1) { # this is to "remove" the body weight and quality measurement for females so they do not appear twice
-     # writefile$phenotype.bw.oct <- as.integer(-9999)
-     # writefile$live.score <- as.integer(-9999)
+     writefile$phenotype.bw.oct <- as.integer(-9999)
+     writefile$live.score <- as.integer(-9999)
      
    }
    kit.list[,`:=`(dam.age= as.integer(0), obs_fert = as.integer(-9999))] 
@@ -2760,211 +2790,186 @@ RandCull <- function (kitlist) {
    sd <- setdiff(kitlist$id, next.gen.males$id)
    sd <- is.element(kitlist$id, sd)
    kitlist <- kitlist[sd, ]
-   kitlist[, `:=`(hl.class = ifelse(
-     phenotype.h.length < htruncs[1],
-     0,
-     # velv3
-     ifelse(
-       phenotype.h.length > htruncs[1] & phenotype.h.length < htruncs[2],
-       1,
-       # velv2
-       ifelse(
-         phenotype.h.length > htruncs[2] & phenotype.h.length < htruncs[3],
-         2,
-         # vel1
-         ifelse(
-           phenotype.h.length > htruncs[3] & phenotype.h.length < htruncs[4],
-           3,
-           # klassik
-           ifelse(phenotype.h.length > htruncs[4], 4, NA) # long nap
-         )
-       )
-     )
-   ))]
    kitlist[, `:=`(
-     skin.qual.score = ifelse(
-       phenotype.skin.qual >= trunc[3],
-       4,
-       # purple
-       ifelse(
-         truncs[2] < phenotype.skin.qual & phenotype.skin.qual <= truncs[3],
-         3,
-         # platinum
-         ifelse(
-           phenotype.skin.qual > truncs[1] & phenotype.skin.qual <= truncs[2],
-           2,
-           # burgundy
-           ifelse(phenotype.skin.qual <=
-                    truncs[1], 1, 0) # ivory
-         )
-       )
-     ),
-     skin.size = ifelse (
+     
+     P1 = ifelse (
        phenotype.skin.length >= 101,
-       9,
-       ifelse(
-         phenotype.skin.length < 101 & phenotype.skin.length >= 95,
-         8,
-         ifelse(
-           phenotype.skin.length < 95 & phenotype.skin.length >= 89,
-           7,
-           ifelse (
-             phenotype.skin.length < 89 & phenotype.skin.length >= 83,
-            6,
-             ifelse(
-               phenotype.skin.length < 83 &
-                 phenotype.skin.length >= 77,
-               5,
-               ifelse(
-                 phenotype.skin.length < 77 & phenotype.skin.length >= 71,
-                 4,
-                 ifelse (
-                   phenotype.skin.length < 71 & phenotype.skin.length >= 65,
-                   3,
-                   ifelse(
-                     phenotype.skin.length < 65 & phenotype.skin.length >= 59,
-                     2,
-                     ifelse(
-                       phenotype.skin.length < 59 &
-                         phenotype.skin.length >= 53,
-                       1,
-                       ifelse(phenotype.skin.length < 53, 0, -999)
-                     )
-                   )
-                 )
-               )
-             )
-           )
-         )
-       )
-     )
+       1,0),#50
+     P2= ifelse(
+       phenotype.skin.length < 101 & phenotype.skin.length >= 95,
+       1,0),#40
+     P3=ifelse(
+       phenotype.skin.length < 95 & phenotype.skin.length >= 89,
+       1,0),#30
+     P4 = ifelse (
+       phenotype.skin.length < 89 & phenotype.skin.length >= 83,
+       1,0),#00
+     P5=ifelse(
+       phenotype.skin.length < 83 &
+         phenotype.skin.length >= 77,
+       1,0),#0
+     P6=ifelse(
+       phenotype.skin.length < 77 & phenotype.skin.length >= 71,
+       1,0),#1
+     P7 = ifelse (
+       phenotype.skin.length < 71 & phenotype.skin.length >= 65,
+       1,0),#2
+     P8 = ifelse(
+       phenotype.skin.length < 65 & phenotype.skin.length >= 59,
+       1,0),#3
+     P9=ifelse(
+       phenotype.skin.length < 59 &
+         phenotype.skin.length >= 53,
+       1,0),#4
+     P10 = ifelse(phenotype.skin.length < 53, 1, 0),#5
+     P11 = ifelse(
+       phenotype.skin.qual >= truncs[3],
+       1,0),
+     # purple
+     P12 = ifelse(
+       truncs[2] < phenotype.skin.qual & phenotype.skin.qual <= truncs[3],
+       1,0),
+     # platinum
+     P13= ifelse(
+       phenotype.skin.qual > truncs[1] & phenotype.skin.qual <= truncs[2],
+       1,0),
+     # burgundy
+     P14 = ifelse(phenotype.skin.qual <=
+                    truncs[1], 1, 0), # ivory
+     P15 = ifelse(phenotype.h.length > htruncs[4] ,
+                  1,0), #vel3
+     P16 =  ifelse(phenotype.h.length > htruncs[3] & phenotype.h.length < htruncs[4],
+                   1,0),
+     # velv2
+     P17 = ifelse(
+       phenotype.h.length > htruncs[2] & phenotype.h.length < htruncs[3],
+       1,0),
+     # vel1
+     P18=ifelse(
+       phenotype.h.length > htruncs[1] & phenotype.h.length < htruncs[2],
+       1,0),
+     # klassik
+     P19 = ifelse(phenotype.h.length < htruncs[1], 1, 0) # long nap
+     
    )]
-   # TODO put in the "small size" prizes from the actual model
-   kitlist.males <- subset(kitlist, sex == 1)
-   kitlist.males[, `:=`(
-     skin.price = ifelse(
-       skin.size == 9,
-       p.size.male[1],
-       ifelse(
-         skin.size == 8,
-         p.size.male[2],
-         ifelse(
-           skin.size == 7,
-           p.size.male[3],
-           ifelse(
-             skin.size == 6,
-             p.size.male[4],
-             ifelse(
-               skin.size == 5,
-               p.size.male[5],
-               ifelse(
-                 skin.size == 4,
-                 p.size.male[6],
-                 ifelse(skin.size == 3, p.size.male[7], NA)
-               )
-             )
-           )
-         )
-       )
-     )
-     + ifelse(
-       skin.qual.score == 1,
-       p.qual.male[1],
-       ifelse(
-         skin.qual.score == 2,
-         p.qual.male[2],
-         ifelse(
-           skin.qual.score == 3,
-           p.qual.male[3],
-           ifelse(skin.qual.score == 4, p.qual.male[4], NA)
-         )
-       )
-     )
-     + ifelse(
-       hl.class == 0,
-       p.h.length.male[2],
-       # velv3
-       ifelse(
-         hl.class == 1,
-         p.h.length.male[3],
-         #velv2
-         ifelse(
-           hl.class == 2,
-           p.h.length.male[4],
-           # velv 1
-           ifelse(
-             hl.class == 3,
-             p.h.length.male[1],
-             ifelse(hl.class ==
-                      4, p.h.length.male[5], NA)
-           )
-         )
-       )
-     )
-   )]
+   # the loop function here below is to make sure that the skins are allocated
+   # into legal classes, i.e. no purple skins in velvet 3 and no purple skins
+   # in klassik
+for (k in 1:nrow(kitlist)) {
+  if (kitlist$P15[k] == 1) {
+    set( kitlist,i=k, j=which(colnames(kitlist) %in% c("P11","P12","P14")), value=0)
+    kitlist$P13[k] <- 1                       
+  }
+  if(kitlist$P18[k] == 1 & kitlist$P11[k] == 1) {
+    
+    set( kitlist,i=k, j=which(colnames(kitlist) %in% c("P11")), value=0)
+    set( kitlist,i=k, j=which(colnames(kitlist) %in% c("P12")), value=1)
+  }
+  if (kitlist$P19[k] == 1 ) {
+    set( kitlist,i=k, j=which(colnames(kitlist) %in% c("P11","P12","P13")), value=0)
+    set( kitlist,i=k, j=which(colnames(kitlist) %in% c("P14")), value=1)
+  }
+}
+kits.males <- subset(kitlist, sex == 1, select=
+                          c("id",
+                            "P1", #50
+                            "P2",#40
+                            "P3",#30
+                            "P4",#00
+                            "P5",#0
+                            "P6",#1
+                            "P7",#2
+                            "P8",#3
+                            "P9",#4
+                            "P10",#5
+                            "P11",#purple
+                            "P12",#platinum
+                            "P13",#burgundy
+                            "P14",#ivory
+                            "P15",#velv3
+                            "P16",#velv2
+                            "P17",#vel1
+                            "P18",#kl
+                            "P19")#long nap
+   )
+   # prices for 4 and 5 are made up (size)
+   skin.prices.males <- intercept.bm+(as.matrix(kits.males))[,2:20] %*% (prices.bmales)
+   skin.prices.males<- cbind(kits.males$id, skin.prices.males)
    
-   kitlist.females <- subset(kitlist, sex == 2)
-   kitlist.females[, `:=`(
-     skin.price = ifelse(
-       skin.size == 6,
-       p.size.female[1],
-       ifelse(
-         skin.size == 5,
-         p.size.female[2],
-         ifelse(
-           skin.size == 4,
-           p.size.female[3],
-           ifelse(
-             skin.size == 3,
-             p.size.female[4],
-             ifelse(
-               skin.size == 2,
-               p.size.female[5],
-               ifelse(
-                 skin.size == 1,
-                 p.size.female[6],
-                 ifelse(skin.size == 0, p.size.female[7], NA)
-               )
-             )
-           )
-         )
-       )
-     )
-     + ifelse(
-       skin.qual.score == 1,
-       p.qual.female[1],
-       ifelse(
-         skin.qual.score == 2,
-         p.qual.female[2],
-         ifelse(
-           skin.qual.score == 3,
-           p.qual.female[3],
-           ifelse(skin.qual.score == 4, p.qual.female[4], NA)
-         )
-       )
-     )
-     + ifelse(
-       hl.class == 0,
-       p.h.length.female[2],
-       # velv3
-       ifelse(
-         hl.class == 1,
-         p.h.length.female[3],
-         #velv2
-         ifelse(
-           hl.class == 2,
-           p.h.length.female[4],
-           # velv 1
-           ifelse(
-             hl.class == 3,
-             p.h.length.female[1],
-             ifelse(hl.class ==
-                      4, p.h.length.female[5], NA)
-           )
-         )
-       )
-     )
-   )]
-   kitlist <- rbind(kitlist.females, kitlist.males)
+   kits.females <- subset(kitlist, sex == 2, select=
+                            c("id",
+                              "P1", #50
+                              "P2",#40
+                              "P3",#30
+                              "P4",#00
+                              "P5",#0
+                              "P6",#1
+                              "P7",#2
+                              "P8",#3
+                              "P9",#4
+                              "P10",#5
+                              "P11",#purple
+                              "P12",#platinum
+                              "P13",#burgundy
+                              "P14",#ivory
+                              "P15",#velv3
+                              "P16",#velv2
+                              "P17",#vel1
+                              "P18",#kl
+                              "P19")#long nap
+   )
+   # prices for 4 and 5 are made up (size)
+   skin.prices.females <- intercept.bfemales+(as.matrix(kits.females))[,2:20] %*% (prices.bfemales)
+   skin.prices.females<- cbind(kits.females$id, skin.prices.females)
+   skin.prices <- rbind(skin.prices.males, skin.prices.females)
+   colnames(skin.prices) <- c("id","skin.price")
+   kitlist <- merge(kitlist, skin.prices, by="id")
+   set( kitlist, j=which(colnames(kitlist) %in% 
+                           c("id",
+                             "P1", #50
+                             "P2",#40
+                             "P3",#30
+                             "P4",#00
+                             "P5",#0
+                             "P6",#1
+                             "P7",#2
+                             "P8",#3
+                             "P9",#4
+                             "P10",#5
+                             "P11",#purple
+                             "P12",#platinum
+                             "P13",#burgundy
+                             "P14",#ivory
+                             "P15",#velv3
+                             "P16",#velv2
+                             "P17",#vel1
+                             "P18",#kl
+                             "P19"))  , value=NULL )
    return(kitlist)
+ } 
+############# calculate MBLUP ############
+ CalculateMBLUP <- function () {
+   system2("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/run_dmu4.bat", " MBLUP_full")
+   # read the solutions and only keep the predictions of BV (they're not that right)
+   
+   solutions <- as.matrix(read.table(file="MBLUP_full.SOL"))
+   solutions <- as.data.table(solutions)
+   solutions <- subset(solutions, V1 == 4 & V2==1 ) # BW
+   set (solutions, j=c("V1","V2","V3", "V4", "V6", "V7","V9"), value= NULL)
+   setnames(solutions, c("V5","V8"),c("id", "blup.bwnov"))
+   temp <- as.matrix(read.table(file="MBLUP_full.SOL"))
+   temp <- as.data.table(temp)
+   temp <- subset(temp, V1 == 4 & V2==2 ) # qual
+   set (temp, j=c("V1","V2","V3", "V4", "V6", "V7","V9"), value= NULL)
+   setnames(temp, c("V5","V8"),c("id", "blup.qual"))
+   solutions <- merge(solutions, temp, by="id")
+   temp <- as.matrix(read.table(file="MBLUP_full.SOL"))
+   temp <- as.data.table(temp)
+   temp <- subset(temp, V1 == 4 & V2==3 ) # litter size
+   set (temp, j=c("V1","V2","V3", "V4", "V6", "V7","V9"), value= NULL)
+   setnames(temp, c("V5","V8"),c("id", "blup.fert"))
+   solutions <- merge(solutions, temp, by="id")
+   
+   return(solutions)
  }
+ 
