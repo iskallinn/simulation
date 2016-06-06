@@ -22,49 +22,35 @@ phenotypic <- 1
 blup <- 2
 trace.ped <- 0
 mask.phenotypes <- 1 # 0 no masking, 1 mask phenotypes of kits from small litters
-sept <- 1 # weigh kits in september
-oct <- 0  # weigh kits in october
+sept <- 1 # weigh kits in september CURRENTLY DEFUNCT, ONLY SEPT <- 1 SUPPORTED
+oct <- 0  # weigh kits in october CURRENTLY DEFUNCT
 use.blup.to.assort.mat <- 0 # if 1 then the males and females will be sorted on 
 #their combined index before mating
 use.comb.ind.for.males <- 1 # if 1 then the usage of the males will depend on 
-# their combined index, not quality
-mblup <- 0
+# their combined index, not quality & weight
+mblup <- 0 # If == 1 then MBLUP will be used for selection index, note that 
+# selection method will have to be == blup
 ############### Controls for simulation ############
 n.females <-  1000             # NUMBER OF FEMALES
-nruns <- 1                    # how many replicates of the simulation
-n <- 5                        # number of generation per replicate
+nruns <- 1                     # how many replicates of the simulation
+n <- 5                         # number of generation per replicate
 mating.method <- assortative   # mating method, random or assortative
-selection.method <- blup  # selection mating, 
+selection.method <- blup       # selection strategy, 
 weighing.method <- oct         # control for when to weigh kits for selection cands
+# note, this is currently NOT SUPPORTED, SO DO NOT CHANGE
 qual.classes <- 5              # quality classes, 5 or 10 are supported
 intensity.remating <- 0.2      # this controls how many males are chosen not to be remated
-# selection = truncation,  no selection = next gen is chosen at random
-make.obs.file <- 1 # 1 = make observation file, 0 otherwise
-use.true.sire <- 0 # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
-feed.price    <- 2.85 # feed price per kg feed
-use.MBLUP     <-  1
-############# Mean settings for traits   #####################
-mean.body.size.male.oct <- 3750
-mean.body.size.female.oct <- 1960
-mean.body.size.male.sept <- 2270
-mean.body.size.female.sept <- 1280
+make.obs.file <- 1             # 1 = make observation file, 0 otherwise
+use.true.sire <- 0             # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
+feed.price    <- 2.85          # feed price per kg feed
 ############### Innter settings, change at own risk##########
-male.ratio <-  6               # MALE TO FEMALE RATIO
-male.inf <-  0.98              # % ODDS OF MALE BEING NOT BARREN
-female.inf <- 0.9              # % ODDS OF FEMALE BEING NOT BARREN
-prop.oldfemales <-  0.4        # Proportion of older females
-ibd.fertility <- 0.06          # Inbreeding depression on fertility NOTE: not in use atm
+male.ratio      <- 6           # MALE TO FEMALE RATIO
+male.inf        <- 0.98        # % ODDS OF MALE BEING NOT BARREN
+female.inf      <- 0.9         # % ODDS OF FEMALE BEING NOT BARREN
+prop.oldfemales <- 0.4         # Proportion of older females
 max.age.females <- 2           # define how old the females can be
-yearling.effect <- -0.07       # setting for yearling effect, current best guess is -0.07
-sib.effect.male <- -13.4       # Effect on body size of (male) one extra kit in litter, Hansen(1997)
-sib.effect.female <- -18.6      # Effect on body size of (female) one extra kit in litter, Hansen(1997)
-sib.effect.male.sept   <- -21.5 # Effect on body size of (female) one extra kit in litter, Hansen(1997)
-sib.effect.female.sept <- -12.6 # Effect on body size of (female) one extra kit in litter, Hansen(1997)
-sib.effect.male.june   <- -19.9       
-sib.effect.female.june <- -15.9
-eff.dam.age.june       <- 29
-quantile.setting.ls <- 0.6        # amount of kits to throw away because of too low littersize
-quantile.setting.bw <- 0.1    # prop of kits to disqualify due to weight
+quantile.setting.ls <- 0.6     # amount of kits to throw away because of too low littersize
+quantile.setting.bw <- 0.1     # prop of kits to disqualify due to weight
 mating.will.yearling.1st          <- 0.95 # probability of yearling being mated
 mating.will.yearling.2nd          <- 0.92 # probability of yearling being remated
 mating.will.old.1st               <- 0.98 # probability of old female being mated
@@ -74,43 +60,38 @@ pr.barren.double.mating.yearling  <- 0.9 # probability of double mated yearling 
 pr.barren.one.mating.old          <- 0.9 # probability of single mated old female being barren
 pr.barren.double.mating.old       <- 0.95 # probability of double mated old female being barren
 n.males <-  ceiling( n.females/male.ratio ) # calculates needed amount of males 
-cull.ratio                       <- 0.8 # survival rate of kits, farmwise from 2nd cnt to pelting
+cull.ratio                        <- 0.8 # survival rate of kits, farmwise from 2nd cnt to pelting
 
 ############# Variance settings for traits ###################
 # fertility
-variance.fertility     <-  0.0122738     # Genetic variance of fertility, live born
-var.perm.env.ls        <-  0.0004464     # Variance of permanent environment of litter size of dam
+variance.fertility         <-  0.0122738  # Genetic variance of fertility, live born
+var.perm.env.ls            <-  0.0004464  # Variance of permanent environment of litter size of dam
 # quality variances
-var.live.qual.gen       <- 0.12
-var.live.qual.res       <- 0.41
+var.live.qual.gen          <- 0.12        # Genetic variance of live graded qual
+var.live.qual.res          <- 0.41        # residual variance of live graded qual
 # skin quality
-var.skin.qual.gen       <- 1.53
-var.skin.qual.res       <- 3.42
+var.skin.qual.gen          <- 1.53        # genetic variance of skin quality
+var.skin.qual.res          <- 3.42        # residual variance of skin quality
 # guard hair length
-var.h.length            <- 0.07
-var.h.length.res        <- 0.41
+var.h.length               <- 0.07        # genetic variance of hair length
+var.h.length.res           <- 0.41        # residual variance of hair length
 # skin sizes
-mean.skin.length.male   <- 95.59
-var.skin.length.male    <- 11.6
-var.skin.length.c.male  <- 3.14
-var.skin.length.res.male<- 26
-mean.skin.length.female <- 75.62
-var.skin.length.female  <- 8.94
-var.skin.length.c.female<- 1.49
-var.skin.length.res.female <- 9.29
-
-
-# misc
-roof.body.size          <-  2400          # Maximum body weight of females to be allowed for selection
-bw.eff.damage           <-  34.5          # effect of dam age on weight of males
+mean.skin.length.male      <- 95.59       # mean skin length male
+var.skin.length.male       <- 11.6        # genetic variance of skin length male
+var.skin.length.c.male     <- 3.14        # perm env of skin length male
+var.skin.length.res.male   <- 26          # residual of skin length male
+mean.skin.length.female    <- 75.62       # mean of skin length female
+var.skin.length.female     <- 8.94        # genetic variance of skin length female
+var.skin.length.c.female   <- 1.49        # perm env of skin length female
+var.skin.length.res.female <- 9.29        # residual of skin length female
 
 ################# RR parameters ###################
-
+# Note that the working folder in the simulation_working needs to be set 
 G_BWF <- as.matrix(read.table("G_BWF.txt"))
 P_BWF <- as.matrix(read.table("P_BWF.txt"))
 P_BWM <- as.matrix(read.table("P_BWM.txt"))
 P_RFI <- as.matrix(read.table("P_RFI.txt"))
-# new sigma matrix
+# Correlation matrix between traits
 G_sigma <- as.matrix(read.table("G_sigma.txt"),header=T, row.names = 1)
 # make a vector of the variances to quicken calculations later
 variances <-
