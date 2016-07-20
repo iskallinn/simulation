@@ -1,12 +1,11 @@
-############## Connection for output ##############
+############## Change to installed folder containing the scripts ##############
 setwd("C:/Users/Notandi/Dropbox/Projects/simulation/")
+source("first_time.r")
 source("definitions.r")
 source("generatebasegen.r")
-source("utility function poisson.r")
+source("utility_functions.r")
 source("runsimulation.r")
 source("simulation_function.r")
 
-system.time(Simulation( n = 10, nruns = 1, selection.method = phenotypic))
+Simulation( n = 10, nruns = 1, selection.method = phenotypic)
 
-                                 
-+closeAllConnections()
