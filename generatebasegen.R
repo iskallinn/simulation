@@ -18,8 +18,14 @@ RunFirstYear <- function (p,year,selection.method,mblup, trace.ped)  { # p = is 
   # # This is not really needed at this point since all gen0 animals are unrelated
   # 
   mating.list <- YearlingEffectOnFertility (mating.list, year)
+  if (crossmating == 1) {
   mating.list = transform( mating.list,  obs_fert =  rpois(nrow(mating.list),
-                                                           lambda = exp(1.95 + perm.env.ls + dam.fert+dam.age))*barren*semen.quality)
+                                                           lambda = exp(1.99 + perm.env.ls + dam.fert+dam.age))*barren*semen.quality)
+  } else if (crossmating == 0 ) {
+    mating.list = transform( mating.list,  obs_fert =  rpois(nrow(mating.list),
+                                                             lambda = exp(1.95 + perm.env.ls + dam.fert+dam.age))*barren*semen.quality)
+    
+  }
   set( mating.list, j=which(colnames(mating.list) %in% c("semen.quality","dam.age")) , value=NULL )
   stat.crate[1] <- nrow(mating.list)
   mating.list <-  subset( mating.list,  obs_fert >  0 ) # remove females who are barren or mated with barren male
@@ -34,6 +40,7 @@ RunFirstYear <- function (p,year,selection.method,mblup, trace.ped)  { # p = is 
   stat.crate[3] <- mean(kit.list$true.sire == kit.list$sire.assumed)
   stat.crate[4] <-nrow(kit.list)
   kit.list <- RandCull(kit.list)
+  kit.list.for.stats <- kit.list
   stat.crate[7] <- nrow(kit.list)
   kit.list <- RFI(kit.list, leg2, leg1, t)
   kit.list.nomasked <- kit.list
@@ -57,7 +64,8 @@ RunFirstYear <- function (p,year,selection.method,mblup, trace.ped)  { # p = is 
                                 "f0.dam")  , value=NULL )
   }
   next.gen <- rbind(next.gen, old.females,fill=TRUE)
-  kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males)
+  feed.intake <- sum(kit.list$FI)
+  kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year)
   # # add in next gen and kit.list to big pedigree
   if (selection.method ==blup){
     big.pedfile <- update.big.pedigree (big.pedfile, next.gen, next.gen.males)
@@ -69,20 +77,20 @@ RunFirstYear <- function (p,year,selection.method,mblup, trace.ped)  { # p = is 
     stat1 <- subset(kit.list, sex==1)#males
     cat (
       year, #simulation year
-      mean(kit.list$litter.size), #avg genetic value of litter size
-      var(kit.list$litter.size), # variance of genetic value of litter size
+      mean(kit.list.for.stats$litter.size), #avg genetic value of litter size
+      var(kit.list.for.stats$litter.size), # variance of genetic value of litter size
       0, #avg inbreeding
       mean(mating.list$obs_fert), #observed fertility
       stat[[2,2]], #avg phenotype, october females
-      mean(kit.list$add.gen.bw.m), #avg gen val oct weight
+      mean(kit.list.for.stats$add.gen.bw.m), #avg gen val oct weight
       stat[[1,2]], #avg phenotype oct males
-      var(kit.list$add.gen.bw.m), #variance oct weight
+      var(kit.list.for.stats$add.gen.bw.m), #variance oct weight
       0, #correlation bw blup and phenotype
       cor(stat1$add.gen.bw.m, stat1$phenotype.bw.oct), #correlation bw phenotype and genetic value
-      mean(kit.list$skin.length.male), # avg genetic value for skin length
-      var(kit.list$skin.length.male),  # var of skin length
-      mean(kit.list$skin.qual), # avg genetic value of skin qual
-      var(kit.list$skin.qual), # var of skin qual
+      mean(kit.list.for.stats$skin.length.male), # avg genetic value for skin length
+      var(kit.list.for.stats$skin.length.male),  # var of skin length
+      mean(kit.list.for.stats$skin.qual), # avg genetic value of skin qual
+      var(kit.list.for.stats$skin.qual), # var of skin qual
       0, # correlation of gen value litter size to blup
       0, # correlation of own litter size to genetic value 
       stat.crate[1], # number of mated females
@@ -92,15 +100,15 @@ RunFirstYear <- function (p,year,selection.method,mblup, trace.ped)  { # p = is 
       stat.crate[5], # percentages of females mated with "own" male
       stat.crate[6], # number of females mated once
       stat.crate[7], # survived kits
-      mean(kit.list$live.qual), # avg live quality
-      var(kit.list$live.qual),  #variance of live quality
+      mean(kit.list.for.stats$live.qual), # avg live quality
+      var(kit.list.for.stats$live.qual),  #variance of live quality
       0, # correlation bw blup and gen value live qual
       0,
       0,
       stat[[1,3]], # skin length phenotype, male
       stat[[2,3]], # skin length phenotype, female
       #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
-      sum(kit.list$FI)/n.females,
+      feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
       sum(kit.list$skin.price, na.rm =T)/n.females,
       sep = "\t",
       file = con
@@ -114,14 +122,14 @@ RunFirstYear <- function (p,year,selection.method,mblup, trace.ped)  { # p = is 
       0,
       mean(mating.list$obs_fert),
       stat[[2,2]],
-      mean(kit.list$add.gen.bw.m),
+      mean(kit.list.for.stats$add.gen.bw.m),
       stat[[1,2]],
-      var(kit.list$add.gen.bw.m),
+      var(kit.list.for.stats$add.gen.bw.m),
       cor(stat1$add.gen.bw.m, stat1$phenotype.bw.oct),
-      mean(kit.list$skin.length.male),
-      var(kit.list$skin.length.male),
-      mean(kit.list$skin.qual),
-      var(kit.list$skin.qual),
+      mean(kit.list.for.stats$skin.length.male),
+      var(kit.list.for.stats$skin.length.male),
+      mean(kit.list.for.stats$skin.qual),
+      var(kit.list.for.stats$skin.qual),
       0,
       stat.crate[1],
       stat.crate[2],
@@ -130,12 +138,12 @@ RunFirstYear <- function (p,year,selection.method,mblup, trace.ped)  { # p = is 
       stat.crate[5],
       stat.crate[6],
       stat.crate[7], # survived kits
-      mean(kit.list$live.qual), # avg live quality
-      var(kit.list$live.qual),  #variance of live quality
+      mean(kit.list.for.stats$live.qual), # avg live quality
+      var(kit.list.for.stats$live.qual),  #variance of live quality
       stat[[1,3]], # skin length phenotype, male
       stat[[2,3]],
       #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
-      sum(kit.list$FI)/n.females,
+      feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
       sum(kit.list$skin.price, na.rm =T)/n.females,
       sep = "\t",
       file = con

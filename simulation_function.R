@@ -43,6 +43,62 @@ Simulation <- function (
     use.blup.to.assort.mat <- 0
   }
   setwd("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
+  skin.metrics.males <- file(description = "skin_metrics_males", open ="w")
+  skin.metrics.females <- file(description = "skin_metrics_females", open ="w")
+  cat(
+    "Gen",
+    "S50", #50
+    "S40",#40
+    "S30",#30
+    "S00",#00
+    "S0",#0
+    "S1",#1
+    "S2",#2
+    "S3",#3
+    "S4",#4
+    "S5",#5
+    "purple",#purple
+    "platinum",#platinum
+    "burgundy",#burgundy
+    "ivory",#ivory
+    "vel3",#velv3
+    "vel2",#velv2
+    "vel1",#vel1
+    "kl",#kl
+    "long.nap",#long nap 
+    "avg.price.males",
+    "numb.animals",
+    "\n",
+  sep="\t",  
+    file = skin.metrics.males
+  ) 
+  cat(
+    "Gen",
+    "S50", #50
+    "S40",#40
+    "S30",#30
+    "S00",#00
+    "S0",#0
+    "S1",#1
+    "S2",#2
+    "S3",#3
+    "S4",#4
+    "S5",#5
+    "purple",#purple
+    "platinum",#platinum
+    "burgundy",#burgundy
+    "ivory",#ivory
+    "vel3",#velv3
+    "vel2",#velv2
+    "vel1",#vel1
+    "kl",#kl
+    "long.nap",#long nap 
+    "avg.price.females",
+    "numb.animals",
+    "\n",
+    sep="\t",  
+    file = skin.metrics.females
+  ) 
   if (selection.method == blup) {
   con <- file(description = "results", open = "w")
   cat(

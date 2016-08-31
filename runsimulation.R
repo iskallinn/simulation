@@ -26,13 +26,14 @@ RunSimulation <- function (x, year, p, selection.method,mblup) {
   mating.list <-
     YearlingEffectOnFertility (mating.list, year)  # checks the dam age and puts the effect for yearlings
   
-  mating.list = transform(mating.list,
-                          obs_fert =  rpois(
-                            nrow(mating.list),
-                            lambda = exp(1.95 + perm.env.ls + dam.fert +
-                                           dam.age)
-                          )
-                          * barren * semen.quality)
+  if (crossmating == 1) {
+    mating.list = transform( mating.list,  obs_fert =  rpois(nrow(mating.list),
+                                                             lambda = exp(1.99 + perm.env.ls + dam.fert+dam.age))*barren*semen.quality)
+  } else if (crossmating == 0 ) {
+    mating.list = transform( mating.list,  obs_fert =  rpois(nrow(mating.list),
+                                                             lambda = exp(1.95 + perm.env.ls + dam.fert+dam.age))*barren*semen.quality)
+    
+  }
   set(mating.list,
       j = which(colnames(mating.list) %in% c("semen.quality", "dam.age")) ,
       value = NULL)
@@ -70,7 +71,6 @@ RunSimulation <- function (x, year, p, selection.method,mblup) {
       }
   }
   
-  
   stat.crate[3] <- mean(kit.list$true.sire == kit.list$sire.assumed)
   kit.list$birthyear.dam <- NULL
   # ############### Selection of next generation    #############
@@ -107,10 +107,12 @@ RunSimulation <- function (x, year, p, selection.method,mblup) {
         j = which(colnames(next.gen) %in% c("obs_fert","dam.age"))  ,
         value = NULL)
   }
+  
   next.gen$FI <- NULL
   next.gen <- rbind(next.gen, old.females, fill = T)
+  feed.intake <- sum(kit.list$FI)
   kit.list.masked <- kit.list
-  kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males)
+  kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year)
   skin.price <- sum(kit.list$skin.price, na.rm =T)/n.females
   if (year == n) {
     save(kit.list, file="last.year.Rdata")
@@ -119,6 +121,7 @@ RunSimulation <- function (x, year, p, selection.method,mblup) {
     stop("NA in id's")
   }
   con <- file(description = "results", open = "a")
+  # browser() 
   if (selection.method == blup) {
     kit.list <- merge(kit.list.masked, solutions, by= "id", all.x=TRUE) # merge to solutions of blup of fertility
     stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
@@ -157,7 +160,7 @@ RunSimulation <- function (x, year, p, selection.method,mblup) {
     stat[[1,3]],
     stat[[2,3]],
     #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
-    sum(kit.list$FI)/n.females,
+    feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
     skin.price,
     sep = "\t",
     file = con
@@ -173,15 +176,15 @@ RunSimulation <- function (x, year, p, selection.method,mblup) {
       mean(mating.list$f0.dam),
       mean(mating.list$obs_fert),
       stat[[2,2]], # avg oct weight of females
-      mean(kit.list$add.gen.bw.m),
+      mean(kit.list.nomasked$add.gen.bw.m),
       stat[[1,2]], # avg oct weight of males
-      var(kit.list$add.gen.bw.m),
+      var(kit.list.nomasked$add.gen.bw.m),
       cor(stat1$add.gen.bw.m, stat1$phenotype.bw.oct),
-      mean(kit.list$skin.length.male),
-      var(kit.list$skin.length.male),
-      mean(kit.list$skin.qual),
-      var(kit.list$skin.qual),
-      cor(kit.list$own_littersize, kit.list$litter.size),
+      mean(kit.list.nomasked$skin.length.male),
+      var(kit.list.nomasked$skin.length.male),
+      mean(kit.list.nomasked$skin.qual),
+      var(kit.list.nomasked$skin.qual),
+      cor(kit.list.nomasked$own_littersize, kit.list.nomasked$litter.size),
       stat.crate[1],
       stat.crate[2],
       stat.crate[3],
@@ -189,12 +192,12 @@ RunSimulation <- function (x, year, p, selection.method,mblup) {
       stat.crate[5],
       stat.crate[6],
       stat.crate[7],
-      mean(kit.list$live.qual),
-      var(kit.list$live.qual),
+      mean(kit.list.nomasked$live.qual),
+      var(kit.list.nomasked$live.qual),
       stat[[1,3]],
       stat[[2,3]],
       #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
-      sum(kit.list$FI)/n.females,
+      feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
       sum(kit.list$skin.price, na.rm =T)/n.females,
       sep = "\t",
       file = con
