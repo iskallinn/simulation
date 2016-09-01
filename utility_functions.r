@@ -2597,7 +2597,7 @@ count.sex.siblings <- function (x) {
 ############### Calculate selection index ###########
 
 CalculateBLUP <- function () {
-  system2("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/run_dmu4.bat", " MBLUP")
+  system2("run_dmu4.bat", " MBLUP")
   # read the solutions and only keep the predictions of BV (they're not that right)
   
   solutions <- as.matrix(read.table(file="MBLUP.SOL"))
@@ -3232,7 +3232,7 @@ file = skin.metrics.males
  } 
 ############# calculate MBLUP ############
  CalculateMBLUP <- function () {
-   system2("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/run_dmu4.bat", " MBLUP_full")
+   system2("run_dmu4.bat", " MBLUP_full")
    # read the solutions and only keep the predictions of BV (they're not that right)
    
    solutions <- as.matrix(read.table(file="MBLUP_full.SOL"))
