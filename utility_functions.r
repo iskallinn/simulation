@@ -704,7 +704,13 @@ mate <- function (x, y, year) {
     mating.list <- merge(mating.list, mating.list.temp, by="dam.id")
     
   } else if (crossmating == 0 ) {
+    if (purebreeding == 1 ) { # if purebreeding we will not use diff males in 2nd mating
+      # we will not attempt to mate females with different male if 1st fails
+      mating.list.allowed <- mating.list 
+      } else if (purebreeding == 0){ 
   mating.list.allowed <- subset(mating.list, can.remate == 1)
+  }
+  
   mating.list.allowed[, `:=`(IDX = 1:.N) , by = sire.id.1st]
   mating.list.allowed$sire.id.2nd       <-
     ifelse(
@@ -818,8 +824,8 @@ mate <- function (x, y, year) {
       mating.list.allowed$sire.h.length.1st      ,
       0
     )
-
-#####################
+if (purebreeding == 0 ) {  
+#####################d######
   
   
   #subset mating.list.allowed into two, those done and those left
@@ -1042,7 +1048,20 @@ mate <- function (x, y, year) {
   mating.list <-
     rbind(mating.list.remated, mating.list.leftover) # merge the now completed mating list together
   } # end of no crossmating if
-  mating.list[, `:=`(
+  } #end of purebreeding if
+  if (purebreeding == 1 ) { 
+    mating.list <- mating.list.allowed 
+    set(
+      mating.list,
+      j = c(
+            "IDX",
+        "test"
+      ),
+      value = NULL
+    )
+    
+    } 
+    mating.list[, `:=`(
     semen.quality = ifelse (
       mating.list$semen.quality.2nd == 0 & mating.list$sire.id.2nd ==0,
       mating.list$semen.quality.1st,
@@ -3236,4 +3255,6 @@ file = skin.metrics.males
    
    return(solutions)
  }
+ 
+ 
  

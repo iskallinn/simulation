@@ -42,7 +42,8 @@ Simulation <- function (
   if (selection.method == phenotypic) {
     use.blup.to.assort.mat <- 0
   }
-  setwd("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
+  #setwd("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
+  setwd("C:/Users/au384062/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
   skin.metrics.males <- file(description = "skin_metrics_males", open ="w")
   skin.metrics.females <- file(description = "skin_metrics_females", open ="w")
   cat(
