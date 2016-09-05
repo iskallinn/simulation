@@ -8,9 +8,9 @@ library(orthopolynom) # for the random regression model for BW and RFI
 
 ############## Index weights ############
 # weights must sum to 1
-weight.fert.old.females <- 0.4
-weight.bw.old.females   <- 0.45
-weight.qual.old.females <- 0.15
+weight.fert.old.females <- 0.175
+weight.bw.old.females   <- 0.425
+weight.qual.old.females <- 0.4
 weight.fert.kits        <- 0.175
 weight.bw.kits          <- 0.425
 weight.qual.kits        <- 0.40
@@ -21,9 +21,9 @@ trace.ped <- 0       # if 1 then DmuTrace is used to prunce ped 5 gens back
 mask.phenotypes <- 1 # 0 no masking, 1 mask phenotypes of kits from small litters
 sept <- 1 # weigh kits in september CURRENTLY DEFUNCT, ONLY SEPT <- 1 SUPPORTED
 oct <- 0  # weigh kits in october CURRENTLY DEFUNCT
-use.blup.to.assort.mat <- 0 # if 1 then the males and females will be sorted on 
+use.blup.to.assort.mat <- 1 # if 1 then the males and females will be sorted on 
 #their combined index before mating
-use.comb.ind.for.males <- 0 # if 1 then the usage of the males will depend on 
+use.comb.ind.for.males <- 1 # if 1 then the usage of the males will depend on 
 # their combined index, not quality & weight
 mblup <- 0 # If == 1 then MBLUP will be used for selection index, note that 
 # selection method will have to be == blup
@@ -31,20 +31,23 @@ mblup <- 0 # If == 1 then MBLUP will be used for selection index, note that
 n.females <-  1000             # NUMBER OF FEMALES
 nruns <- 1                     # how many replicates of the simulation
 n <- 5                         # number of generation per replicate
+assortative <- 1
 mating.method <- assortative   # mating method, random or assortative
 selection.method <- phenotypic       # selection strategy, 
 weighing.method <- oct         # control for when to weigh kits for selection cands
-crossmating <- 1               # 1 = systematic crossmating
+crossmating <- 0               # 1 = systematic crossmating
+purebreeding <- 1
+yearling.effect <- -0.07 
 # note, this is currently NOT SUPPORTED, SO DO NOT CHANGE
 qual.classes <- 5              # quality classes, 5 or 10 are supported
 intensity.remating <- 0.2      # this controls how many males are chosen not to be remated
 make.obs.file <- 1             # 1 = make observation file, 0 otherwise
 use.true.sire <- 0             # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
 feed.price    <- 2.85          # feed price per kg feed
-true.sire.chance <- 0.5
+true.sire.chance <- 0.85
 ############### Innter settings, change at own risk##########
 male.ratio      <- 6           # MALE TO FEMALE RATIO
-male.inf        <- 0.99        # % Proportion OF MALE BEING NOT BARREN
+male.inf        <- 0.98        # % Proportion OF MALE BEING NOT BARREN
 prop.oldfemales <- 0.4         # Proportion of older females
 max.age.females <- 2           # define the max age of females
 quantile.setting.ls <- 0.4     # amount of kits to throw away because of too low littersize
