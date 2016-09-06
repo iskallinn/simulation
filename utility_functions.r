@@ -2803,7 +2803,8 @@ MaskKits <- function (kitlist) {
 # random culling is implemented since survival is not very heritable and a lot of effort
 # TODO make more variability in 
 RandCull <- function (kitlist) {
-  kitlist[, SO:=rbinom(nrow(kitlist), 1, cull.ratio)]
+
+    kitlist[, SO:=rbinom(nrow(kitlist), 1, cull.ratio)]
   kitlist <- subset(kitlist, SO == 1  )
   return(kitlist)
 }
@@ -3258,7 +3259,7 @@ file = skin.metrics.males
    return(solutions)
  }
  ################# Write the log file #####################
- WriteLogFile <- function () {
+ WriteLogFile <- function (n.females, n,nruns,cull.ratio) {
    logfile <- file(description = "log.log", open = "w")
    cat("Logfile from MinkSim",file=logfile)
    cat("\n", file = logfile)

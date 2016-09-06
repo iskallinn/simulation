@@ -44,7 +44,8 @@ Simulation <- function (
   }
   #setwd("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
   setwd("C:/Users/au384062/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
-  WriteLogFile()
+  WriteLogFile(n.females, n,nruns,cull.ratio)
+  
   skin.metrics.males <- file(description = "skin_metrics_males", open ="w")
   skin.metrics.females <- file(description = "skin_metrics_females", open ="w")
   cat(
