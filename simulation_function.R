@@ -136,6 +136,9 @@ Simulation <- function (
     "avg.skin.length.female", 
     "feed.per.skin",
     "skin.price",
+    "pr.farm.margin",
+    "feeding.cost",
+    "avg.skin.price",
     sep = "\t",
     file = con
   )  } else if (selection.method == phenotypic) {
@@ -169,6 +172,9 @@ Simulation <- function (
       "avg.skin.length.female",
       "feed.per.skin",
       "skin.price",
+      "pr.farm.margin",
+      "feeding.cost",
+      "avg.skin.price",
       sep = "\t",
       file = con
     )

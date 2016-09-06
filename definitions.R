@@ -44,6 +44,7 @@ intensity.remating <- 0.2      # this controls how many males are chosen not to 
 make.obs.file <- 1             # 1 = make observation file, 0 otherwise
 use.true.sire <- 0             # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
 feed.price    <- 2.85          # feed price per kg feed
+variable.costs <- 166          # variable costs per skin
 true.sire.chance <- 0.85
 ############### Innter settings, change at own risk##########
 male.ratio      <- 6           # MALE TO FEMALE RATIO
