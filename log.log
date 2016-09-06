@@ -1,0 +1,27 @@
+Logfile from MinkSim
+Simulation started sep 06 14:19:02
+Simulation ended sep 06 14:20:31
+Selection method is phenotypic
+Selection criterion
+ Proportion of animals deselected due to litter size 	0.4
+ Proportion of animals deselected due to body weight 	0.4
+ Proportion remaining for selection on quality	0.24
+Controls for simulation
+Number of females on farm	1000
+Number of replicates	1
+Number of years per replicates	5
+Males per female	6
+Number of males	167
+Proportion of males barren	0.02
+Proportion of females older than 1	0.4
+Max age of females	2
+Systematic crossmating, 0 = no, 1 = yes	0
+Systematic purebreeding, 0 = no, 1 = yes	1
+Random culling ratio	0.85
+Feed price per kg	2.85
+Variable costs per skin	166
+Max age of females	2
+Use true sire in pedigree, 0=no, 1 = yes	0
+Use EBV to rank males in mating, 0=no, 1=yes	1
+Trace pedigree, 0=no, 1=yes	0
+Proportion of males to deselect in 2nd mating	0.2

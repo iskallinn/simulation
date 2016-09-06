@@ -337,6 +337,7 @@ GenerateBaseMales <- function (leg2,t) {
 
 mate <- function (x, y, year) {
   # x = males, y = females
+  # browser()
   if (year >2 & use.blup.to.assort.mat == 1 & selection.method ==blup) {
     setorder(x, -comb.ind)
     setorder(y, -comb.ind)
@@ -850,7 +851,7 @@ if (purebreeding == 0 ) {
       value = NULL)
   mating.list.leftover <-
     rbind(mating.list.leftover, mating.list.notallowed)
-  
+  # browser()
   # here I should reorder the dams that are leftovers to prioritize younger dams and the ones mated with shitty males
   setkey(mating.list.leftover, dam.id)
   if (year >2 & use.blup.to.assort.mat == 1 & selection.method ==blup) {
@@ -2994,6 +2995,7 @@ RandCull <- function (kitlist) {
  
  ######################## Skin price function ##############################
  SkinPrices <- function (kitlist, next.gen, next.gen.males,y) {
+   
    sd <-
      setdiff(kitlist$id, next.gen$id) # remove the next.gen females from kit.list
    sd <- is.element(kitlist$id, sd)
@@ -3255,6 +3257,111 @@ file = skin.metrics.males
    
    return(solutions)
  }
- 
+ ################# Write the log file #####################
+ WriteLogFile <- function () {
+   logfile <- file(description = "log.log", open = "w")
+   cat("Logfile from MinkSim",file=logfile)
+   cat("\n", file = logfile)
+   cat("Simulation started",file=logfile,sep = "\t")
+   cat(format(Sys.time(), " %b %d %X"),file=logfile,sep = "\t")
+   cat("\n", file = logfile)
+   cat("Simulation ended",file=logfile,sep = "\t")
+   cat("\n", file = logfile)
+   
+   if (selection.method == phenotypic) {
+     cat("Selection method is phenotypic", sep="\t",file=logfile)
+     cat("\n", file = logfile)  
+   } else if (selection.method == blup & mblup == 0) {
+     cat("selection method is single-trait BLUP",sep="\t",file=logfile)
+     cat("\n", file = logfile)
+   } else if (selection.method== blup & mblup == 1) {
+     cat("Selection method is multi-trait BLUP", sep="\t",file=logfile)
+     cat("\n", file = logfile)
+   }
+   cat("Selection criterion", file=logfile, sep="\n")
+   if (selection.method == phenotypic) {
+     cat(
+       " Proportion of animals deselected due to litter size ",
+       quantile.setting.ls,
+       file = logfile,
+       sep = "\t"
+     )
+     cat("\n", file = logfile)
+     cat(
+       " Proportion of animals deselected due to body weight ",
+       quantile.setting.bw,
+       file = logfile,
+       sep = "\t"
+     )
+     cat("\n", file = logfile)
+     cat(
+       " Proportion remaining for selection on quality",
+       ((1 - quantile.setting.ls) * quantile.setting.bw),
+       file = logfile,
+       sep = "\t"
+     )
+     cat("\n", file = logfile)
+   } else if (selection.method == blup) {
+     cat("Index weights on kits", file=logfile)
+     cat("\n", file = logfile)
+     cat("Index weight on litter size ", weight.fert.kits, file =logfile, sep="\t")
+     cat("\n", file = logfile)
+     cat("Index weight on body weight ", weight.bw.kits, file =logfile, sep="\t")
+     cat("\n", file = logfile)
+     cat("Index weight on live graded quality ", weight.qual.kits, file =logfile, sep="\t")
+     # old females    
+     cat("\n", file = logfile)
+     cat("Index weights on old females", file=logfile)
+     cat("\n", file = logfile)
+     cat("Index weight on litter size ", weight.fert.old.females, file =logfile, sep="\t")
+     cat("\n", file = logfile)
+     cat("Index weight on body weight ", weight.bw.old.females, file =logfile, sep="\t")
+     cat("\n", file = logfile)
+     cat("Index weight on live graded quality ", weight.qual.old.females, file =logfile, sep="\t")
+     cat("\n", file = logfile)
+   }
+   
+   cat("Controls for simulation", file = logfile, sep="\n")
+   cat("Number of females on farm",n.females, file=logfile, sep="\t")
+   cat("\n", file = logfile)
+   cat("Number of replicates",nruns, file=logfile, sep="\t")
+   cat("\n", file = logfile)
+   cat("Number of years per replicates",n, file=logfile, sep="\t")
+   cat("\n", file = logfile)
+   cat("Males per female",male.ratio, file=logfile, sep="\t")
+   cat("\n", file = logfile)
+   cat("Number of males",n.males, file=logfile, sep="\t")
+   cat("\n", file = logfile)
+   cat("Proportion of males barren",1-male.inf, file=logfile, sep="\t")
+   cat("\n", file = logfile)
+   cat("Proportion of females older than 1",prop.oldfemales, file=logfile, sep="\t")
+   cat("\n", file = logfile)
+   cat("Max age of females",max.age.females, file=logfile, sep="\t")
+   cat("\n", file = logfile)
+   cat("Systematic crossmating, 0 = no, 1 = yes",crossmating, file=logfile, sep="\t")
+   cat("\n", file = logfile)
+   cat("Systematic purebreeding, 0 = no, 1 = yes",purebreeding, file=logfile, sep="\t")
+   cat("\n", file = logfile)
+   cat("Random culling ratio",cull.ratio, file=logfile, sep="\t")
+   cat("\n", file = logfile)
+   cat("Feed price per kg",feed.price, file=logfile, sep="\t")
+   cat("\n", file = logfile)
+   cat("Variable costs per skin",variable.costs, file=logfile, sep="\t")
+   cat("\n", file = logfile)
+   cat("Max age of females",max.age.females, file=logfile, sep="\t")
+   cat("\n", file = logfile)
+   cat("Use true sire in pedigree, 0=no, 1 = yes",use.true.sire, file=logfile, sep="\t")
+   cat("\n", file = logfile)
+   cat("Use EBV to rank males in mating, 0=no, 1=yes",use.blup.to.assort.mat, file=logfile, sep="\t")
+   cat("\n", file = logfile)
+   cat("Trace pedigree, 0=no, 1=yes",trace.ped, file=logfile, sep="\t")
+   cat("\n", file = logfile)
+   cat("Proportion of males to deselect in 2nd mating",intensity.remating, file=logfile, sep="\t")
+   cat("\n", file = logfile)
+   
+   
+   close(con = logfile)
+   
+ }
  
  

@@ -75,6 +75,8 @@ RunSimulation <- function (x, year, p, selection.method,mblup) {
   kit.list$birthyear.dam <- NULL
   # ############### Selection of next generation    #############
   # # See utility functions for method
+  # browser()
+  
   if (selection.method == phenotypic) {
     old.females <-
       PhenoSelectionOldFemales (next.gen, mating.list, year)
@@ -121,7 +123,7 @@ RunSimulation <- function (x, year, p, selection.method,mblup) {
     stop("NA in id's")
   }
   con <- file(description = "results", open = "a")
-  # browser() 
+  # browser()
   if (selection.method == blup) {
     kit.list <- merge(kit.list.masked, solutions, by= "id", all.x=TRUE) # merge to solutions of blup of fertility
     stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
@@ -164,7 +166,7 @@ RunSimulation <- function (x, year, p, selection.method,mblup) {
     skin.price,
     sum(kit.list$skin.price, na.rm =T)-(nrow(kit.list)*variable.costs)-feed.intake*feed.price, #pr farm margin
     feed.intake*feed.price/nrow(kit.list.nomasked),
-    sum(kit.list$skin.price)/(nrow(kit.list)-ceiling(((1-prop.oldfemales)*n.females)+n.males)),
+    mean(kit.list$skin.price),
     sep = "\t",
     file = con
   )
@@ -204,7 +206,7 @@ RunSimulation <- function (x, year, p, selection.method,mblup) {
       sum(kit.list$skin.price, na.rm =T)/n.females,
       sum(kit.list$skin.price, na.rm =T)-(nrow(kit.list)*variable.costs)-feed.intake*feed.price, #pr farm margin
       feed.intake*feed.price/nrow(kit.list.nomasked),
-      sum(kit.list$skin.price)/(nrow(kit.list)-ceiling(((1-prop.oldfemales)*n.females)+n.males)),
+      mean(kit.list$skin.price),
       sep = "\t",
       file = con
     )

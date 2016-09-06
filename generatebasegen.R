@@ -112,7 +112,7 @@ RunFirstYear <- function (p,year,selection.method,mblup, trace.ped)  { # p = is 
       sum(kit.list$skin.price, na.rm =T)/n.females,
       sum(kit.list$skin.price, na.rm =T)-(nrow(kit.list)*variable.costs)-feed.intake*feed.price, #pr farm margin
       feed.intake*feed.price/nrow(kit.list.nomasked),
-      sum(kit.list$skin.price)/(nrow(kit.list)-ceiling(((1-prop.oldfemales)*n.females)+n.males)),
+      mean(kit.list$skin.price),
       sep = "\t",
       file = con
     )  } else if (selection.method == phenotypic) {
@@ -150,7 +150,7 @@ RunFirstYear <- function (p,year,selection.method,mblup, trace.ped)  { # p = is 
       sum(kit.list$skin.price, na.rm =T)/n.females,
       sum(kit.list$skin.price, na.rm =T)-(nrow(kit.list)*variable.costs)-feed.intake*feed.price, #pr farm margin
       feed.intake*feed.price/nrow(kit.list.nomasked),
-      sum(kit.list$skin.price)/(nrow(kit.list)-ceiling(((1-prop.oldfemales)*n.females)+n.males)),
+      mean(kit.list$skin.price),
       sep = "\t",
       file = con
     )
