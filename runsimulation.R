@@ -1,5 +1,44 @@
-RunSimulation <- function (x, year, p, selection.method,mblup) {
-  # x = output from gen0
+RunSimulation <-
+  function (x,   # x = output from gen0
+            year,
+            p,
+            selection.method,
+            mblup,
+            crossmating,
+            make.obs.file,
+            leg2,
+            t,
+            n.females,
+            mating.will.yearling.1st,
+            mating.will.yearling.2nd,
+            n.males,
+            male.ratio,
+            male.inf,
+            intensity.remating,
+            use.blup.to.assort.mat,
+            purebreeding,
+            pr.barren.double.mating.yearling,
+            pr.barren.double.mating.old,
+            pr.barren.one.mating.yearling,
+            pr.barren.one.mating.old,
+            yearling.effect,
+            cull.ratio,
+            leg1,
+            max.age.females,
+            prop.oldfemales,
+            quantile.setting.ls,
+            quantile.setting.bw,
+            use.comb.ind.for.males,
+            weighing.method,
+            true.sire.chance,
+            use.true.sire,
+            weight.bw.old.females,
+            weight.fert.old.females,
+            weight.qual.old.females,
+            weight.bw.kits,
+            weight.fert.kits,
+            weight.qual.kits) 
+{
   stat.crate <- c(0,0,0,0,0,0,0)
   next.gen <- rbindlist(x[1])
   next.gen.males <- rbindlist(x[2])
@@ -16,17 +55,43 @@ RunSimulation <- function (x, year, p, selection.method,mblup) {
   t <- rbind(next.gen.males, temp, fill = T) # needed down the road
   remove(temp)
   ############### Make barren males ##########################
-    next.gen.males <- PrepareMalesForMating(next.gen.males,year)
-  next.gen <- PrepareFemalesForMating(next.gen, year)
+  next.gen.males <-
+    PrepareMalesForMating(
+      next.gen.males,
+      year,
+      use.comb.ind.for.males,
+      selection.method,
+      weighing.method,
+      intensity.remating
+    )
+  next.gen <-
+    PrepareFemalesForMating(
+      next.gen,
+      year,
+      mating.will.old.1st,
+      mating.will.yearling.1st,
+      mating.will.old.2nd,
+      mating.will.yearling.2nd
+    )
   # ############### assign each female a male,  based on his mating willingness #####
-  mating.list <- mate(next.gen.males, next.gen, year)
+  mating.list <- mate(next.gen.males, 
+                      next.gen, 
+                      year,
+                      use.blup.to.assort.mat,
+                      selection.method,
+                      crossmating,
+                      purebreeding,
+                      pr.barren.double.mating.yearling,
+                      pr.barren.double.mating.old,
+                      pr.barren.one.mating.yearling,
+                      pr.barren.one.mating.old ) 
   # ############### Update pedigree ########################
   pedfile <- UpdatePedigree(pedfile, next.gen, next.gen.males, year)
   # ############### Inbreeding Coefficient and calculation of breeding value#############################
   mating.list <-
-    YearlingEffectOnFertility (mating.list, year)  # checks the dam age and puts the effect for yearlings
+    YearlingEffectOnFertility (mating.list, year,yearling.effect)  # checks the dam age and puts the effect for yearlings
   
-  if (crossmating == 1) {
+  if (crossmating == 1) { #arbitrarily have more kits if there is systematic 1+1 crossmating
     mating.list = transform( mating.list,  obs_fert =  rpois(nrow(mating.list),
                                                              lambda = exp(1.99 + perm.env.ls + dam.fert+dam.age))*barren*semen.quality)
   } else if (crossmating == 0 ) {
@@ -43,17 +108,43 @@ RunSimulation <- function (x, year, p, selection.method,mblup) {
   stat.crate[5] <- mean(mating.list$sire.id.1st == mating.list$sire.id.2nd) # percentage of females mated with 1st male
   stat.crate[6] <- ( mean(mating.list$sire.id.2nd == 0)) # percentage of single mated females
   if (selection.method == blup) {
-    kit.list <- MakeKitsGenN(mating.list, pedfile, big.pedfile, year, p, leg2, t)
+    kit.list <-
+      MakeKitsGenN(
+        mating.list,
+        pedfile,
+        big.pedfile,
+        year,
+        p,
+        leg2,
+        t,
+        true.sire.chance,
+        use.true.sire,
+        make.obs.file,
+        qual.classes
+      )
     stat.crate[4] <-nrow(kit.list)
-    kit.list <- RandCull(kit.list)
+    kit.list <- RandCull(kit.list,cull.ratio)
     stat.crate[7] <- nrow(kit.list)
     kit.list <- RFI(kit.list, leg2, leg1, t)
     kit.list.nomasked <- kit.list
     kit.list <- MaskKits(kit.list)
     } else if (selection.method == phenotypic) {
-    kit.list <- MakeKitsGenN(mating.list, pedfile, pedfile, year, p, leg2, t)
-    stat.crate[4] <-nrow(kit.list)
-    kit.list <- RandCull(kit.list)
+      kit.list <-
+        MakeKitsGenN(
+          mating.list,
+          pedfile,
+          pedfile,
+          year,
+          p,
+          leg2,
+          t,
+          true.sire.chance,
+          use.true.sire,
+          make.obs.file,
+          qual.classes
+        )
+      stat.crate[4] <-nrow(kit.list)
+    kit.list <- RandCull(kit.list,cull.ratio)
     stat.crate[7] <- nrow(kit.list)
     kit.list <- RFI(kit.list, leg2, leg1, t)
     kit.list.nomasked <- kit.list
@@ -79,19 +170,44 @@ RunSimulation <- function (x, year, p, selection.method,mblup) {
   
   if (selection.method == phenotypic) {
     old.females <-
-      PhenoSelectionOldFemales (next.gen, mating.list, year)
-    next.gen <- PhenoSelectionFemaleKits (kit.list, old.females)
-    next.gen.males <- PhenoSelectionMaleKits (kit.list)
+      PhenoSelectionOldFemales (next.gen,
+                                mating.list,
+                                year,
+                                max.age.females,
+                                n.females,
+                                prop.oldfemales)
+    next.gen <-
+      PhenoSelectionFemaleKits (kit.list,
+                                old.females,
+                                quantile.setting.ls,
+                                quantile.setting.bw)
+    next.gen.males <-
+      PhenoSelectionMaleKits (kit.list, quantile.setting.ls, quantile.setting.bw)
     ############### Index selection of next generation #############
   } else if (selection.method == blup) {
     big.pedfile    <-
       update.big.pedigree (big.pedfile, next.gen, next.gen.males)
     old.females    <-
-      IndSelectionOldFemales (next.gen, solutions, year)
+      IndSelectionOldFemales (next.gen, solutions, year,
+                              weight.bw.old.females,
+                              weight.fert.old.females,
+                              weight.qual.old.females)
     next.gen       <-
-      IndSelFemaleKits (kit.list, solutions,old.females,mblup)
+      IndSelFemaleKits (
+        kit.list,
+        solutions,
+        old.females,
+        mblup,
+        weight.bw.kits,
+        weight.fert.kits,
+        weight.qual.kits
+      )
     next.gen.males <-
-      IndSelMaleKits (kit.list, solutions)
+      IndSelMaleKits (kit.list,
+                      solutions,
+                      weight.bw.kits,
+                      weight.fert.kits,
+                      weight.qual.kits)
   }
   if ("f0.dam" %in% colnames(old.females)) {
     set(old.females,

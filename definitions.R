@@ -5,20 +5,9 @@ library(data.table)  # faster then data frames at everything and memory efficien
 library(mvtnorm)     # generating random deviates from a multivariate normal distribution
 library(doBy)        # for gathering up statistics along the way
 library(orthopolynom) # for the random regression model for BW and RFI
-
-############## Index weights ############
-# weights must sum to 1
-weight.fert.old.females <- 0.175
-weight.bw.old.females   <- 0.425
-weight.qual.old.females <- 0.4
-weight.fert.kits        <- 0.175
-weight.bw.kits          <- 0.425
-weight.qual.kits        <- 0.40
 ############## Switches, best left alone ###########
 phenotypic <- 1
 blup <- 2
-trace.ped <- 0       # if 1 then DmuTrace is used to prunce ped 5 gens back
-mask.phenotypes <- 1 # 0 no masking, 1 mask phenotypes of kits from small litters
 sept <- 1 # weigh kits in september CURRENTLY DEFUNCT, ONLY SEPT <- 1 SUPPORTED
 oct <- 0  # weigh kits in october CURRENTLY DEFUNCT
 use.blup.to.assort.mat <- 1 # if 1 then the males and females will be sorted on 
@@ -27,6 +16,7 @@ use.comb.ind.for.males <- 1 # if 1 then the usage of the males will depend on
 # their combined index, not quality & weight
 mblup <- 0 # If == 1 then MBLUP will be used for selection index, note that 
 # selection method will have to be == blup
+
 ############### Controls for simulation ############
 n.females <-  1000             # NUMBER OF FEMALES
 nruns <- 1                     # how many replicates of the simulation
@@ -37,22 +27,33 @@ selection.method <- phenotypic       # selection strategy,
 weighing.method <- oct         # control for when to weigh kits for selection cands
 crossmating <- 0               # 1 = systematic crossmating
 purebreeding <- 1
-yearling.effect <- -0.07 
-# note, this is currently NOT SUPPORTED, SO DO NOT CHANGE
+yearling.effect <- -0.07       # Change at own risk, currently gives ~0.6 fewer kits on yearlings
 qual.classes <- 5              # quality classes, 5 or 10 are supported
 intensity.remating <- 0.2      # this controls how many males are chosen not to be remated
 make.obs.file <- 1             # 1 = make observation file, 0 otherwise
 use.true.sire <- 0             # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
 feed.price    <- 2.85          # feed price per kg feed
 variable.costs <- 166          # variable costs per skin
-true.sire.chance <- 0.85
-############### Innter settings, change at own risk##########
-male.ratio      <- 6           # MALE TO FEMALE RATIO
-male.inf        <- 0.98        # % Proportion OF MALE BEING NOT BARREN
+true.sire.chance <- 0.85       # probability of kits being sired by 2nd male
+trace.ped <- 0       # if 1 then DmuTrace is used to prunce ped 5 gens back
+mask.phenotypes <- 1 # 0 no masking, 1 mask phenotypes of kits from small litters
+
+############## Index weights & settings for PS ############
+# weights must sum to 1
+weight.fert.old.females <- 0.175
+weight.bw.old.females   <- 0.425
+weight.qual.old.females <- 0.4
+weight.fert.kits        <- 0.175
+weight.bw.kits          <- 0.425
+weight.qual.kits        <- 0.40
 prop.oldfemales <- 0.4         # Proportion of older females
 max.age.females <- 2           # define the max age of females
 quantile.setting.ls <- 0.4     # amount of kits to throw away because of too low littersize
 quantile.setting.bw <- 0.4     # prop of kits to disqualify due to weight
+
+############### Inner settings, change at own risk##########
+male.ratio      <- 6           # MALE TO FEMALE RATIO
+male.inf        <- 0.98        # % Proportion OF MALE BEING NOT BARREN
 mating.will.yearling.1st          <- 0.95 # probability of yearling being mated
 mating.will.yearling.2nd          <- 0.92 # probability of yearling being remated
 mating.will.old.1st               <- 0.98 # probability of old female being mated
