@@ -3,7 +3,13 @@
 
 ############### Creation of Gen0 females ############
 # This function creates the base population of females
-GenerateBaseFemales <- function (leg2,t) {
+GenerateBaseFemales <- function ( leg2,
+                                  t,
+                                  n.females,
+                                 mating.will.yearling.1st,
+                                 mating.will.yearling.2nd,
+                                 qual.classes ) 
+  {
   id        <-  seq(1:n.females)
   add.gen <- rmvnorm(n.females, sigma = G_sigma,method="svd" ) 
   # multiplies the random deviates by the variances
@@ -157,7 +163,14 @@ GenerateBaseFemales <- function (leg2,t) {
 }
 ############### Creation of Gen0 males#######################################
 # This function creates  the base population of males
-GenerateBaseMales <- function (leg2,t) {
+GenerateBaseMales <- function (leg2,
+                               t,
+                               n.males,
+                               male.ratio,
+                               male.inf,
+                               qual.classes,
+                               intensity.remating) 
+  {
   mating.willingness.1st <-  numeric( n.males )  
   mating.willingness.2nd  <-  numeric( n.males)
   semen.quality.1st      <-  numeric( n.males )  
@@ -335,7 +348,18 @@ GenerateBaseMales <- function (leg2,t) {
 # of females using an inefficient looping function, it would speed up the program
 # if a more lean method could be thought out to perform it. 
 
-mate <- function (x, y, year) {
+mate <- function (x, 
+                  y, 
+                  year,
+                  use.blup.to.assort.mat,
+                  selection.method,
+                  crossmating,
+                  purebreeding,
+                  pr.barren.double.mating.yearling,
+                  pr.barren.double.mating.old,
+                  pr.barren.one.mating.yearling,
+                  pr.barren.one.mating.old ) 
+  {
   # x = males, y = females
   # browser()
   if (year >2 & use.blup.to.assort.mat == 1 & selection.method ==blup) {
@@ -1123,7 +1147,7 @@ setkey(y, id)
 ############### Breeding value of offspring ###############################
 # This function creates the kits for the first generation only, since the 
 # subsequent generation is more complex this is the only instance of it
-MakeKitsGen0 <- function (x,y, z, leg2) { #x = mating.list, y= effgen0.males, z = year, leg2 = legendre poly
+MakeKitsGen0 <- function (x,y, z, leg2,qual.classes,true.sire.chance) { #x = mating.list, y= effgen0.males, z = year, leg2 = legendre poly
   kit.list <- x[rep(seq(nrow(x)), obs_fert), 
             c("dam.id",
               "sire.id.1st",
@@ -1601,7 +1625,11 @@ kit.list[, `:=`(add.gen.bw.f =  q[1]*bw1_f+q[2]*bw2_f+q[3]*bw3_f,
 }
 ############### Phenotypic Selection of old females ###############################################
 # currently they are only truncated on their litter size phenotype
-PhenoSelectionOldFemales <- function (y,x, year) { # y = gen0.females, x = mating.list
+PhenoSelectionOldFemales <- function (y,x, year,
+                                      max.age.females,
+                                      n.females,
+                                      prop.oldfemales ) 
+  { # y = gen0.females, x = mating.list
   setkey(x, obs_fert)
   setorder(x, -obs_fert)
   if ("birthyear.dam" %in% colnames(x)) {
@@ -1621,47 +1649,6 @@ PhenoSelectionOldFemales <- function (y,x, year) { # y = gen0.females, x = matin
   setnames(old.females, "dam.id", "id")
   old.females <- merge(old.females, y, by="id")
   
-  # if("phenotype.bw.oct" %in% colnames(old.females)){
-
-#   } else {
-# #     if (qual.classes == 5){
-# #       truncs <- qnorm(p=c(0.05,0.3,0.7,0.95), 
-# #                       mean=mean(old.females$live.qual,
-# #                                 sd= sqrt(var(old.females$live.qual))),
-# #                       lower.tail=TRUE)
-# #       old.females[,`:=`(live.score= ifelse(live.qual >= truncs[4],5,
-# # ifelse(truncs[3] < live.qual & live.qual <= truncs[4],4,
-# # ifelse(live.qual > truncs[2] & live.qual<=truncs[3],3,
-# # ifelse(live.qual > truncs[1] & live.qual <=truncs[2],2,
-# # ifelse(live.qual <=truncs[1],1,0
-# # ))))))]
-# #     } else if (qual.classes == 10) {
-# #       truncs <- qnorm(p=c(0.01, 0.05, 0.15, 0.3, 0.5, 0.7, 0.85, 0.95, 0.99), 
-# #                       mean=mean(old.females$live.qual,
-# #                                 sd= sqrt(var(old.females$live.qual))),
-# #                       lower.tail=TRUE)
-# #       old.females[,`:=`(live.score= 
-# # ifelse(live.qual >= truncs[9],10,
-# # ifelse(truncs[8] < live.qual & live.qual <= truncs[9],9,
-# # ifelse(live.qual > truncs[7] & live.qual<=truncs[8],8,
-# # ifelse(live.qual > truncs[6] & live.qual <=truncs[7],7,
-# # ifelse(live.qual > truncs[5] & live.qual <=truncs[6],6,
-# # ifelse(live.qual > truncs[4] & live.qual <=truncs[5],5,
-# # ifelse(live.qual > truncs[3] & live.qual <=truncs[4],4,
-# # ifelse(live.qual > truncs[2] & live.qual <=truncs[3],3,
-# # ifelse(live.qual > truncs[1] & live.qual <=truncs[2],2,
-# # ifelse(live.qual <=truncs[1],1,0 
-# # )))))))))))]
-# #     }
-#     
-# old.females[,`:=`(phenotype.bw.oct = 
-# mean.body.size.female.oct + bw.oct +
-# rnorm(nrow(old.females))*sqrt(var.c.bw.oct.female),
-# phenotype.bw.sept = 
-# mean.body.size.female.sept + bw.sept +
-# rnorm(nrow(old.females))*sqrt(var.c.bw.oct.female)
-#     )]
-#   }
   if("sire.id" %in% colnames(old.females)) {
     setnames(old.females, "sire.id", "sire.assumed")
     old.females[,`:=`(true.sire = old.females$sire.assumed)]
@@ -1680,7 +1667,10 @@ PhenoSelectionOldFemales <- function (y,x, year) { # y = gen0.females, x = matin
   return(old.females)
 }  
 ############### Phenotypic Selection of yearling females ############
-PhenoSelectionFemaleKits <- function (x,y) { # x = kit.list, y = y  
+PhenoSelectionFemaleKits <- function (x, # x = kit.list
+                                      y, # y = old females
+                                      quantile.setting.ls,
+                                      quantile.setting.bw) {   
   truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting.ls ) 
   selection.candidates.females <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
   selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
@@ -1740,8 +1730,8 @@ PhenoSelectionFemaleKits <- function (x,y) { # x = kit.list, y = y
   
   return (next.gen)
 }
-############### Selection of yearling males in 1st gen ###############################
-PhenoSelectionMaleKits <- function (x) { # x = kit.list 
+############### Selection of yearling males ###############################
+PhenoSelectionMaleKits <- function (x,quantile.setting.ls,quantile.setting.bw ) { # x = kit.list 
   truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting.ls ) 
   selection.candidates.males <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
   selection.candidates.males <-  subset( selection.candidates.males,  sex  ==   1) # take the male kits
@@ -1848,7 +1838,14 @@ PhenoSelectionMaleKits <- function (x) { # x = kit.list
 #   }
 ############### Index selection of old females ###############################################
 # currently they are only truncated on their litter size phenotype
-IndSelectionOldFemales <- function (x,y,year) { # x = next.gen, y = solutions, z = solutions.bw
+
+IndSelectionOldFemales <- function (x,
+                                    y,
+                                    year,
+                                    weight.bw.old.females,
+                                    weight.fert.old.females,
+                                    weight.qual.old.females) {
+  # x = next.gen, y = solutions, z = solutions.bw
   # delete last years index
   if("blup.fert" %in% colnames(x)) {
     set( x, j=which(colnames(x) %in% 
@@ -1885,15 +1882,32 @@ IndSelectionOldFemales <- function (x,y,year) { # x = next.gen, y = solutions, z
   return(old.females)
 }  
 ############### Index selection for females ################
-IndSelFemaleKits <- function (x,y,q,mblup) { # x = kit.list , y = solutions q = old.females 
-  x <- merge(x, y, by= "id", all.x=TRUE) # merge to solutions of blup of fertility
-  x[, `:=`(index.bw   = 100+ (blup.bwnov-mean(x$blup.bwnov))/(sqrt(var(x$blup.bwnov)))*10,
-           index.fert = 100+ (blup.fert-mean(x$blup.fert))/(sqrt(var(x$blup.fert)))*10,
-           index.qual = 100+ (blup.qual-mean(x$blup.qual))/(sqrt(var(x$blup.qual)))*10) ]
-  x <- transform(x, comb.ind = index.bw*weight.bw.kits+
-                   index.fert*weight.fert.kits+
-                   weight.qual.kits*index.qual)
-  if (mblup == 0) { # throw away the smallest litters
+IndSelFemaleKits <-
+  function (x,
+            y,
+            q,
+            mblup,
+            weight.bw.kits,
+            weight.fert.kits,
+            weight.qual.kits) {
+    # x = kit.list , y = solutions q = old.females
+    x <-
+      merge(x, y, by = "id", all.x = TRUE) # merge to solutions of blup of fertility
+    x[, `:=`(
+      index.bw   = 100 + (blup.bwnov - mean(x$blup.bwnov)) / (sqrt(var(x$blup.bwnov))) *
+        10,
+      index.fert = 100 + (blup.fert - mean(x$blup.fert)) / (sqrt(var(x$blup.fert))) *
+        10,
+      index.qual = 100 + (blup.qual - mean(x$blup.qual)) / (sqrt(var(x$blup.qual))) *
+        10
+    )]
+    x <- transform(
+      x,
+      comb.ind = index.bw * weight.bw.kits +
+        index.fert * weight.fert.kits +
+        weight.qual.kits * index.qual
+    )
+    if (mblup == 0) { # throw away the smallest litters
   truncation.point <-  quantile( x$blup.fert,  probs =  quantile.setting.ls ) 
   selection.candidates.females <- subset(x, blup.fert >= truncation.point)
   } else if (mblup == 1) { selection.candidates.females <- x 
@@ -1916,7 +1930,12 @@ IndSelFemaleKits <- function (x,y,q,mblup) { # x = kit.list , y = solutions q = 
   return (next.gen)
 }
 ############### Index selection for males ##############
-IndSelMaleKits <- function (x,y) { # x = kit.list, y = solutions,
+IndSelMaleKits <- function (x, # x = kit.list
+                            y, # y = solutions
+                            weight.bw.kits,
+                            weight.fert.kits,
+                            weight.qual.kits) {
+
   x <- merge(x, y, by= "id", all.x=TRUE) # merge to solutions 
   x[, `:=`(index.bw   = 100+ (blup.bwnov-mean(x$blup.bwnov))/(sqrt(var(x$blup.bwnov)))*10,
            index.fert = 100+ (blup.fert-mean(x$blup.fert))/(sqrt(var(x$blup.fert)))*10,
@@ -1947,8 +1966,15 @@ IndSelMaleKits <- function (x,y) { # x = kit.list, y = solutions,
 
  
 ############### Make barren males ##################
-PrepareMalesForMating <- function (x,year) { # x = next.gen.males 
-  setkey(x, id)
+PrepareMalesForMating <-
+  function (x,
+            year,
+            use.comb.ind.for.males,
+            selection.method,
+            weighing.method,
+            intensity.remating) {
+    # x = next.gen.males
+    setkey(x, id)
   #   next.gen.males[next.gen.males,semen.quality:=rbinom( nrow(next.gen.males),  1,  male.inf )]
   #   next.gen.males[next.gen.males,mating.willingness:=rZIP( nrow(next.gen.males),  mu = male.ratio,  sigma = 0.05 )]
   x[,`:=`( semen.quality.1st=  rbinom( nrow(x),  1,  male.inf ),  
@@ -1971,9 +1997,16 @@ for (i in 1:ceiling((1-intensity.remating)*nrow(x))) {
   return(x)
 } 
 ############### mating will of females #############
-PrepareFemalesForMating <- function (x,year) { # x = next.gen
-  x[,`:=`(dam.age = ifelse(year-birthyear != 1, 0,1))] # 1 = older females, 0 = yearlings
-  
+PrepareFemalesForMating <-
+  function (x,
+            year,
+            mating.will.old.1st,
+            mating.will.yearling.1st,
+            mating.will.old.2nd,
+            mating.will.yearling.2nd) {
+    # x = next.gen
+    x[, `:=`(dam.age = ifelse(year - birthyear != 1, 0, 1))] # 1 = older females, 0 = yearlings
+    
   x[,`:=`( # this makes the mating will of the females in the first round of matings
     mating.will.1st.round = ifelse( dam.age == 1, rbinom(nrow(x), 1,mating.will.old.1st),
                                     ifelse(dam.age == 0, rbinom(nrow(x),1, mating.will.yearling.1st),0))
@@ -2001,7 +2034,18 @@ if (year ==2) {
 ############### Breeding value of offspring in gen n###############################
 # put in dam id's and make genetic value of each kit for fertility
 # common cause for crash was a negative litter size
-MakeKitsGenN <- function (x,y,z,year,p, leg2, t) { #x = mating.list, y = pedfile, z = big.pedfile
+MakeKitsGenN <- function (x,
+                          y,
+                          z,
+                          year,
+                          p,
+                          leg2,
+                          t,
+                          true.sire.chance,
+                          use.true.sire,
+                          make.obs.file,
+                          qual.classes
+) { #x = mating.list, y = pedfile, z = big.pedfile
   kit.list <- x[rep(seq(nrow(x)), obs_fert), # makes the kit list by expanding the mating list
                 c("dam.id",
                   "sire.id.1st",
@@ -2206,8 +2250,14 @@ MakeKitsGenN <- function (x,y,z,year,p, leg2, t) { #x = mating.list, y = pedfile
       kit.list$sire.h.length.1st,
       kit.list$sire.h.length.2nd
     )
-  kit.list$true.sire.check <- ifelse( kit.list$sire.id.1st != kit.list$sire.id.2nd, rbinom(nrow(kit.list), 1, true.sire.chance), 1) # 85% chance that the kits are sired by 2nd mating
-  kit.list$true.sire <- ifelse( kit.list$true.sire.check == 0, kit.list$sire.id.1st, kit.list$sire.id.2nd)
+  kit.list$true.sire.check <-
+    ifelse(kit.list$sire.id.1st != kit.list$sire.id.2nd,
+           rbinom(nrow(kit.list), 1, true.sire.chance),
+           1) # 85% chance that the kits are sired by 2nd mating
+  kit.list$true.sire <-
+    ifelse(kit.list$true.sire.check == 0,
+           kit.list$sire.id.1st,
+           kit.list$sire.id.2nd)
   kit.list[, `:=`(true.sire.fert = 
                     ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
                            kit.list$sire.fert.2nd, kit.list$sire.fert.1st), 
@@ -2547,7 +2597,7 @@ write.table(format(x[,.(dam.id,prodyear,dam.age,obs_fert)], nsmall=1), file= out
 }
 } 
 ############### make dam.age checks #################
-YearlingEffectOnFertility <- function (x,y){ # x = mating.list, y = year
+YearlingEffectOnFertility <- function (x,y,yearling.effect){ # x = mating.list, y = year
   dam.age <- numeric(nrow(x))
   for (i in 1:nrow(x)) { # this is to change the parity into a two class thing
     if (y - x$birthyear.dam[i] == 1) {
@@ -2688,7 +2738,7 @@ CalculateBLUP <- function () {
  
 ############### Create observation file for phenotypes #################
 # currently one phenotype file is made
-WriteObservations <- function (mating.list, next.gen, next.gen.males,kit.list,year,p) {
+WriteObservations <- function (mating.list, next.gen, next.gen.males,kit.list,year,p,sorting.prop) {
   matinglist <- mating.list[,c("dam.id","obs_fert"),with=FALSE]
   setnames(matinglist, "dam.id", "id")
   if("obs_fert" %in% colnames(next.gen)) {
@@ -2713,11 +2763,23 @@ WriteObservations <- function (mating.list, next.gen, next.gen.males,kit.list,ye
   temp <- next.gen.males[, c("id","dam.id", "phenotype.bw.oct", "live.score", "dam.age","sex", "birthyear", "obs_fert","own_littersize"),with=F]
   writefile <- rbind(writefile, temp) #rbind the males first
   if (year >1) { # this is to "remove" the body weight and quality measurement for females so they do not appear twice
-    # writefile$phenotype.bw.oct <- as.integer(-9999)
-    # writefile$live.score <- as.integer(-9999)
+    writefile$phenotype.bw.oct <- as.integer(-9999)
+    writefile$live.score <- as.integer(-9999)
     
   }
   kit.list[,`:=`(dam.age= as.integer(0),obs_fert = as.integer(-9999))] 
+  if (sorting.prop != 1) {
+    # hingað
+    numb.animals.to.sort <- ceiling(nrow(kit.list)*(1-sorting.prop))
+   animals.to.mask <-  kit.list[,c("id"),with=FALSE][sample(.N,numb.animals.to.sort)]
+  animals.to.mask <- merge(animals.to.mask,kit.list,by="id", all.x=TRUE)
+  animals.to.mask[,`:=`(phenotype.bw.oct= as.integer(-9999),live.score = as.integer(-9999))]
+  sd <- setdiff(kit.list$id, animals.to.mask$id)
+  sd <- is.element(kit.list$id, sd)
+  kit.list <- kit.list[sd, ]
+  kit.list <- rbind(kit.list,animals.to.mask)
+  
+   }
   temp <- kit.list[, c("id", "dam.id","phenotype.bw.oct", "live.score", "dam.age","sex", "birthyear","own_littersize" ,"obs_fert"), with=FALSE]
   writefile <- rbind (writefile, temp)
   writefile[is.na(writefile)]	=	as.integer(-9999)
@@ -2802,7 +2864,7 @@ MaskKits <- function (kitlist) {
 ############### Random Culling ##############
 # random culling is implemented since survival is not very heritable and a lot of effort
 # TODO make more variability in 
-RandCull <- function (kitlist) {
+RandCull <- function (kitlist,cull.ratio) {
 
     kitlist[, SO:=rbinom(nrow(kitlist), 1, cull.ratio)]
   kitlist <- subset(kitlist, SO == 1  )
@@ -2902,7 +2964,8 @@ RandCull <- function (kitlist) {
    
    return(kit.list) 
  }
- 
+ ############### Write observation file for body weight ####################
+ # defunct
  WriteObservationFileBodyWeight <- function (x,year,p) {
    inter <- as.integer(rep(1, times=nrow(x))) # intercept for the quality regression
    x<- cbind(x, inter)
@@ -3259,8 +3322,39 @@ file = skin.metrics.males
    return(solutions)
  }
  ################# Write the log file #####################
- WriteLogFile <- function (n.females, n,nruns,cull.ratio) {
-   logfile <- file(description = "log.log", open = "w")
+ WriteLogFile <-
+   function ( n.females,
+                 n,
+                 nruns,
+                 phenotypic,
+                 blup,
+                 mblup,
+                 selection.method,
+                 quantile.setting.ls,
+                 quantile.setting.bw,
+                 weight.fert.kits,
+                 weight.bw.kits,
+                 weight.qual.kits, 
+                 weight.fert.old.females,
+                 weight.bw.old.females,
+                 weight.qual.old.females,
+                 male.ratio,
+                 n.males,
+                 male.inf,
+                 prop.oldfemales,
+                 max.age.females,
+                 crossmating,
+                 purebreeding,
+                 cull.ratio,
+                 feed.price,
+                 variable.costs,
+                 use.true.sire,
+                 use.blup.to.assort.mat,
+                 trace.ped,
+                 intensity.remating
+   ) 
+     {
+     logfile <- file(description = "log.log", open = "w")
    cat("Logfile from MinkSim",file=logfile)
    cat("\n", file = logfile)
    cat("Simulation started",file=logfile,sep = "\t")
@@ -3323,41 +3417,39 @@ file = skin.metrics.males
    }
    
    cat("Controls for simulation", file = logfile, sep="\n")
-   cat("Number of females on farm",n.females, file=logfile, sep="\t")
+   cat("Number of females on farm                      	︱",n.females, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Number of replicates",nruns, file=logfile, sep="\t")
+   cat("Number of replicates	                        ︱",nruns, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Number of years per replicates",n, file=logfile, sep="\t")
+   cat("Number of years per replicates	                ︱",n, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Males per female",male.ratio, file=logfile, sep="\t")
+   cat("Males per female                              	︱",male.ratio, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Number of males",n.males, file=logfile, sep="\t")
+   cat("Number of males	                                ︱",n.males, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Proportion of males barren",1-male.inf, file=logfile, sep="\t")
+   cat("Proportion of males barren                  	︱",1-male.inf, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Proportion of females older than 1",prop.oldfemales, file=logfile, sep="\t")
+   cat("Proportion of females older than 1	            ︱",prop.oldfemales, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Max age of females",max.age.females, file=logfile, sep="\t")
+   cat("Max age of females	                            ︱",max.age.females, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Systematic crossmating, 0 = no, 1 = yes",crossmating, file=logfile, sep="\t")
+   cat("Systematic crossmating, 0 = no, 1 = yes      	︱",crossmating, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Systematic purebreeding, 0 = no, 1 = yes",purebreeding, file=logfile, sep="\t")
+   cat("Systematic purebreeding, 0 = no, 1 = yes     	︱",purebreeding, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Random culling ratio",cull.ratio, file=logfile, sep="\t")
+   cat("Random culling ratio                        	︱",cull.ratio, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Feed price per kg",feed.price, file=logfile, sep="\t")
+   cat("Feed price per kg                              	︱",feed.price, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Variable costs per skin",variable.costs, file=logfile, sep="\t")
+   cat("Variable costs per skin                     	︱",variable.costs, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Max age of females",max.age.females, file=logfile, sep="\t")
+   cat("Use true sire in pedigree, 0=no, 1 = yes    	︱",use.true.sire, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Use true sire in pedigree, 0=no, 1 = yes",use.true.sire, file=logfile, sep="\t")
+   cat("Use EBV to rank males in mating, 0=no, 1=yes	︱",use.blup.to.assort.mat, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Use EBV to rank males in mating, 0=no, 1=yes",use.blup.to.assort.mat, file=logfile, sep="\t")
+   cat("Trace pedigree, 0=no, 1=yes                  	︱",trace.ped, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Trace pedigree, 0=no, 1=yes",trace.ped, file=logfile, sep="\t")
-   cat("\n", file = logfile)
-   cat("Proportion of males to deselect in 2nd mating",intensity.remating, file=logfile, sep="\t")
+   cat("Proportion of males to deselect in 2nd mating	︱",intensity.remating, file=logfile, sep="\t")
    cat("\n", file = logfile)
    
    

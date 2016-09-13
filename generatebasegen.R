@@ -1,23 +1,79 @@
 ############### Documentation ###################
 # This function connects all the underlying functions and goes through the first
 # generation and makes and selects offspring, creates a new pedigree
-RunFirstYear <- function (p,year,selection.method,mblup, trace.ped)  { # p = is the loopcounter for the replicates
-  p <- p
-  stat.crate <- c(0,0,0,0,0,0) # temporary holding space for values
+RunFirstYear <-
+  function (p, # p = is the loopcounter for the replicates
+            year,
+            selection.method,
+            mblup,
+            trace.ped,
+            crossmating,
+            make.obs.file,
+            leg2,
+            t,
+            n.females,
+            mating.will.yearling.1st,
+            mating.will.yearling.2nd,
+            n.males,
+            male.ratio,
+            male.inf,
+            intensity.remating,
+            use.blup.to.assort.mat,
+            purebreeding,
+            pr.barren.double.mating.yearling,
+            pr.barren.double.mating.old,
+            pr.barren.one.mating.yearling,
+            pr.barren.one.mating.old,
+            yearling.effect,
+            cull.ratio,
+            leg1,
+            max.age.females,
+            prop.oldfemales,
+            quantile.setting.ls,
+            quantile.setting.bw,
+            true.sire.chance,
+            sorting.prop
+  )
+  {
+    p <- p
+    stat.crate <- c(0,0,0,0,0,0) # temporary holding space for values
   if (make.obs.file == 1) {
     pedigree <- file(description = paste("pedigree_",p, sep=""), open="w")
   }
   year <- 1
   ModifyDIRFile (p, mblup, trace.ped)
   ############### Create base population ############
-  gen0.females <- GenerateBaseFemales(leg2,t) # create females
-  effgen0.males <- GenerateBaseMales(leg2,t) # create males
+  gen0.females <- GenerateBaseFemales( leg2,
+                                       t,
+                                       n.females,
+                                       mating.will.yearling.1st,
+                                       mating.will.yearling.2nd,
+                                       qual.classes ) # create females
+  effgen0.males <- GenerateBaseMales(leg2,
+                                     t,
+                                     n.males,
+                                     male.ratio,
+                                     male.inf,
+                                     qual.classes,
+                                     intensity.remating) # create males
   ################## assign each female a male,  based on his mating willingness ####
-   mating.list <- mate (effgen0.males,gen0.females,year)
+  mating.list <- mate (
+    effgen0.males,
+    gen0.females,
+    year,
+    use.blup.to.assort.mat,
+    selection.method,
+    crossmating,
+    purebreeding,
+    pr.barren.double.mating.yearling,
+    pr.barren.double.mating.old,
+    pr.barren.one.mating.yearling,
+    pr.barren.one.mating.old
+  )
   # ############### make gen 0 pedigree & and some bookkeeping ##############
   # # This is not really needed at this point since all gen0 animals are unrelated
   # 
-  mating.list <- YearlingEffectOnFertility (mating.list, year)
+  mating.list <- YearlingEffectOnFertility (mating.list, year,yearling.effect)
   if (crossmating == 1) {
   mating.list = transform( mating.list,  obs_fert =  rpois(nrow(mating.list),
                                                            lambda = exp(1.99 + perm.env.ls + dam.fert+dam.age))*barren*semen.quality)
@@ -35,11 +91,11 @@ RunFirstYear <- function (p,year,selection.method,mblup, trace.ped)  { # p = is 
   # ############### Breeding value of offspring ###############################
   # # put in dam id's and make genetic value of each kit for fertility
   # # see utility functions for bv function
-  kit.list <- MakeKitsGen0(mating.list, effgen0.males,year,leg2)
+  kit.list <- MakeKitsGen0(mating.list, effgen0.males,year,leg2, qual.classes,true.sire.chance)
   # 
   stat.crate[3] <- mean(kit.list$true.sire == kit.list$sire.assumed)
   stat.crate[4] <-nrow(kit.list)
-  kit.list <- RandCull(kit.list)
+  kit.list <- RandCull(kit.list,cull.ratio)
   kit.list.for.stats <- kit.list
   stat.crate[7] <- nrow(kit.list)
   kit.list <- RFI(kit.list, leg2, leg1, t)
@@ -49,16 +105,19 @@ RunFirstYear <- function (p,year,selection.method,mblup, trace.ped)  { # p = is 
   pedfile <- MakePedfileGen0(gen0.females,effgen0.males)
   if (selection.method == blup) {
     big.pedfile <- WriteBigPedigree(kit.list, pedfile,year,p)
-    WriteObservations(mating.list, gen0.females,effgen0.males,kit.list,year,p)
+    WriteObservations(mating.list, gen0.females,effgen0.males,kit.list,year,p,sorting.prop)
     WriteMBLUPObservations(mating.list, gen0.females, effgen0.males, kit.list, year,p)
     }
   kit.list$birthyear.dam <- NULL # to  do figure out error
   # ############### Selection of first generation #########################################
   # # We choose females to fit n.females, based on prop of old females
   # # Note: currently all females are replaced in year 1
-  old.females <- PhenoSelectionOldFemales ( gen0.females,mating.list,year)
-  next.gen <- PhenoSelectionFemaleKits (kit.list, old.females)
-  next.gen.males <- PhenoSelectionMaleKits (kit.list)
+  old.females <- PhenoSelectionOldFemales ( gen0.females,mating.list,year,max.age.females,
+                                            n.females,
+                                            prop.oldfemales )
+  next.gen <- PhenoSelectionFemaleKits (kit.list, old.females, quantile.setting.ls,
+                                        quantile.setting.bw)
+  next.gen.males <- PhenoSelectionMaleKits (kit.list,quantile.setting.ls,quantile.setting.bw)
   if("f0.dam" %in% colnames(old.females)) {
     set( old.females, j=which(colnames(old.females) %in%
                                 "f0.dam")  , value=NULL )

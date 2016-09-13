@@ -1,0 +1,477 @@
+---
+title: "Report from MinkSim"
+author: "K?ri Gautason"
+date: "2 sep 2016"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+# Results from MinkSim
+
+A variety of key figures and plots will be generated
+
+## Table of Contents
+  1. Litter size and reproduction results
+  2. Body weight and skin length
+  3. Live graded quality and skin quality
+  4. Feeding costs
+  5. Economics
+
+##   1. Litter size and reproduction results
+
+### Summary statistics
+```{r results="asis", echo=FALSE}
+library(ggplot2)
+  setwd("C:/Users/au384062/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
+library(doBy)        #
+
+  results <- read.table("results", header = T, row.names = NULL)
+summarized <-
+  summaryBy(
+    Gen + Gmean + Gvar + Fis + Obs.fert + mean.phenotype.bw.females + gen.value.bs +
+      mean.phenotype.bw.males + bw.var+cor.bw.to.blup+cor.bw.phenotype+skin.length.mean+
+    skin.length.var+
+    skin.qual.mean+
+    skin.qual.var+
+    cor.ls.blup+
+    cor.ls.own.to.ls+
+      mated.females+
+      barren.females+
+      numb.false.sires+
+      numb.kits+
+      remating.perc+
+      perc.single.mat+
+      mean.gen.val.qual+
+      var.gen.val.qual+
+      cor.blup.qual.gen.val.qual+
+      cor.live.score.skin.qa+
+      cor.blup.qual.to.skin.qual+
+      survived.kits+feed.per.skin+avg.skin.length.male+skin.price+avg.skin.length.female
+    +pr.farm.margin+feeding.cost+avg.skin.price
+    
+    ~ Gen,
+    data = results, 
+    FUN = c(mean, var), 
+    na.rm = T
+  ) 
+
+
+data <- matrix(c(
+              "Mated females",
+               "Barren females%",
+               "% kits w false sires",
+               "% females with same male 2", 
+               "% females single-mated",
+               round( mean(summarized$mated.females.mean),2), 
+               round(mean(summarized$barren.females.mean)/mean(summarized$mated.females.mean)*100,2),
+               round((1-mean(summarized$numb.false.sires.mean))*100,2), 
+               round(mean(summarized$remating.perc.mean*100),2),
+               round(mean(summarized$perc.single.mat.mean)*100),2),
+               nrow = 5, ncol = 2)
+knitr::kable(data, caption= "Key Figures",digits = 2)
+```
+
+
+### Litter size per mated female
+This is defined as kits born alive. Bars show standard deviation of each replicate.
+
+```{r summarized,echo=FALSE}
+
+
+qplot(Gen, Obs.fert.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = Obs.fert.mean - sqrt(Obs.fert.var),
+    ymax = Obs.fert.mean + sqrt(Obs.fert.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2)+labs( title = "Kits per mated female", x= "Year of simulation", y= "kits/female")
+
+```
+
+### Genetic trend for litter size
+
+Genetic trend of litter size within age cohort
+
+```{r, echo=FALSE}
+qplot(Gen, Gmean.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = Gmean.mean - sqrt(Gmean.var),
+    ymax = Gmean.mean + sqrt(Gmean.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2)+
+  labs( title = "Genetic trend of litter size", x= "Year of simulation", y= "mean genetic value of LS")
+```
+
+### Genetic variance of litter size
+
+Shows the trend in the genetic variance of litter size through the simulation. Theoretically it should slowly decrease over time. Increase indicates assortative mating or possible, a bug.
+
+```{r, echo=FALSE}
+qplot(Gen, Gvar.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = Gvar.mean - sqrt(Gvar.var),
+    ymax = Gvar.mean + sqrt(Gvar.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2)+labs( title = "Genetic variance of litter size", x= "Year of simulation", y= "Genetic variance")
+
+```
+
+### Inbreeding coefficient
+
+Program tracks inbreeding through the simulation. 
+
+```{r, echo=FALSE}
+qplot(Gen, Fis.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = Fis.mean - sqrt(Fis.var),
+    ymax = Fis.mean + sqrt(Fis.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2)+labs( title = "Inbreeding Coefficient", x= "Year of simulation", y= "F")
+
+```
+
+### Accuracy of selection criterion
+
+This is defined as the correlation between the phenotype of the kits dam to the true breeding value of the kit
+
+```{r, echo=FALSE}
+qplot(Gen, cor.ls.own.to.ls.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = cor.ls.own.to.ls.mean - sqrt(cor.ls.own.to.ls.var),
+    ymax = cor.ls.own.to.ls.mean + sqrt(cor.ls.own.to.ls.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2)+
+  labs( title = "Accuracy of phenotype as selection criterion", x= "Year of simulation", y= "Cor( Ydam,TBV )")
+
+```
+
+### Accuracy of breeding values
+
+This is defined as the correlation between the estimated breeding value and the true breeding value
+
+```{r, echo=FALSE}
+qplot(Gen, cor.ls.blup.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = cor.ls.blup.mean - sqrt(cor.ls.blup.var),
+    ymax = cor.ls.blup.mean + sqrt(cor.ls.blup.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2) +
+  labs(title = "Accuracy of BLUP", x="Simulation Year", y="Accuracy")
+
+```
+
+## 2. Body weight and skin length
+
+### Body weight of females
+Body weight of females at 205 days of age, mean within age cohort. 
+
+```{r, echo=FALSE}
+
+qplot(Gen, mean.phenotype.bw.females.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = mean.phenotype.bw.females.mean - sqrt(mean.phenotype.bw.females.var),
+    ymax = mean.phenotype.bw.females.mean + sqrt(mean.phenotype.bw.females.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2) +
+  labs(title = "Mean body weight of females", x="Simulation Year", y="Body Weight [kg]")
+```
+### Body weight of males
+Body weight of males at 205 days of age, mean within age cohort. 
+```{r,echo=FALSE}
+qplot(Gen, mean.phenotype.bw.males.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = mean.phenotype.bw.males.mean - sqrt(mean.phenotype.bw.males.var),
+    ymax = mean.phenotype.bw.males.mean + sqrt(mean.phenotype.bw.males.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2)+labs(title= "Mean body weight of males", x = "Simulation Year", y = "Body weight [kg]")
+
+```
+
+### Genetic variance of body weight
+
+```{r,echo=FALSE}
+qplot(Gen, bw.var.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = bw.var.mean - sqrt(bw.var.var),
+    ymax = bw.var.mean + sqrt(bw.var.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2)+
+  labs(title= "Genetic variance of body weight", x = "Simulation Year", y = "Genetic variance [kg^2]")
+
+```
+### Skin length phenotype, male skins
+
+This shows the development in average skin length, note that this is within age cohort and includes all animals, even those not pelted
+
+```{r,echo=FALSE}
+qplot(Gen, avg.skin.length.male.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = avg.skin.length.male.mean - sqrt(avg.skin.length.male.var),
+    ymax = avg.skin.length.male.mean + sqrt(avg.skin.length.male.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2)+
+    labs(title= "Skin length of males", x = "Simulation Year", y = "Skin length [cm]")+
+ geom_hline(aes(yintercept=101))+
+  annotate("text", x = 11, y = 102, label = "50 size")+
+ geom_hline(aes(yintercept=95))+
+    annotate("text", x = 11, y = 96, label = "40 size")+
+ geom_hline(aes(yintercept=89))+
+  annotate("text", x = 11, y = 90, label = "30 size")
+
+```
+
+### Skin length phenotype, female skins
+
+This shows the development in average skin length, note that this is within age cohort and includes all animals, even those not pelted
+
+```{r,echo=FALSE}
+qplot(Gen, avg.skin.length.female.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = avg.skin.length.female.mean - sqrt(avg.skin.length.female.var),
+    ymax = avg.skin.length.female.mean + sqrt(avg.skin.length.female.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2) +
+    labs(title= "Skin length of females", x = "Simulation Year", y = "Skin length [cm]")+
+ geom_hline(aes(yintercept=83))+
+  annotate("text", x = 11, y = 84, label = "0 size")+
+ geom_hline(aes(yintercept=77))+
+    annotate("text", x = 11, y = 78, label = "1 size")+
+ geom_hline(aes(yintercept=71))+
+  annotate("text", x = 11, y = 72, label = "2 size")
+
+```
+
+## 3. Skin quality and live graded quality
+
+### Average quality of skins
+
+Note that the unit here is difficult to interpret. It is in phenotypic units, i.e. includes both environment and genetic part. Defined to start as the average distribution of skins in 2015 from Norway, Sweden, Denmark and Iceland. Quality of all other skins sold are fixed.
+
+```{r, echo= FALSE}
+qplot(Gen, skin.qual.mean.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = skin.qual.mean.mean - sqrt(skin.qual.mean.var),
+    ymax = skin.qual.mean.mean + sqrt(skin.qual.mean.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2)+
+      labs(title= "Skin quality phenotype", x = "Simulation Year", y = "Skin qual [undefined]")
+
+```
+
+### Accuracy of EBV of quality - live graded quality
+Defined as the correlation between EBV and TBV of live graded quality. This is the correlation to the continous phenotype, not the live graded score(discrete variable).
+
+```{r, echo=FALSE}
+qplot(Gen, cor.blup.qual.gen.val.qual.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = cor.blup.qual.gen.val.qual.mean - sqrt(cor.blup.qual.gen.val.qual.var),
+    ymax = cor.blup.qual.gen.val.qual.mean + sqrt(cor.blup.qual.gen.val.qual.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2) + 
+  geom_line(linetype =2) +labs(title = "Accuracy of EBV - live graded quality", x="Simulation Year", y="Accuracy")
+
+```
+
+### Accuracy of EBV of quality - skin quality
+Defined as the correlation between EBV and TBV of live graded quality. This is the correlation to the continous phenotype, not the live graded score(discrete variable).
+
+```{r, echo=FALSE}
+qplot(Gen, cor.blup.qual.to.skin.qual.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = cor.blup.qual.to.skin.qual.mean - sqrt(cor.blup.qual.to.skin.qual.var),
+    ymax = cor.blup.qual.to.skin.qual.mean + sqrt(cor.blup.qual.to.skin.qual.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2) + 
+  geom_line(linetype =2) +labs(title = "Accuracy of EBV - skin quality", x="Simulation Year", y="Accuracy")
+
+```
+
+## 4. Feed costs
+### Feed costs per produced skin
+
+Note that this is only the feeding costs from july to november. It is currently missing the feeding costs of the breeding stock, the feed consumed by females during lactation and feed consumed by kits in june
+
+```{r, echo= FALSE}
+qplot(Gen, feeding.cost.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = feeding.cost.mean - sqrt(feeding.cost.var),
+    ymax = feeding.cost.mean + sqrt(feeding.cost.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2)+
+      labs(title= "Feeding cost per produced skin", x = "Simulation Year", y = "Feeding costs [DKK]")
+
+```
+
+## 5. Economics
+
+Here i will put in economical analyses of the runs, given some assumptions. I want to include margin pr farm, pr female and pr skin
+
+### Average skin price across farm
+
+Here is the raw average of sold skins. It is important to keep in mind that there is a bias upwards in this price when the litter size drops as proportionally fewer female skins will be sold.
+
+```{r, echo=FALSE}
+qplot(Gen, avg.skin.price.mean, data=summarized) + geom_line(linetype =2) +geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = avg.skin.price.mean - sqrt(avg.skin.price.var),
+    ymax = avg.skin.price.mean + sqrt(avg.skin.price.var)
+  ),
+  width = 0.25,
+  data = summarized
+)+
+  labs(title ="Average skin price", x="Simulation Year", y="Skin price [DKK]")
+```
+
+### Margin per farm pr year
+
+This is calculated as income from skins minus the variable costs, currently the variable costs are rather simplistic and need to be redone in a more elegant manner. 
+
+```{r,echo=FALSE}
+qplot(Gen, pr.farm.margin.mean, data=summarized) + geom_line(linetype =2) +geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = pr.farm.margin.mean - sqrt(pr.farm.margin.var),
+    ymax = pr.farm.margin.mean + sqrt(pr.farm.margin.var)
+  ),
+  width = 0.25,
+  data = summarized
+)+
+  labs(title ="Pr. farm margin", x="Simulation Year", y="Margin [DKK]")
+
+
+```
+
+### Average price of female skins
+
+```{r,echo=FALSE}
+  setwd("C:/Users/au384062/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
+
+skin.metrics.females <- read.table("skin_metrics_females", header=T, row.names = NULL)
+female.skins <- summaryBy(S50/numb.animals + 
+                     S40/numb.animals +
+                     S30/numb.animals+
+                     S00/numb.animals+
+                     S0/numb.animals+
+                     S1/numb.animals+
+                     S2/numb.animals+
+                     S3/numb.animals+
+                     S4/numb.animals+
+                     S5/numb.animals+
+                     purple/numb.animals+
+                     platinum/numb.animals+
+                     burgundy/numb.animals+
+                     ivory/numb.animals+
+                     vel3/numb.animals+
+                     vel2/numb.animals+
+                   vel1/numb.animals+
+                   kl/numb.animals+
+                  long.nap/numb.animals+
+                    avg.price.females
+                   ~ Gen, data=skin.metrics.females,FUN = c(mean, var))
+qplot(Gen, avg.price.females.mean, data=female.skins) + geom_line(linetype =2) +geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = avg.price.females.mean - sqrt(avg.price.females.var),
+    ymax = avg.price.females.mean + sqrt(avg.price.females.var)
+  ),
+  width = 0.25,
+  data = female.skins
+)+
+  labs(title ="Average price of female skins", x="Simulation Year", y="Sales price [DKK]")
+
+```
+
+### Average price of male skins
+
+### Average price of female skins
+
+```{r,echo=FALSE}
+  setwd("C:/Users/au384062/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
+
+skin.metrics.males <- read.table("skin_metrics_males", header=T, row.names = NULL)
+
+male.skins <- summaryBy(S50/numb.animals + 
+                     S40/numb.animals +
+                     S30/numb.animals+
+                     S00/numb.animals+
+                     S0/numb.animals+
+                     S1/numb.animals+
+                     S2/numb.animals+
+                     S3/numb.animals+
+                     S4/numb.animals+
+                     S5/numb.animals+
+                     purple/numb.animals+
+                     platinum/numb.animals+
+                     burgundy/numb.animals+
+                     ivory/numb.animals+
+                     vel3/numb.animals+
+                     vel2/numb.animals+
+                     vel1/numb.animals+
+                     kl/numb.animals+
+                     long.nap/numb.animals+
+                     avg.price.males
+                   ~ Gen, data=skin.metrics.males,FUN = c(mean, var))
+
+qplot(Gen, avg.price.males.mean, data=male.skins) + geom_line(linetype =2) +geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = avg.price.males.mean - sqrt(avg.price.males.var),
+    ymax = avg.price.males.mean + sqrt(avg.price.males.var)
+  ),
+  width = 0.25,
+  data = male.skins
+)+
+  labs(title ="Average price of male skins", x="Simulation Year", y="Sales price [DKK]")
+
+```
+
+

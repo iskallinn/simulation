@@ -37,7 +37,8 @@ RunSimulation <-
             weight.qual.old.females,
             weight.bw.kits,
             weight.fert.kits,
-            weight.qual.kits) 
+            weight.qual.kits,
+            sorting.prop) 
 {
   stat.crate <- c(0,0,0,0,0,0,0)
   next.gen <- rbindlist(x[1])
@@ -155,7 +156,7 @@ RunSimulation <-
     stat.crate[3] <- mean(kit.list$true.sire == kit.list$sire.assumed)
     if(trace.ped == 1 ){TracePed(kit.list,next.gen)}
     if (mblup == 0) {
-     WriteObservations(mating.list, next.gen,next.gen.males,kit.list,year,p)
+     WriteObservations(mating.list, next.gen,next.gen.males,kit.list,year,p,sorting.prop)
       solutions <- CalculateBLUP ()
     } else if (mblup ==1 ) { WriteMBLUPObservations(mating.list, next.gen, next.gen.males, kit.list, year,p)
      solutions <- CalculateMBLUP ()
@@ -280,9 +281,9 @@ RunSimulation <-
     #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
     feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
     skin.price,
-    sum(kit.list$skin.price, na.rm =T)-(nrow(kit.list)*variable.costs)-feed.intake*feed.price, #pr farm margin
+    skin.price*n.females-(nrow(kit.list)*variable.costs)-feed.intake*feed.price, #pr farm margin
     feed.intake*feed.price/nrow(kit.list.nomasked),
-    mean(kit.list$skin.price),
+    skin.price*n.females/nrow(kit.list.nomasked),
     sep = "\t",
     file = con
   )
