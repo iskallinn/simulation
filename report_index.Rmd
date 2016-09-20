@@ -334,7 +334,7 @@ qplot(Gen, cor.blup.qual.to.skin.qual.mean, data = summarized) + geom_errorbar(
 ## 4. Feed costs
 ### Feed costs per produced skin
 
-Note that this is only the feeding costs from july to november. It is currently missing the feeding costs of the breeding stock, the feed consumed by females during lactation and feed consumed by kits in june
+Note that this is a beta version with all the feeding costs, minus the amount kits eat in weeks 6-9
 
 ```{r, echo= FALSE}
 qplot(Gen, feeding.cost.mean, data = summarized) + geom_errorbar(

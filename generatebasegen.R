@@ -174,6 +174,9 @@ RunFirstYear <-
       sum(kit.list$skin.price, na.rm =T)-(nrow(kit.list)*variable.costs)-feed.intake*feed.price, #pr farm margin
       (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),
       mean(kit.list$skin.price),
+      0,
+      0,
+      0,
       sep = "\t",
       file = con
     )  } else if (selection.method == phenotypic) {

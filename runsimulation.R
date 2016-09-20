@@ -38,7 +38,9 @@ RunSimulation <-
             weight.bw.kits,
             weight.fert.kits,
             weight.qual.kits,
-            sorting.prop) 
+            sorting.prop,
+            pseudo.import,
+            pseudo.import.prop) 
 {
   stat.crate <- c(0,0,0,0,0,0,0)
   next.gen <- rbindlist(x[1])
@@ -63,8 +65,14 @@ RunSimulation <-
       use.comb.ind.for.males,
       selection.method,
       weighing.method,
-      intensity.remating
+      intensity.remating,
+      pseudo.import,
+      pseudo.import.prop,
+      weight.bw.kits,
+      weight.fert.kits,
+      weight.qual.kits
     )
+  # browser()
   next.gen <-
     PrepareFemalesForMating(
       next.gen,
@@ -246,6 +254,9 @@ RunSimulation <-
     kit.list <- merge(kit.list.masked, solutions, by= "id", all.x=TRUE) # merge to solutions of blup of fertility
     stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
     stat1 <- subset(kit.list, sex==1)#males
+    lm1  <- lm(data=kit.list, litter.size~blup.fert )
+    lm2  <- lm(data=kit.list, live.qual~blup.qual )
+    lm3  <- lm(data=kit.list, add.gen.bw.m~blup.bwnov )
     
     cat (
     year,
@@ -285,6 +296,10 @@ RunSimulation <-
     skin.price*n.females-(nrow(kit.list)*variable.costs)-feed.intake*feed.price, #pr farm margin
     (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),
     skin.price*n.females/nrow(kit.list.nomasked),
+    coef(lm1)[2],
+    coef(lm2)[2],
+    coef(lm3)[2],
+    
     sep = "\t",
     file = con
   )

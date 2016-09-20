@@ -1972,7 +1972,12 @@ PrepareMalesForMating <-
             use.comb.ind.for.males,
             selection.method,
             weighing.method,
-            intensity.remating) {
+            intensity.remating,
+            pseudo.import,
+            pseudo.import.prop,
+            weight.bw.kits,
+            weight.fert.kits,
+            weight.qual.kits) {
     # x = next.gen.males
     setkey(x, id)
   #   next.gen.males[next.gen.males,semen.quality:=rbinom( nrow(next.gen.males),  1,  male.inf )]
@@ -1994,6 +1999,15 @@ for (i in 1:ceiling((1-intensity.remating)*nrow(x))) {
   x$can.remate[i] <- 1
 }
   x <- subset( x, mating.willingness.1st > 0 ) 
+  if (pseudo.import == 1) {
+  x <- MaskPseudoImport (pseudo.import,
+                         pseudo.import.prop,
+                         x,
+                         selection.method,
+                         weight.bw.kits,
+                         weight.fert.kits,
+                         weight.qual.kits)
+  }
   return(x)
 } 
 ############### mating will of females #############
@@ -3457,7 +3471,10 @@ file = skin.metrics.males
    
  }
  
- 
+ ################## Feed usage of adults #########################
+ # this simple functions used a simple way to generate feeding costs for the breeders
+ # males are considered to live for 110 days after pelting and females 365 days, use data from Tauson et al 2004
+ # & mink nutrition book and assume K_lactation = 0.78 (like in sows)
  FeedUsageBreeders <- function (mating.list, next.gen.males, next.gen )   {
 next.gen.males$feed.used.males <- (next.gen.males$phenotype.bw.oct^0.75*0.527*110)/5.0208
 feed.used.males <- sum(next.gen.males$feed.used.males)
@@ -3475,3 +3492,41 @@ return(feed.used.breeders)
 
 } 
  
+############### Pseudo imported males ##########################
+ # Idea is to delete pedigree information about a certain proportion of 
+ # males to use as a simple way to look at possible bias that comes about because
+ # of missing pedigree information when importing from a better farm
+ 
+ MaskPseudoImport <-
+   function (pseudo.import,
+             pseudo.import.prop,
+             next.gen.males,
+             selection.method,
+             weight.bw.kits,
+             weight.fert.kits,
+             weight.qual.kits
+) 
+  {
+     # browser()
+     
+         if (selection.method ==2  ) { # 2 == blup
+           mean.SL <- mean(next.gen.males$skin.length.male)
+           mean.SQ <- mean(next.gen.males$skin.qual)
+           mean.LS <- mean(next.gen.males$litter.size)
+           sd.SL <- sqrt(var(next.gen.males$skin.length.male))
+           sd.SQ <- sqrt(var(next.gen.males$skin.qual))
+           sd.LS <- sqrt(var(next.gen.males$litter.size))
+           next.gen.males[, rank := 100 + (skin.length.male - mean.SL)/sd.SL*10 * weight.bw.kits +
+                            (skin.qual-mean.SQ)/sd.SQ*10 * weight.qual.kits + (litter.size-mean.LS)/sd.LS*10 * weight.fert.kits]
+           truncation <-
+             quantile(next.gen.males$rank, probs = (1 - pseudo.import.prop))
+           next.gen.males[, mask := ifelse (next.gen.males$rank < truncation, 0, 1)]
+           next.gen.males$sire.assumed <-
+             ifelse(next.gen.males$mask == 1, 0, next.gen.males$sire.assumed)
+           next.gen.males$dam.id <-
+             ifelse(next.gen.males$mask == 1, 0, next.gen.males$sire.assumed)
+           set(next.gen.males, j = which(colnames(next.gen.males) %in%
+                              c("mask", "rank"))  , value = NULL)
+           return(next.gen.males)
+    }
+   }

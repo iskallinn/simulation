@@ -12,6 +12,8 @@ Simulation <- function (
   nruns = 1,                     # how many replicates of the simulation
   n = 5,                         # number of generation per replicate
   assortative = 1,
+  pseudo.import = 1,             # Delete pseudo imported male pedigree
+  pseudo.import.prop = 0.2,      # proportion of best quality males to mask
   mating.method = assortative,   # mating method, random or assortative
   selection.method = phenotypic,       # selection strategy, 
   weighing.method = oct,         # control for when to weigh kits for selection cands
@@ -183,6 +185,9 @@ Simulation <- function (
     "pr.farm.margin",
     "feeding.cost",
     "avg.skin.price",
+    "reg_EBV_TBV_LS",
+    "reg_EBV_TBV_qual",
+    "reg_EBV_TBV_size",
     sep = "\t",
     file = con
   )  } else if (selection.method == 1) { # phenotypic
@@ -305,7 +310,9 @@ Simulation <- function (
           weight.bw.kits,
           weight.fert.kits,
           weight.qual.kits,
-          sorting.prop
+          sorting.prop,
+          pseudo.import,
+          pseudo.import.prop
         )
       
     }
