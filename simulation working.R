@@ -11,15 +11,16 @@ source("simulation_function.r")
 
 
 Simulation(
-  n = 10,
-  nruns = 200,
-  selection.method = phenotypic ,
+  n =10,
+  nruns = 5,
+  selection.method = 1 ,
   mblup = 0,
   make.obs.file = 0,
   cull.ratio = 0.85,
   purebreeding = 0,
   quantile.setting.ls = 0.4,
-  quantile.setting.bw,
-  crossmating = 1
+  quantile.setting.bw =0.4,
+  crossmating = 1,
+  true.sire.chance = 0.5
   )
 

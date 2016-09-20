@@ -100,6 +100,7 @@ RunSimulation <-
                                                              lambda = exp(1.95 + perm.env.ls + dam.fert+dam.age))*barren*semen.quality)
     
   }
+  feed.usage.breeders <- FeedUsageBreeders(mating.list, next.gen.males, next.gen )
   set(mating.list,
       j = which(colnames(mating.list) %in% c("semen.quality", "dam.age")) ,
       value = NULL)
@@ -282,7 +283,7 @@ RunSimulation <-
     feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
     skin.price,
     skin.price*n.females-(nrow(kit.list)*variable.costs)-feed.intake*feed.price, #pr farm margin
-    feed.intake*feed.price/nrow(kit.list.nomasked),
+    (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),
     skin.price*n.females/nrow(kit.list.nomasked),
     sep = "\t",
     file = con
@@ -322,7 +323,7 @@ RunSimulation <-
       feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
       sum(kit.list$skin.price, na.rm =T)/n.females,
       sum(kit.list$skin.price, na.rm =T)-(nrow(kit.list)*variable.costs)-feed.intake*feed.price, #pr farm margin
-      feed.intake*feed.price/nrow(kit.list.nomasked),
+      (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),
       mean(kit.list$skin.price),
       sep = "\t",
       file = con

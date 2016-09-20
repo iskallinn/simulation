@@ -85,6 +85,8 @@ RunFirstYear <-
   set( mating.list, j=which(colnames(mating.list) %in% c("semen.quality","dam.age")) , value=NULL )
   stat.crate[1] <- nrow(mating.list)
   mating.list <-  subset( mating.list,  obs_fert >  0 ) # remove females who are barren or mated with barren male
+  
+  feed.usage.breeders <- FeedUsageBreeders(mating.list, effgen0.males, gen0.females )
   stat.crate[2] <- (stat.crate[1] - nrow(mating.list))
   stat.crate[5] <- mean(mating.list$sire.id.1st == mating.list$sire.id.2nd) # percentage of females mated with 1st male
   stat.crate[6] <- ( mean(mating.list$sire.id.2nd == 0)) # percentage of single mated females
@@ -170,7 +172,7 @@ RunFirstYear <-
       feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
       sum(kit.list$skin.price, na.rm =T)/n.females,
       sum(kit.list$skin.price, na.rm =T)-(nrow(kit.list)*variable.costs)-feed.intake*feed.price, #pr farm margin
-      feed.intake*feed.price/nrow(kit.list.nomasked),
+      (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),
       mean(kit.list$skin.price),
       sep = "\t",
       file = con
@@ -208,7 +210,7 @@ RunFirstYear <-
       feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
       sum(kit.list$skin.price, na.rm =T)/n.females,
       sum(kit.list$skin.price, na.rm =T)-(nrow(kit.list)*variable.costs)-feed.intake*feed.price, #pr farm margin
-      feed.intake*feed.price/nrow(kit.list.nomasked),
+      (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),
       mean(kit.list$skin.price),
       sep = "\t",
       file = con

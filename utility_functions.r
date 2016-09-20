@@ -3417,39 +3417,39 @@ file = skin.metrics.males
    }
    
    cat("Controls for simulation", file = logfile, sep="\n")
-   cat("Number of females on farm                      	︱",n.females, file=logfile, sep="\t")
+   cat("Number of females on farm                    	/",n.females, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Number of replicates	                        ︱",nruns, file=logfile, sep="\t")
+   cat("Number of replicates	                      /",nruns, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Number of years per replicates	                ︱",n, file=logfile, sep="\t")
+   cat("Number of years per replicates	               /",n, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Males per female                              	︱",male.ratio, file=logfile, sep="\t")
+   cat("Males per female                             	/",male.ratio, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Number of males	                                ︱",n.males, file=logfile, sep="\t")
+   cat("Number of males	                               /",n.males, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Proportion of males barren                  	︱",1-male.inf, file=logfile, sep="\t")
+   cat("Proportion of males barren                 	/",1-male.inf, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Proportion of females older than 1	            ︱",prop.oldfemales, file=logfile, sep="\t")
+   cat("Proportion of females older than 1	           /",prop.oldfemales, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Max age of females	                            ︱",max.age.females, file=logfile, sep="\t")
+   cat("Max age of females	                           /",max.age.females, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Systematic crossmating, 0 = no, 1 = yes      	︱",crossmating, file=logfile, sep="\t")
+   cat("Systematic crossmating, 0 = no, 1 = yes    	/",crossmating, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Systematic purebreeding, 0 = no, 1 = yes     	︱",purebreeding, file=logfile, sep="\t")
+   cat("Systematic purebreeding, 0 = no, 1 = yes   	/",purebreeding, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Random culling ratio                        	︱",cull.ratio, file=logfile, sep="\t")
+   cat("Random culling ratio                      	/",cull.ratio, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Feed price per kg                              	︱",feed.price, file=logfile, sep="\t")
+   cat("Feed price per kg                            	/",feed.price, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Variable costs per skin                     	︱",variable.costs, file=logfile, sep="\t")
+   cat("Variable costs per skin                   	/",variable.costs, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Use true sire in pedigree, 0=no, 1 = yes    	︱",use.true.sire, file=logfile, sep="\t")
+   cat("Use true sire in pedigree, 0=no, 1 = yes    /",use.true.sire, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Use EBV to rank males in mating, 0=no, 1=yes	︱",use.blup.to.assort.mat, file=logfile, sep="\t")
+   cat("Use EBV to rank males in mating, 0=no, 1=yes/",use.blup.to.assort.mat, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Trace pedigree, 0=no, 1=yes                  	︱",trace.ped, file=logfile, sep="\t")
+   cat("Trace pedigree, 0=no, 1=yes                 /",trace.ped, file=logfile, sep="\t")
    cat("\n", file = logfile)
-   cat("Proportion of males to deselect in 2nd mating	︱",intensity.remating, file=logfile, sep="\t")
+   cat("Proportion of males to deselect in 2nd mating	/",intensity.remating, file=logfile, sep="\t")
    cat("\n", file = logfile)
    
    
@@ -3457,4 +3457,21 @@ file = skin.metrics.males
    
  }
  
+ 
+ FeedUsageBreeders <- function (mating.list, next.gen.males, next.gen )   {
+next.gen.males$feed.used.males <- (next.gen.males$phenotype.bw.oct^0.75*0.527*110)/5.0208
+feed.used.males <- sum(next.gen.males$feed.used.males)
+feed.used <- numeric(nrow(mating.list))
+mating.list <- cbind(mating.list,feed.used)
+transform(mating.list,feed.used, 13*obs_fert*0.78*4.53
+                          +22.2*obs_fert*0.78*5.14+  
+                            28.6*obs_fert*.78*5.86+
+                            32.8*obs_fert*0.78*5.96)
+feed.used.females <- sum(mating.list$feed.used)
+next.gen$feed.used <- (next.gen$phenotype.bw.oct^0.75*0.527*365)/5.020
+feed.used.females <- feed.used.females + sum(next.gen$feed.used)
+feed.used.breeders <- (feed.used.females+feed.used.males)
+return(feed.used.breeders)
+
+} 
  

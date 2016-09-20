@@ -310,7 +310,7 @@ qplot(Gen, avg.skin.price.mean, data=summarized) + geom_line(linetype =2) +geom_
   width = 0.25,
   data = summarized
 )+
-  labs(title ="Average skin price", x="Simulation Year", y="Feed costs per skin [DKK]")
+  labs(title ="Average skin price", x="Simulation Year", y="Skinprice [DKK]")
 ```
 ### Margin per farm pr year
 
