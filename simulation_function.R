@@ -1,6 +1,7 @@
 Simulation <- function (  
   phenotypic = 1,  
   blup = 2,
+  cheat = 0,# to make bw obs for both males and females, only for estimating var comps
   sept = 1, # weigh kits in september CURRENTLY DEFUNCT, ONLY SEPT = 1 SUPPORTED
   oct = 0,  # weigh kits in october CURRENTLY DEFUNCT
   use.blup.to.assort.mat = 1, # if 1 then the males and females will be sorted on 
@@ -49,7 +50,6 @@ Simulation <- function (
   pr.barren.double.mating.yearling  = 0.9, # probability of double mated yearling being barren
   pr.barren.one.mating.old          = 0.9, # probability of single mated old female being barren
   pr.barren.double.mating.old       = 0.95, # probability of double mated old female being barren
-  n.males =  ceiling( n.females/male.ratio ), # calculates needed amount of males 
   cull.ratio                        = 0.85, # survival rate of kits, farmwise from 2nd cnt to pelting 
   sorting.prop                      = 1 # proportion of animals to live grade
 ) # closing paranthesis for definitions 
@@ -57,6 +57,8 @@ Simulation <- function (
   if (selection.method == phenotypic) {
     use.blup.to.assort.mat <- 0
   }
+  n.males =  ceiling( n.females/male.ratio ) # calculates needed amount of males 
+  
   #setwd("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
   setwd("C:/Users/au384062/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
   WriteLogFile( n.females,
@@ -264,7 +266,8 @@ Simulation <- function (
                       quantile.setting.ls,
                       quantile.setting.bw,
                       true.sire.chance,
-                      sorting.prop
+                      sorting.prop,
+                      cheat
     )
     
     for (y in 1:n) {
@@ -312,7 +315,8 @@ Simulation <- function (
           weight.qual.kits,
           sorting.prop,
           pseudo.import,
-          pseudo.import.prop
+          pseudo.import.prop,
+          cheat
         )
       
     }

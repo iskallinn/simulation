@@ -32,7 +32,8 @@ RunFirstYear <-
             quantile.setting.ls,
             quantile.setting.bw,
             true.sire.chance,
-            sorting.prop
+            sorting.prop,
+            cheat
   )
   {
     p <- p
@@ -48,14 +49,16 @@ RunFirstYear <-
                                        n.females,
                                        mating.will.yearling.1st,
                                        mating.will.yearling.2nd,
-                                       qual.classes ) # create females
+                                       qual.classes,
+                                       cheat) # create females
   effgen0.males <- GenerateBaseMales(leg2,
                                      t,
                                      n.males,
                                      male.ratio,
                                      male.inf,
                                      qual.classes,
-                                     intensity.remating) # create males
+                                     intensity.remating,
+                                     cheat) # create males
   ################## assign each female a male,  based on his mating willingness ####
   mating.list <- mate (
     effgen0.males,
@@ -100,15 +103,17 @@ RunFirstYear <-
   kit.list <- RandCull(kit.list,cull.ratio)
   kit.list.for.stats <- kit.list
   stat.crate[7] <- nrow(kit.list)
-  kit.list <- RFI(kit.list, leg2, leg1, t)
+  kit.list <- RFI(kit.list, leg2, leg1, t, cheat)
   kit.list.nomasked <- kit.list
   kit.list <- MaskKits(kit.list)
   
   pedfile <- MakePedfileGen0(gen0.females,effgen0.males)
   if (selection.method == blup) {
     big.pedfile <- WriteBigPedigree(kit.list, pedfile,year,p)
+    if (mblup == 0) { 
     WriteObservations(mating.list, gen0.females,effgen0.males,kit.list,year,p,sorting.prop)
-    WriteMBLUPObservations(mating.list, gen0.females, effgen0.males, kit.list, year,p)
+      } else if (mblup == 1 ){
+    WriteMBLUPObservations(mating.list, gen0.females, effgen0.males, kit.list, year,p,cheat)}
     }
   kit.list$birthyear.dam <- NULL # to  do figure out error
   # ############### Selection of first generation #########################################
@@ -118,7 +123,7 @@ RunFirstYear <-
                                             n.females,
                                             prop.oldfemales )
   next.gen <- PhenoSelectionFemaleKits (kit.list, old.females, quantile.setting.ls,
-                                        quantile.setting.bw)
+                                        quantile.setting.bw,n.females)
   next.gen.males <- PhenoSelectionMaleKits (kit.list,quantile.setting.ls,quantile.setting.bw)
   if("f0.dam" %in% colnames(old.females)) {
     set( old.females, j=which(colnames(old.females) %in%
@@ -134,8 +139,17 @@ RunFirstYear <-
   # ############## First year statistics #######################
   con <- file(description="results",open="a")
   if (selection.method == blup) {
+    if (cheat == 1 ) {
+      kit.list [, phenotype.bw.oct := (ifelse(
+        sex == 1,
+        kit.list$cheat.phenotype.bw.male,
+        kit.list$cheat.phenotype.bw.female
+      ))]
+    }
+    
     stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
     stat1 <- subset(kit.list, sex==1)#males
+    
     cat (
       year, #simulation year
       mean(kit.list.for.stats$litter.size), #avg genetic value of litter size

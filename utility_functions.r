@@ -8,7 +8,7 @@ GenerateBaseFemales <- function ( leg2,
                                   n.females,
                                  mating.will.yearling.1st,
                                  mating.will.yearling.2nd,
-                                 qual.classes ) 
+                                 qual.classes,cheat ) 
   {
   id        <-  seq(1:n.females)
   add.gen <- rmvnorm(n.females, sigma = G_sigma,method="svd" ) 
@@ -67,6 +67,32 @@ GenerateBaseFemales <- function ( leg2,
   q <- as.matrix(as.data.frame(polynomial.values(polynomials = leg2, x =t[6])))
 
   const <- 0.9+ q %*% FR.females # contains the fixed regression and the overall intercept for BW
+  if (cheat == 1 ) {
+    const.male <- q %*% FR.males
+    gen0.females[, `:=`(
+      cheat.phenotype.bw.female = (
+        const + q[1] * bw1_f + q[2] * bw2_f + q[3] * bw3_f +
+          q[1] * pe1.bw.f + q[2] * pe2.bw.f +
+          q[3] * pe3.bw.f +
+          rnorm(nrow(gen0.females)) *
+          sqrt(bw.res.female[8])
+      ),
+      phenotype.live.qual = live.qual +
+        rnorm(nrow(gen0.females)) * sqrt(var.live.qual.res),
+      phenotype.skin.length = mean.skin.length.female + skin.length.female +
+        rnorm(nrow(gen0.females)) * sqrt(var.skin.length.c.female) +
+        rnorm(nrow(gen0.females)) * sqrt(var.skin.length.res.female),
+      phenotype.skin.qual = skin.qual + rnorm(nrow(gen0.females)) *
+        sqrt(var.skin.qual.res),
+      phenotype.h.length = h.length + rnorm(nrow(gen0.females)) *
+        sqrt(var.h.length.res),
+      cheat.phenotype.bw.male = (const.male + q[1] * bw1_m + q[2] * bw2_m + q[3] * bw3_m +
+                                   rnorm(nrow(gen0.females)) *
+                                   sqrt(bw.res.male[8]))
+      )]
+    gen0.females$phenotype.bw.oct <- gen0.females$cheat.phenotype.bw.female
+  } else if ( cheat ==0 ) {
+  
   gen0.females[,`:=`(phenotype.bw.oct =(const + q[1]*bw1_f+q[2]*bw2_f+q[3]*bw3_f + 
                        q[1]*pe1.bw.f+q[2]*pe2.bw.f+q[3]*pe3.bw.f+ 
                     rnorm(nrow(gen0.females))*sqrt(bw.res.female[8]))  ,
@@ -79,7 +105,7 @@ GenerateBaseFemales <- function ( leg2,
                       sqrt(var.skin.qual.res),
                     phenotype.h.length = h.length+ rnorm(nrow(gen0.females))*
                       sqrt(var.h.length.res)
-  )] 
+  )] }
   if (qual.classes == 5) {
     truncs <- qnorm(
       p = c(0.05, 0.3, 0.7, 0.95),
@@ -169,7 +195,8 @@ GenerateBaseMales <- function (leg2,
                                male.ratio,
                                male.inf,
                                qual.classes,
-                               intensity.remating) 
+                               intensity.remating,
+                               cheat) 
   {
   mating.willingness.1st <-  numeric( n.males )  
   mating.willingness.2nd  <-  numeric( n.males)
@@ -206,7 +233,7 @@ GenerateBaseMales <- function (leg2,
   can.remate         <-  rep(0,times=n.males) 
   perm.env.bw <- rmvnorm(n.males, sigma = P_BWM,method="svd" )
   perm.env.bw <- t(t(perm.env.bw)*sqrt(pe.var.bw.male))
-  colnames(perm.env.bw) <- c("pe1.bw.f", "pe2.bw.f", "pe3.bw.f")
+  colnames(perm.env.bw) <- c("pe1.bw.m", "pe2.bw.m", "pe3.bw.m")
   
   
   #TODO make this into something more meaningful once I have quality or something to rank the males on
@@ -235,9 +262,30 @@ GenerateBaseMales <- function (leg2,
   q <- as.matrix(as.data.frame(polynomial.values(polynomials = leg2, x =t[6])))
   
   const <- q %*% FR.males # contains the fixed regression and the overall intercept for BW
+    if (cheat == 1 ) {
+      const.female <- FR.females 
+      gen0.males[,`:=`(cheat.phenotype.bw.male = 
+                         (const + q[1]*bw1_m+q[2]*bw2_m+q[3]*bw3_m + 
+                            q[1]*pe1.bw.m+q[2]*pe2.bw.m+q[3]*pe3.bw.m+ 
+                            rnorm(nrow(gen0.males))*sqrt(bw.res.male[8])),
+                       phenotype.live.qual = live.qual + 
+                         rnorm(nrow(gen0.males))*sqrt(var.live.qual.res),
+                       phenotype.skin.length = mean.skin.length.male + skin.length.male + 
+                         rnorm(nrow(gen0.males))*sqrt(var.skin.length.c.male)+
+                         rnorm(nrow(gen0.males))*sqrt(var.skin.length.res.male),
+                       phenotype.skin.qual = skin.qual + rnorm(nrow(gen0.males))*
+                         sqrt(var.skin.qual.res),
+                       phenotype.h.length = h.length+ rnorm(nrow(gen0.males))*
+                         sqrt(var.h.length.res),
+                       cheat.phenotype.bw.female = 
+                         (const.female + q[1]*bw1_f+q[2]*bw2_f+q[3]*bw3_f + 
+                            rnorm(nrow(gen0.males))*sqrt(bw.res.female[8]))
+      )]    
+      gen0.males$phenotype.bw.oct <- gen0.males$cheat.phenotype.bw.male
+  } else if (cheat == 0 ) {  
   gen0.males[,`:=`(phenotype.bw.oct = 
                      (const + q[1]*bw1_m+q[2]*bw2_m+q[3]*bw3_m + 
-                      q[1]*pe1.bw.f+q[2]*pe2.bw.f+q[3]*pe3.bw.f+ 
+                      q[1]*pe1.bw.m+q[2]*pe2.bw.m+q[3]*pe3.bw.m+ 
                        rnorm(nrow(gen0.males))*sqrt(bw.res.male[8])),
                      phenotype.live.qual = live.qual + 
                        rnorm(nrow(gen0.males))*sqrt(var.live.qual.res),
@@ -248,7 +296,7 @@ GenerateBaseMales <- function (leg2,
                      sqrt(var.skin.qual.res),
                    phenotype.h.length = h.length+ rnorm(nrow(gen0.males))*
                      sqrt(var.h.length.res)
-  )]
+  )]}
   
   if (qual.classes == 5) {
     truncs <- qnorm(
@@ -335,7 +383,7 @@ GenerateBaseMales <- function (leg2,
   #make a subset of the males which will mate, this must be moved into the mating function 
   effgen0.males <- subset( gen0.males,  mating.willingness.1st > 0 ) 
   set( effgen0.males, j=which(colnames(effgen0.males) %in% 
-                               c("pe1.bw.f", "pe2.bw.f", "pe3.bw.f"))  , value=NULL )
+                               c("pe1.bw.m", "pe2.bw.m", "pe3.bw.m"))  , value=NULL )
   
   return (effgen0.males)
 }
@@ -1670,7 +1718,8 @@ PhenoSelectionOldFemales <- function (y,x, year,
 PhenoSelectionFemaleKits <- function (x, # x = kit.list
                                       y, # y = old females
                                       quantile.setting.ls,
-                                      quantile.setting.bw) {   
+                                      quantile.setting.bw,
+                                      n.females) {   
   truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting.ls ) 
   selection.candidates.females <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
   selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
@@ -2783,7 +2832,6 @@ WriteObservations <- function (mating.list, next.gen, next.gen.males,kit.list,ye
   }
   kit.list[,`:=`(dam.age= as.integer(0),obs_fert = as.integer(-9999))] 
   if (sorting.prop != 1) {
-    # hingað
     numb.animals.to.sort <- ceiling(nrow(kit.list)*(1-sorting.prop))
    animals.to.mask <-  kit.list[,c("id"),with=FALSE][sample(.N,numb.animals.to.sort)]
   animals.to.mask <- merge(animals.to.mask,kit.list,by="id", all.x=TRUE)
@@ -2887,7 +2935,7 @@ RandCull <- function (kitlist,cull.ratio) {
 
  
 ############### Residual feed intake ###########
- RFI <- function (kit.list, leg2,leg1, t) {
+ RFI <- function (kit.list, leg2,leg1, t,cheat) {
    t <- c(63,84,105,126,147,168,189,210)
    t <- StandardTime(t)
    t <- t[3:8]
@@ -2925,16 +2973,39 @@ RandCull <- function (kitlist,cull.ratio) {
    #   perm.env = ifelse( sex == 1, pe1.bw.m*q[[6,1]]+pe2.bw.m*q[[6,2]]+pe3.bw.m*q[[6,3]], pe1.bw.f*q[[6,1]]+pe2.bw.f*q[[6,2]]+pe3.bw.f*q[[6,3]])
    #   
    # )]  
+   
+   if (cheat==1) {
+     temp[, `:=`(
+       cheat.phenotype.bw.male = const.m[6] + bw1_m * q[[6, 1]] + bw2_m * q[[6, 2]] +
+         bw3_m * q[[6, 3]] +
+         rnorm(nrow(temp)) * sqrt(bw.res.male[8]),
+       cheat.phenotype.bw.female =
+         const.f[6] + bw1_f * q[[6, 1]] + bw2_f * q[[6, 2]] + bw3_f * q[[6, 3]] +
+         rnorm(nrow(temp)) * sqrt(bw.res.female[8]),
+       perm.env = ifelse(
+         sex == 1,
+         pe1.bw.m * q[[6, 1]] + pe2.bw.m * q[[6, 2]] + pe3.bw.m * q[[6, 3]],
+         pe1.bw.f * q[[6, 1]] + pe2.bw.f * q[[6, 2]] + pe3.bw.f * q[[6, 3]]
+       )
+     )]
+     temp[,phenotype.bw.oct:= (ifelse(sex == 1, temp$cheat.phenotype.bw.male, temp$cheat.phenotype.bw.female) ) ]
+     temp <- temp[,c("id","sex","phenotype.bw.oct","cheat.phenotype.bw.male", "cheat.phenotype.bw.female"),with=F]
+     
+     
+   } else if (cheat == 0){
    temp[,`:=`( 
      phenotype.bw.oct = ifelse(sex==1, const.m[6] + bw1_m*q[[6,1]]+bw2_m*q[[6,2]]+bw3_m*q[[6,3]]+
                                  rnorm(nrow(temp))*sqrt(bw.res.male[8]),
                                const.f[6] + bw1_f*q[[6,1]]+bw2_f*q[[6,2]]+bw3_f*q[[6,3]]+
                                  rnorm(nrow(temp))*sqrt(bw.res.female[8])),
-     perm.env = ifelse( sex == 1, pe1.bw.m*q[[6,1]]+pe2.bw.m*q[[6,2]]+pe3.bw.m*q[[6,3]], pe1.bw.f*q[[6,1]]+pe2.bw.f*q[[6,2]]+pe3.bw.f*q[[6,3]])
+     perm.env = ifelse(sex == 1,
+                       pe1.bw.m * q[[6, 1]] + pe2.bw.m * q[[6, 2]] + pe3.bw.m * q[[6, 3]],
+                       pe1.bw.f * q[[6, 1]] + pe2.bw.f * q[[6, 2]] + pe3.bw.f * q[[6, 3]])
      
-   )]  
+   )] 
+     temp <- temp[,c("id","sex","phenotype.bw.oct"),with=F]
+   }
    
-   temp <- temp[,c("id","sex","phenotype.bw.oct"),with=F]
    temp <- merge(temp, 
                  kit.list[,
                           c("id",
@@ -2950,7 +3021,18 @@ RandCull <- function (kitlist,cull.ratio) {
    leg1 <- legendre.polynomials(1, normalized = T)
    q <- as.matrix(as.data.frame(polynomial.values(polynomials = leg1, x =t)))
    const.rfi <- q %*% FR.RFI
-   temp[,`:=`(
+   if ( cheat == 1 ) {
+     temp[,`:=`(
+       FI = ifelse( sex == 1, 
+                    phenotype.bw.oct*b.bw.male + const.rfi[6]+ 
+                      q[[6,1]]*rfi1_m + q[[6,2]]*rfi2_m+ q[[6,1]]*pe1.rfi.m+q[[6,2]]*pe2.rfi.m+  
+                      rnorm(nrow(temp))*sqrt(res.rfi[6]),
+                    phenotype.bw.oct*b.bw.female+ const.rfi[6]+
+                      q[[6,1]]*rfi1_f+ q[[6,2]]*rfi2_f+ q[[6,1]]*pe1.rfi.f+q[[6,2]]*pe2.rfi.f+
+                      rnorm(nrow(temp))*sqrt(res.rfi[6]))
+     )]
+   } else if (cheat == 0 ) {
+     temp[,`:=`(
      FI = ifelse( sex == 1, 
                   phenotype.bw.oct*b.bw.male + const.rfi[6]+ 
                     q[[6,1]]*rfi1_m + q[[6,2]]*rfi2_m+ q[[6,1]]*pe1.rfi.m+q[[6,2]]*pe2.rfi.m+  
@@ -2958,10 +3040,18 @@ RandCull <- function (kitlist,cull.ratio) {
                   phenotype.bw.oct*b.bw.female+ const.rfi[6]+
                     q[[6,1]]*rfi1_f+ q[[6,2]]*rfi2_f+ q[[6,1]]*pe1.rfi.f+q[[6,2]]*pe2.rfi.f+
                     rnorm(nrow(temp))*sqrt(res.rfi[6]))
-   )]
+     )]}
+   if (cheat == 1 ) { 
+     kit.list <- merge(kit.list,temp[,c("id",
+                                        "cheat.phenotype.bw.male",
+                                        "cheat.phenotype.bw.female",
+                                        "FI"), with=FALSE], by="id")
+       } else if (cheat == 0 ){
    kit.list <- merge(kit.list,temp[,c("id",
                                       "phenotype.bw.oct",
                                       "FI"), with=FALSE], by="id")
+}   
+   
    # kit.list$phenotype.bw.oct <- kit.list$phenotype.bw.oct*1000
    set( kit.list, j=which(colnames(kit.list) %in% 
                      c("pe1.rfi.m",
@@ -3020,7 +3110,7 @@ RandCull <- function (kitlist,cull.ratio) {
  }
  
  ################ MBLUP write observation file #####################
- WriteMBLUPObservations <- function (mating.list, next.gen, next.gen.males,kit.list,year,p) {
+ WriteMBLUPObservations <- function (mating.list, next.gen, next.gen.males,kit.list,year,p,cheat) {
    matinglist <- mating.list[,c("dam.id","obs_fert"),with=FALSE]
    setnames(matinglist, "dam.id", "id")
    if("obs_fert" %in% colnames(next.gen)) {
@@ -3028,49 +3118,164 @@ RandCull <- function (kitlist,cull.ratio) {
                               "obs_fert")  , value=NULL )
    }
    next.gen <- merge(next.gen, matinglist, by="id",all.x=TRUE)
-   
-   # if (year < 2) {
-   # writefile[,`:=`(dam.id= as.integer(0))] 
-   # }
-   if (year == 1){
-     next.gen.males$own_littersize= as.integer(0)
+
+      if (year == 1) {
+     next.gen.males$own_littersize = as.integer(0)
      next.gen$own_littersize = as.integer(0)
    } # make up littersizes for the base gen, probably ok to set it to a constant as it will then be regressed to zero
+   if (cheat == 1 ) {
+     writefile <-
+       next.gen[, c(
+         "id",
+         "dam.id",
+         "phenotype.bw.oct",
+         "live.score",
+         "sex",
+         "birthyear",
+         "obs_fert",
+         "own_littersize",
+         "cheat.phenotype.bw.male",
+         "cheat.phenotype.bw.female"
+       ), with = FALSE]
+     writefile[, `:=`(dam.age = ifelse(year - writefile$birthyear == 1, as.integer(1), as.integer(2)))]
+     
+     
+     next.gen.males[, `:=`(dam.age = as.integer(0), obs_fert = as.integer(-9999))]
+     temp <-
+       next.gen.males[, c(
+         "id",
+         "dam.id",
+         "phenotype.bw.oct",
+         "live.score",
+         "dam.age",
+         "sex",
+         "birthyear",
+         "obs_fert",
+         "own_littersize",
+         "cheat.phenotype.bw.male",
+         "cheat.phenotype.bw.female"
+       ), with = F]
+     
+     
+   } else if (cheat == 0 ) {
+   writefile <-
+     next.gen[, c(
+       "id",
+       "dam.id",
+       "phenotype.bw.oct",
+       "live.score",
+       "sex",
+       "birthyear",
+       "obs_fert",
+       "own_littersize"
+     ), with = FALSE]
+   writefile[, `:=`(dam.age = ifelse(year - writefile$birthyear == 1, as.integer(1), as.integer(2)))]
    
-   writefile <- next.gen[, c("id","dam.id", "phenotype.bw.oct", "live.score", "sex", "birthyear", "obs_fert","own_littersize"), with=FALSE]
-   writefile[,`:=`(dam.age = ifelse( year-writefile$birthyear == 1, as.integer(1), as.integer(2)))]
    
-   
-   next.gen.males[,`:=`(dam.age= as.integer(0),obs_fert = as.integer(-9999))] 
-   temp <- next.gen.males[, c("id","dam.id", "phenotype.bw.oct", "live.score", "dam.age","sex", "birthyear", "obs_fert","own_littersize"),with=F]
+   next.gen.males[, `:=`(dam.age = as.integer(0), obs_fert = as.integer(-9999))]
+   temp <-
+     next.gen.males[, c(
+       "id",
+       "dam.id",
+       "phenotype.bw.oct",
+       "live.score",
+       "dam.age",
+       "sex",
+       "birthyear",
+       "obs_fert",
+       "own_littersize"
+     ), with = F] 
+   }
    writefile <- rbind(writefile, temp) #rbind the males first
-   if (year >1) { # this is to "remove" the body weight and quality measurement for females so they do not appear twice
+   if (year > 1) {
+     # this is to "remove" the body weight and quality measurement for females so they do not appear twice
      writefile$phenotype.bw.oct <- as.integer(-9999)
      writefile$live.score <- as.integer(-9999)
      
    }
-   kit.list[,`:=`(dam.age= as.integer(0), obs_fert = as.integer(-9999))] 
-   temp <- kit.list[, c("id", "dam.id","phenotype.bw.oct", "live.score", "dam.age","sex", "birthyear","own_littersize" ,"obs_fert"), with=FALSE]
+   kit.list[, `:=`(dam.age = as.integer(0), obs_fert = as.integer(-9999))]
+   if (cheat == 1 ) { 
+     kit.list [, phenotype.bw.oct := (ifelse(
+       sex == 1,
+       kit.list$cheat.phenotype.bw.male,
+       kit.list$cheat.phenotype.bw.female
+     ))]
+     temp <-
+     kit.list[, c(
+       "id",
+       "dam.id",
+       "phenotype.bw.oct",
+       "live.score",
+       "dam.age",
+       "sex",
+       "birthyear",
+       "own_littersize" ,
+       "obs_fert",
+       "cheat.phenotype.bw.male",
+       "cheat.phenotype.bw.female"
+     ), with = FALSE]
+   } else if (cheat == 0) {
+     temp <-
+       kit.list[, c(
+         "id",
+         "dam.id",
+         "phenotype.bw.oct",
+         "live.score",
+         "dam.age",
+         "sex",
+         "birthyear",
+         "own_littersize" ,
+         "obs_fert"
+       ), with = FALSE]
+   }
    writefile <- rbind (writefile, temp)
    writefile[is.na(writefile)]	=	as.integer(-9999)
-   writefile[,`:=`(inter= as.integer(1), year= as.integer(year))]
-   writefile[, c("dam.id","sex","birthyear","id","own_littersize")
-             :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("dam.id","sex","birthyear","id","own_littersize")]
+   writefile[, `:=`(inter = as.integer(1), year = as.integer(year))]
+   writefile[, c("dam.id", "sex", "birthyear", "id", "own_littersize")
+             := lapply(.SD, function(x)
+               as.integer(x)), .SDcols = c("dam.id", "sex", "birthyear", "id", "own_littersize")]
    
    if (year == 1) {
-     MBLUP_Y <- file(description = paste("MBLUP_Y",p, sep=""), open="w")
+     MBLUP_Y <- file(description = paste("MBLUP_Y", p, sep = ""),
+                     open = "w")
    } else if (year > 1) {
-     MBLUP_Y <- file(description = paste("MBLUP_Y",p, sep=""), open="a")
+     MBLUP_Y <- file(description = paste("MBLUP_Y", p, sep = ""),
+                     open = "a")
      
    }
-   writefile[,`:=`(bw.female = ifelse(sex == 2, phenotype.bw.oct, -9999.0),
-                  phenotype.bw.oct = ifelse(sex ==1, phenotype.bw.oct, -9999.0))]
-   write.table(format(writefile[,.(id,dam.id,year,dam.age,birthyear,sex,own_littersize,inter,phenotype.bw.oct,live.score,obs_fert,bw.female)], nsmall=1, digits=2), 
-               file= MBLUP_Y, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
-   close(con=MBLUP_Y)
    
- }
- 
+   if (cheat == 1 ) {
+     writefile[,`:=`(bw.female = cheat.phenotype.bw.female,
+                     phenotype.bw.oct = cheat.phenotype.bw.male)]
+   } else if (cheat == 0 ) {
+     writefile[, `:=`(
+       bw.female = ifelse(sex == 2, phenotype.bw.oct,-9999.0),
+       phenotype.bw.oct = ifelse(sex == 1, phenotype.bw.oct,-9999.0)
+     )] }
+   write.table(
+     format(writefile[, .(
+       id,
+       dam.id,
+       year,
+       dam.age,
+       birthyear,
+       sex,
+       own_littersize,
+       inter,
+       phenotype.bw.oct,
+       live.score,
+       obs_fert,
+       bw.female
+     )], nsmall = 1, digits = 2),
+     file = MBLUP_Y,
+     append = TRUE,
+     col.names = FALSE,
+     row.names = FALSE,
+     quote = FALSE
+   )
+   close(con = MBLUP_Y)
+   
+ } 
  ######################## Skin price function ##############################
  SkinPrices <- function (kitlist, next.gen, next.gen.males,y) {
    
