@@ -40,8 +40,7 @@ RunSimulation <-
             weight.qual.kits,
             sorting.prop,
             pseudo.import,
-            pseudo.import.prop,
-            cheat) 
+            pseudo.import.prop) 
 {
   stat.crate <- c(0,0,0,0,0,0,0)
   next.gen <- rbindlist(x[1])
@@ -136,7 +135,7 @@ RunSimulation <-
     stat.crate[4] <-nrow(kit.list)
     kit.list <- RandCull(kit.list,cull.ratio)
     stat.crate[7] <- nrow(kit.list)
-    kit.list <- RFI(kit.list, leg2, leg1, t,cheat)
+    kit.list <- RFI(kit.list, leg2, leg1, t)
     kit.list.nomasked <- kit.list
     kit.list <- MaskKits(kit.list)
     } else if (selection.method == phenotypic) {
@@ -168,7 +167,7 @@ RunSimulation <-
     if (mblup == 0) {
      WriteObservations(mating.list, next.gen,next.gen.males,kit.list,year,p,sorting.prop)
       solutions <- CalculateBLUP ()
-    } else if (mblup ==1 ) { WriteMBLUPObservations(mating.list, next.gen, next.gen.males, kit.list, year,p,cheat)
+    } else if (mblup ==1 ) { WriteMBLUPObservations(mating.list, next.gen, next.gen.males, kit.list, year,p)
      solutions <- CalculateMBLUP ()
       }
   }
@@ -252,21 +251,12 @@ RunSimulation <-
   con <- file(description = "results", open = "a")
   # browser()
   if (selection.method == blup) {
-    
     kit.list <- merge(kit.list.masked, solutions, by= "id", all.x=TRUE) # merge to solutions of blup of fertility
-    if (cheat == 1 ) {
-      kit.list [, phenotype.bw.oct := (ifelse(
-        sex == 1,
-        kit.list$cheat.phenotype.bw.male,
-        kit.list$cheat.phenotype.bw.female
-      ))]
-    }
-     stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
+    stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
     stat1 <- subset(kit.list, sex==1)#males
     lm1  <- lm(data=kit.list, litter.size~blup.fert )
     lm2  <- lm(data=kit.list, live.qual~blup.qual )
     lm3  <- lm(data=kit.list, add.gen.bw.m~blup.bwnov )
-    
     
     cat (
     year,
