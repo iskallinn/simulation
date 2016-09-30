@@ -13,7 +13,7 @@ Simulation <- function (
   nruns = 1,                     # how many replicates of the simulation
   n = 5,                         # number of generation per replicate
   assortative = 1,
-  pseudo.import = 1,             # Delete pseudo imported male pedigree
+  pseudo.import = 0,             # Delete pseudo imported male pedigree
   pseudo.import.prop = 0.2,      # proportion of best quality males to mask
   mating.method = assortative,   # mating method, random or assortative
   selection.method = phenotypic,       # selection strategy, 
@@ -58,11 +58,8 @@ Simulation <- function (
   if (selection.method == phenotypic) {
     use.blup.to.assort.mat <- 0
   }
-<<<<<<< HEAD
   n.males =  ceiling( n.females/male.ratio ) # calculates needed amount of males 
   cheat <- 0 # workaround because of unknown bug
-=======
->>>>>>> parent of 801bfdc... Version 18
   #setwd("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
   setwd("C:/Users/au384062/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
   WriteLogFile( n.females,

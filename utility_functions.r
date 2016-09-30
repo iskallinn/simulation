@@ -1674,16 +1674,21 @@ PhenoSelectionFemaleKits <- function (x, # x = kit.list
   truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting.ls ) 
   selection.candidates.females <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
   selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
-  if (weighing.method == oct){
-    truncation.point <-  quantile( selection.candidates.females$phenotype.bw.oct,  probs =  quantile.setting.bw ) 
-    selection.candidates.females <- subset(selection.candidates.females, phenotype.bw.oct >= truncation.point) # throw away the smallest litters
-  } else if (weighing.method == sept) {
-    truncation.point <-  quantile( selection.candidates.females$phenotype.bw.sept,
-                                   probs =  quantile.setting.bw ) 
-    selection.candidates.females <- subset(selection.candidates.females, 
-                                           phenotype.bw.sept >= truncation.point) 
-  }
-  if (qual.classes == 5){
+
+  truncation.point <-  quantile( selection.candidates.females$phenotype.bw.oct,  probs =  quantile.setting.bw ) 
+selection.candidates.females <- subset(selection.candidates.females, phenotype.bw.oct >= truncation.point) # throw away the smallest litters
+for (i in 1:4){
+if (nrow(selection.candidates.females) <= (n.females - nrow(y)) ) {
+  truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting.ls ) 
+  selection.candidates.females <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
+  selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
+  
+  truncation.point <-  quantile( selection.candidates.females$phenotype.bw.oct,  probs =  (quantile.setting.bw -i/10) ) 
+  selection.candidates.females <- subset(selection.candidates.females, phenotype.bw.oct >= truncation.point) # throw away the smallest litters
+} else if (nrow(selection.candidates.females) >= nrow(y) ) {
+  break}
+ }
+ if (qual.classes == 5){
     truncs <- qnorm(p=c(0.05,0.3,0.7,0.95), 
                     mean=mean(selection.candidates.females$live.qual,
                               sd= sqrt(var(selection.candidates.females$live.qual))),
