@@ -12,7 +12,7 @@ source("simulation_function.r")
 
 Simulation(
   n =10,
-  nruns = 200,
+  nruns = 10,
   selection.method = 1 ,
   mblup = 0,
   make.obs.file = 0,
@@ -20,9 +20,10 @@ Simulation(
   purebreeding = 0,
   quantile.setting.ls = 0.4,
   quantile.setting.bw =0.4,
-  prop.oldfemales = 0.6,
-  max.age.females = 6,
-  crossmating = 0
+  prop.oldfemales = 0.4,
+  max.age.females = 3,
+  crossmating = 0,
+  n.cages = 3500
   # true.sire.chance = 0.85,
   # mating.will.yearling.1st   =0.95, # probability of yearling being mated
   # mating.will.yearling.2nd   =0.80, # probability of yearling being remated

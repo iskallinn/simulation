@@ -26,22 +26,23 @@ A variety of key figures and plots will be generated
 ### Summary statistics
 ```{r results="asis", echo=FALSE}
 library(ggplot2)
-  setwd("C:/Users/au384062/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
+  setwd("C:/Users/au384062/Dropbox/Projects/Kopenhagen Fur/Analysis results/Scenarios/Skejby_0811/Standard/Raw_Data//")
 library(doBy)        #
     results <- read.table("results", header = T, row.names = NULL)
 
 summarized <-
   summaryBy(
-    Gen + Gmean + Gvar + Fis + Obs.fert + mean.phenotype.bw.females + gen.value.bs +
-      mean.phenotype.bw.males + bw.var+cor.bw.phenotype +
-    skin.length.mean+
-    skin.length.var+
-    skin.qual.mean+
-    skin.qual.var+
-      cor.ls.own.to.ls+mated.females+barren.females+numb.false.sires+numb.kits+
-      remating.perc+perc.single.mat+mean.gen.val.qual+var.gen.val.qual+survived.kits+
-      avg.skin.length.male+avg.skin.length.female+feed.per.skin+skin.price
-        +pr.farm.margin+feeding.cost+avg.skin.price
+      Gen + Gmean + Gvar + Fis + Obs.fert + mean.phenotype.bw.females + gen.value.bs +
+        mean.phenotype.bw.males + bw.var+cor.bw.phenotype +
+        skin.length.mean+
+        skin.length.var+
+        skin.qual.mean+
+        skin.qual.var+
+        cor.ls.own.to.ls+mated.females+barren.females+numb.false.sires+numb.kits+
+        remating.perc+perc.single.mat+mean.gen.val.qual+var.gen.val.qual+survived.kits+
+        avg.skin.length.male+avg.skin.length.female+feed.per.skin+skin.price+
+      margin+feeding.cost+avg.skin.price+margin+income.from.skins+variable.costs+fixed.costs+pelting.costs+income.fr.sold.kits+
+        gross.feeding.costs+cage_utilization+n.females+sold.skins+costs.pr.sold.skin+costs.pr.female
 
     ~ Gen,
     data = results,
@@ -314,14 +315,16 @@ qplot(Gen, avg.skin.price.mean, data=summarized) + geom_line(linetype =2) +geom_
 ```
 ### Margin per farm pr year
 
-This is calculated as income from skins minus the variable costs, currently the variable costs are rather simplistic and need to be redone in a more elegant manner. 
+This is calculated as income from skins minus the variable costs+fixed+pelting+feeding
+The fixed costs are determined in year 0 by the number of breeding females. Variable costs are fixed pr breeding female and are adjusted within year by the number of breeding females on the farm. Pelting costs are fixed pr pelt and feeding costs are based on the weight of the animals pr farm.
+
 
 ```{r,echo=FALSE}
-qplot(Gen, pr.farm.margin.mean, data=summarized) + geom_line(linetype =2) +geom_errorbar(
+qplot(Gen, margin.mean, data=summarized) + geom_line(linetype =2) +geom_errorbar(
   aes(
     x = Gen,
-    ymin = pr.farm.margin.mean - sqrt(pr.farm.margin.var),
-    ymax = pr.farm.margin.mean + sqrt(pr.farm.margin.var)
+    ymin = margin.mean - sqrt(margin.var),
+    ymax = margin.mean + sqrt(margin.var)
   ),
   width = 0.25,
   data = summarized
@@ -330,6 +333,66 @@ qplot(Gen, pr.farm.margin.mean, data=summarized) + geom_line(linetype =2) +geom_
 
 
 ```
+
+### Costs pr skin
+
+This is calculated as the average sum of all production costs
+Variable, fixed, pelting and feeding divided by the number of skins sold within year
+
+```{r,echo=FALSE}
+qplot(Gen, costs.pr.sold.skin.mean, data=summarized) + geom_line(linetype =2) +geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = costs.pr.sold.skin.mean - sqrt(costs.pr.sold.skin.var),
+    ymax = costs.pr.sold.skin.mean + sqrt(costs.pr.sold.skin.var)
+  ),
+  width = 0.25,
+  data = summarized
+)+
+  labs(title ="Costs pr skin", x="Simulation Year", y="Costs [DKK]")
+
+
+```
+
+### Costs pr female
+
+This is calculated as the average sum of all production costs
+Variable, fixed, pelting and feeding divided by the number of females at the start of the year
+
+```{r,echo=FALSE}
+qplot(Gen, costs.pr.female.mean, data=summarized) + geom_line(linetype =2) +geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = costs.pr.female.mean - sqrt(costs.pr.female.var),
+    ymax = costs.pr.female.mean + sqrt(costs.pr.female.var)
+  ),
+  width = 0.25,
+  data = summarized
+)+
+  labs(title ="Costs pr female", x="Simulation Year", y="Costs [DKK]")
+
+
+```
+
+### Number of female breeders
+
+The program adjust the number of breeding animals between year to try and optimize cage usage. It uses linear programming to optimize the number subject to the constraint that number of kits should fit into the cages. If there are more kits than it guessed, the farm sells of the extra kits at a fixed prize (80 kr pr kit)
+
+```{r,echo=FALSE}
+qplot(Gen, n.females.mean, data=summarized) + geom_line(linetype =2) +geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = n.females.mean - sqrt(n.females.var),
+    ymax = n.females.mean + sqrt(n.females.var)
+  ),
+  width = 0.25,
+  data = summarized
+)+
+  labs(title ="Number of breeding females", x="Simulation Year", y="Costs [DKK]")
+
+
+```
+
 
 ### Average price of female skins
 

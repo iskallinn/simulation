@@ -26,7 +26,6 @@ Simulation <- function (
   make.obs.file = 1,             # 1 = make observation file, 0 otherwise
   use.true.sire = 0,             # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
   feed.price    = 2.85,          # feed price per kg feed
-  variable.costs = 166,          # variable costs per skin
   true.sire.chance = 0.85,       # probability of kits being sired by 2nd male
   trace.ped = 0,       # if 1 then DmuTrace is used to prunce ped 5 gens back
   mask.phenotypes = 1, # 0 no masking, 1 mask phenotypes of kits from small litters
@@ -52,7 +51,12 @@ Simulation <- function (
   pr.barren.double.mating.old       = 0.95, # probability of double mated old female being barren
   n.males =  ceiling( n.females/male.ratio ), # calculates needed amount of males 
   cull.ratio                        = 0.85, # survival rate of kits, farmwise from 2nd cnt to pelting 
-  sorting.prop                      = 1 # proportion of animals to live grade
+  sorting.prop                      = 1, # proportion of animals to live grade
+  n.cages = 5500,
+  variable.costs = 531,          # variable costs per female
+  pelting.costs =  12,           # pelting costs pr skin
+  fixed.costs = 286*n.females,   # fixed costs at start of simulation 
+  price.sold.kit = 80            # price per kit sold
 ) # closing paranthesis for definitions 
   { # opening curly brace for function 
   if (selection.method == phenotypic) {
@@ -185,12 +189,23 @@ Simulation <- function (
     "avg.skin.length.female", 
     "feed.per.skin",
     "skin.price",
-    "pr.farm.margin",
-    "feeding.cost",
+    "margin",
+    "income.from.skins",
+    "variable.costs",
+    "fixed.costs",
+    "pelting.costs",
+    "gross.feeding.costs",
+    "income.fr.sold.kits",
+    "feeding.cost.pr.skin",
     "avg.skin.price",
     "reg_EBV_TBV_LS",
     "reg_EBV_TBV_qual",
     "reg_EBV_TBV_size",
+    "cage_utilization",
+    "n.females",
+    "sold.skins",
+    "costs.pr.sold.skin",
+    "costs.pr.female",
     sep = "\t",
     file = con
   )  } else if (selection.method == 1) { # phenotypic
@@ -225,9 +240,20 @@ Simulation <- function (
       "avg.skin.length.female",
       "feed.per.skin",
       "skin.price",
-      "pr.farm.margin",
+      "margin",
+      "income.from.skins",
+      "variable.costs",
+      "fixed.costs",
+      "pelting.costs",
+      "gross.feeding.costs",
+      "income.fr.sold.kits",
       "feeding.cost",
       "avg.skin.price",
+      "cage_utilization",
+      "n.females",
+      "sold.skins",
+      "costs.pr.sold.skin",
+      "costs.pr.female",
       sep = "\t",
       file = con
     )
@@ -267,7 +293,13 @@ Simulation <- function (
                       quantile.setting.ls,
                       quantile.setting.bw,
                       true.sire.chance,
-                      sorting.prop
+                      sorting.prop,
+                      n,
+                      n.cages,
+                      variable.costs,
+                      fixed.costs,
+                      pelting.costs,
+                      price.sold.kit
     )
     
     for (y in 1:n) {
@@ -315,8 +347,14 @@ Simulation <- function (
           weight.qual.kits,
           sorting.prop,
           pseudo.import,
-          pseudo.import.prop
-        )
+          pseudo.import.prop,
+          n,
+          n.cages,
+          variable.costs,
+          fixed.costs,
+          pelting.costs,
+          price.sold.kit
+          )
       
     }
   }

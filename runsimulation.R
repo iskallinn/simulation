@@ -40,17 +40,30 @@ RunSimulation <-
             weight.qual.kits,
             sorting.prop,
             pseudo.import,
-            pseudo.import.prop) 
+            pseudo.import.prop,
+            n,
+            n.cages,
+            variable.costs,
+            fixed.costs,
+            pelting.costs,
+            price.sold.kit) 
 {
+    # browser()
   stat.crate <- c(0,0,0,0,0,0,0)
   next.gen <- rbindlist(x[1])
+  number.of.females.start.of.year <- nrow(next.gen)
+  
   next.gen.males <- rbindlist(x[2])
   if (selection.method == blup) {
     big.pedfile <- rbindlist(x[4])
     pedfile <- rbindlist(x[3])
-  } else if (selection.method == phenotypic) {
+    fert.memory <- unlist(x[5])
+    n.females <- unlist(x[6])
+    } else if (selection.method == phenotypic) {
     pedfile <- rbindlist(x[3])
-  }
+    fert.memory <- unlist(x[4])
+    n.females <- unlist(x[5])
+    }
   temp <- copy(next.gen)
   
   set(temp, j = which(colnames(temp) %in% c("obs_fert"))  , value =
@@ -117,6 +130,8 @@ RunSimulation <-
   stat.crate[2] <- (stat.crate[1] - nrow(mating.list))
   stat.crate[5] <- mean(mating.list$sire.id.1st == mating.list$sire.id.2nd) # percentage of females mated with 1st male
   stat.crate[6] <- ( mean(mating.list$sire.id.2nd == 0)) # percentage of single mated females
+  # browser()
+  
   if (selection.method == blup) {
     kit.list <-
       MakeKitsGenN(
@@ -135,9 +150,17 @@ RunSimulation <-
     stat.crate[4] <-nrow(kit.list)
     kit.list <- RandCull(kit.list,cull.ratio)
     stat.crate[7] <- nrow(kit.list)
+    fert.memory[year] <- stat.crate[7]/n.females
+    kit.list <- SellExtraKits(kit.list, stat.crate[1], n.cages)
+    numb.sold.kits <- stat.crate[7]-nrow(kit.list)
+    stat.crate[8] <- (nrow(kit.list)/2+n.females)/n.cages
+    
     kit.list <- RFI(kit.list, leg2, leg1, t)
     kit.list.nomasked <- kit.list
     kit.list <- MaskKits(kit.list)
+    # guess number of females and adjust male numbers
+    n.females <- NumberofBreeders(fert.memory,n.cages,year)
+    n.males <- ceiling( n.females/male.ratio )
     } else if (selection.method == phenotypic) {
       kit.list <-
         MakeKitsGenN(
@@ -156,9 +179,15 @@ RunSimulation <-
       stat.crate[4] <-nrow(kit.list)
     kit.list <- RandCull(kit.list,cull.ratio)
     stat.crate[7] <- nrow(kit.list)
+    fert.memory[year] <- stat.crate[7]/n.females
+    kit.list <- SellExtraKits(kit.list, stat.crate[1], n.cages)
+    numb.sold.kits <- stat.crate[7]-nrow(kit.list)
+    stat.crate[8] <- (nrow(kit.list)/2+stat.crate[1])/n.cages
     kit.list <- RFI(kit.list, leg2, leg1, t)
     kit.list.nomasked <- kit.list
     kit.list <- MaskKits(kit.list)
+    n.females <- NumberofBreeders(fert.memory,n.cages,year)
+    n.males <- ceiling( n.females/male.ratio )
     }
   if (selection.method == blup) {
     big.pedfile <- WriteBigPedigree (kit.list, big.pedfile, year, p)
@@ -176,7 +205,6 @@ RunSimulation <-
   kit.list$birthyear.dam <- NULL
   # ############### Selection of next generation    #############
   # # See utility functions for method
-  # browser()
   
   if (selection.method == phenotypic) {
     old.females <-
@@ -190,9 +218,10 @@ RunSimulation <-
       PhenoSelectionFemaleKits (kit.list,
                                 old.females,
                                 quantile.setting.ls,
-                                quantile.setting.bw)
+                                quantile.setting.bw,
+                                n.females)
     next.gen.males <-
-      PhenoSelectionMaleKits (kit.list, quantile.setting.ls, quantile.setting.bw)
+      PhenoSelectionMaleKits (kit.list, quantile.setting.ls, quantile.setting.bw,n.males)
     ############### Index selection of next generation #############
   } else if (selection.method == blup) {
     big.pedfile    <-
@@ -242,9 +271,9 @@ RunSimulation <-
   kit.list.masked <- kit.list
   kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year)
   skin.price <- sum(kit.list$skin.price, na.rm =T)/n.females
-  if (year == n) {
-    save(kit.list, file="last.year.Rdata")
-  }
+  # if (year == n) {
+  #   save(kit.list, file="last.year.Rdata")
+  # }
   if(mean(is.na(next.gen$id)) > 0) {
     stop("NA in id's")
   }
@@ -293,17 +322,36 @@ RunSimulation <-
     #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
     feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
     skin.price,
-    skin.price*n.females-(nrow(kit.list)*variable.costs)-feed.intake*feed.price, #pr farm margin
-    (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),
-    skin.price*n.females/nrow(kit.list.nomasked),
+    sum(kit.list$skin.price, na.rm = T) - number.of.females.start.of.year *
+      variable.costs -
+      feed.intake * feed.price - fixed.costs - nrow(kit.list) * pelting.costs +
+      numb.sold.kits * price.sold.kit, #pr farm margin
+    sum(kit.list$skin.price, na.rm = T), #income from skins
+    number.of.females.start.of.year *variable.costs, #variable costs
+    fixed.costs, #fixed costs
+    ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs, #pelting costs
+    (feed.intake+feed.usage.breeders)*feed.price, #feeding costs
+    numb.sold.kits*price.sold.kit, #sold kits
+    (feed.intake+feed.usage.breeders)*feed.price,    
+    (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),   
+    skin.price*n.females/nrow(kit.list.nomasked), 
     coef(lm1)[2],
     coef(lm2)[2],
     coef(lm3)[2],
-    
+    stat.crate[8],
+    number.of.females.start.of.year,
+    ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
+    (number.of.females.start.of.year *
+       variable.costs +
+       feed.intake * feed.price + fixed.costs + nrow(kit.list) * pelting.costs) /ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
+    (number.of.females.start.of.year *
+       variable.costs +
+       feed.intake * feed.price + fixed.costs + nrow(kit.list) * pelting.costs)/number.of.females.start.of.year,
     sep = "\t",
     file = con
   )
   } else if (selection.method == phenotypic) {
+    # browser()
     stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
     stat1 <- subset(kit.list, sex==1)#males
     
@@ -337,21 +385,39 @@ RunSimulation <-
       #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
       feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
       sum(kit.list$skin.price, na.rm =T)/n.females,
-      sum(kit.list$skin.price, na.rm =T)-(nrow(kit.list)*variable.costs)-feed.intake*feed.price, #pr farm margin
-      (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),
-      mean(kit.list$skin.price),
-      sep = "\t",
+      sum(kit.list$skin.price, na.rm = T) - number.of.females.start.of.year *
+        variable.costs -
+        feed.intake * feed.price - fixed.costs - nrow(kit.list) * pelting.costs +
+        numb.sold.kits * price.sold.kit, #pr farm margin
+      sum(kit.list$skin.price, na.rm = T), #income from skins
+      number.of.females.start.of.year *variable.costs, #variable costs
+        fixed.costs, #fixed costs
+      ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs, #pelting costs
+      (feed.intake+feed.usage.breeders)*feed.price, #feeding costs
+      numb.sold.kits*price.sold.kit,
+      (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),  
+      mean(kit.list$skin.price),  
+      stat.crate[8],  
+      number.of.females.start.of.year,   
+      ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
+      (number.of.females.start.of.year *
+        variable.costs +
+        feed.intake * feed.price + fixed.costs + nrow(kit.list) * pelting.costs) /ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
+      (number.of.females.start.of.year *
+         variable.costs +
+         feed.intake * feed.price + fixed.costs + nrow(kit.list) * pelting.costs)/number.of.females.start.of.year,
+      sep = "\t",  
       file = con
-    )
+    )  
     } 
   cat("\n", file = con)
   # close(con = con)
   closeAllConnections()
   if (selection.method == blup) {
-    return (list(next.gen, next.gen.males, pedfile, big.pedfile))
+    return (list(next.gen, next.gen.males, pedfile, big.pedfile,fert.memory,n.females))
     
   } else if (selection.method == phenotypic) {
-    return (list(next.gen, next.gen.males, pedfile))
+    return (list(next.gen, next.gen.males, pedfile,fert.memory,n.females))
   }
 }
 RunSimulation <-

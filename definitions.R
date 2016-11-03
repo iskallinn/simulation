@@ -5,6 +5,8 @@ library(data.table)  # faster then data frames at everything and memory efficien
 library(mvtnorm)     # generating random deviates from a multivariate normal distribution
 library(doBy)        # for gathering up statistics along the way
 library(orthopolynom) # for the random regression model for BW and RFI
+library(lpSolve)      # for the lp solution to number of breeding females
+
 ############## Switches, best left alone ###########
 phenotypic <- 1
 blup <- 2
@@ -19,6 +21,7 @@ mblup <- 0 # If == 1 then MBLUP will be used for selection index, note that
 
 ############### Controls for simulation ############
 n.females <-  1000             # NUMBER OF FEMALES
+n.cages <- 5500                # number of cages on farm
 nruns <- 1                     # how many replicates of the simulation
 n <- 5                         # number of generation per replicate
 assortative <- 1
@@ -33,7 +36,9 @@ intensity.remating <- 0.2      # this controls how many males are chosen not to 
 make.obs.file <- 1             # 1 = make observation file, 0 otherwise
 use.true.sire <- 0             # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
 feed.price    <- 2.85          # feed price per kg feed
-variable.costs <- 166          # variable costs per skin
+variable.costs <- 531          # variable costs per female
+pelting.costs <-  12           # pelting costs pr skin
+fixed.costs <- 286*n.females   # fixed costs at start of simulation 
 true.sire.chance <- 0.85       # probability of kits being sired by 2nd male
 trace.ped <- 0       # if 1 then DmuTrace is used to prunce ped 5 gens back
 mask.phenotypes <- 1 # 0 no masking, 1 mask phenotypes of kits from small litters

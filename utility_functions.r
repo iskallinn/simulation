@@ -1670,7 +1670,7 @@ PhenoSelectionOldFemales <- function (y,x, year,
 PhenoSelectionFemaleKits <- function (x, # x = kit.list
                                       y, # y = old females
                                       quantile.setting.ls,
-                                      quantile.setting.bw) {   
+                                      quantile.setting.bw,n.females) {   
   truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting.ls ) 
   selection.candidates.females <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
   selection.candidates.females <-  subset( selection.candidates.females,  sex  ==   2) # take the female kits
@@ -1736,7 +1736,8 @@ if (nrow(selection.candidates.females) <= (n.females - nrow(y)) ) {
   return (next.gen)
 }
 ############### Selection of yearling males ###############################
-PhenoSelectionMaleKits <- function (x,quantile.setting.ls,quantile.setting.bw ) { # x = kit.list 
+PhenoSelectionMaleKits <- function (x,quantile.setting.ls,quantile.setting.bw,n.males ) { # x = kit.list 
+  # browser()
   truncation.point <-  quantile( x$own_littersize,  probs =  quantile.setting.ls ) 
   selection.candidates.males <- subset(x, own_littersize >= truncation.point) # throw away the smallest litters
   selection.candidates.males <-  subset( selection.candidates.males,  sex  ==   1) # take the male kits
@@ -3534,3 +3535,44 @@ return(feed.used.breeders)
            return(next.gen.males)
     }
    }
+ ####################### Sell of kits ##########################################
+ # this function figures out if there are too many kits on the farm and then sells of
+ # kits, picked at random until the number of kits fits with cage numbers 
+ 
+ SellExtraKits <- function (kit.list, numb.of.old.females, n.cages) {
+  # browser()
+   if (nrow(kit.list)/2> (n.cages - numb.of.old.females) ) { 
+     
+     
+     
+     old.female.cages.needed <- numb.of.old.females # keeps track of how many cages are needed for old females
+     
+     
+     sold.kit.numb <- ceiling(nrow(kit.list)/2)-(n.cages-old.female.cages.needed) 
+     sold.kit.id <- sample(kit.list$id, size = sold.kit.numb)
+     
+     sd <-
+       setdiff(kit.list$id, sold.kit.id) # remove the next.gen females from kit.list
+     sd <- is.element(kit.list$id, sd)
+     kit.list <- kit.list[sd, ] 
+     
+   }
+   return(kit.list)
+ }
+ ################## Guess number of animals #############################
+ NumberofBreeders <- function (fert.memory,n.cages,year) {
+   # browser()
+   if (year == 1 ) { 
+     objective <- fert.memory[1]/2
+   } else if (year > 1 ) {
+       objective <- mean(fert.memory[year-1:year])*0.45
+     }
+   f.obj <- c(1,1)
+   f.con <- matrix (c(objective,1,1,-1), nrow=2, byrow=TRUE)
+   f.dir <- c("==","==")
+   f.rhs <- c(n.cages,0)
+   lp ("max", f.obj, f.con, f.dir, f.rhs)$solution
+   n.females <- ceiling(lp ("max", f.obj, f.con, f.dir, f.rhs)$solution[1])
+   return(n.females)
+ }
+ 

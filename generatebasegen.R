@@ -32,11 +32,20 @@ RunFirstYear <-
             quantile.setting.ls,
             quantile.setting.bw,
             true.sire.chance,
-            sorting.prop
+            sorting.prop,
+            n,
+            n.cages,
+            variable.costs,
+            fixed.costs,
+            pelting.costs,
+            price.sold.kit
   )
   {
+    number.of.females.start.of.year <- n.females
+    
     p <- p
-    stat.crate <- c(0,0,0,0,0,0) # temporary holding space for values
+    stat.crate <- c(0,0,0,0,0,0,0,0,0) # temporary holding space for values
+    fert.memory <- rep(0, times= n)
   if (make.obs.file == 1) {
     pedigree <- file(description = paste("pedigree_",p, sep=""), open="w")
   }
@@ -100,10 +109,17 @@ RunFirstYear <-
   kit.list <- RandCull(kit.list,cull.ratio)
   kit.list.for.stats <- kit.list
   stat.crate[7] <- nrow(kit.list)
+  fert.memory[year] <- stat.crate[7]/n.females
+  kit.list <- SellExtraKits(kit.list, stat.crate[1], n.cages)
+  numb.sold.kits <- stat.crate[7]-nrow(kit.list)
+  
+  stat.crate[8] <- (nrow(kit.list)/2+stat.crate[1])/n.cages
   kit.list <- RFI(kit.list, leg2, leg1, t)
   kit.list.nomasked <- kit.list
   kit.list <- MaskKits(kit.list)
-  
+  # guess number of females and adjust male numbers
+  n.females <- NumberofBreeders(fert.memory,n.cages,year)
+  n.males <- ceiling( n.females/male.ratio )
   pedfile <- MakePedfileGen0(gen0.females,effgen0.males)
   if (selection.method == blup) {
     big.pedfile <- WriteBigPedigree(kit.list, pedfile,year,p)
@@ -118,8 +134,8 @@ RunFirstYear <-
                                             n.females,
                                             prop.oldfemales )
   next.gen <- PhenoSelectionFemaleKits (kit.list, old.females, quantile.setting.ls,
-                                        quantile.setting.bw)
-  next.gen.males <- PhenoSelectionMaleKits (kit.list,quantile.setting.ls,quantile.setting.bw)
+                                        quantile.setting.bw,n.females)
+  next.gen.males <- PhenoSelectionMaleKits (kit.list,quantile.setting.ls,quantile.setting.bw,n.males)
   if("f0.dam" %in% colnames(old.females)) {
     set( old.females, j=which(colnames(old.females) %in%
                                 "f0.dam")  , value=NULL )
@@ -171,12 +187,34 @@ RunFirstYear <-
       #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
       feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
       sum(kit.list$skin.price, na.rm =T)/n.females,
-      sum(kit.list$skin.price, na.rm =T)-(nrow(kit.list)*variable.costs)-feed.intake*feed.price, #pr farm margin
+      sum(kit.list$skin.price, na.rm = T) - number.of.females.start.of.year *
+        variable.costs -
+        sum(kit.list$skin.price, na.rm = T) - number.of.females.start.of.year *
+        variable.costs -
+        feed.intake * feed.price - fixed.costs - nrow(kit.list) * pelting.costs +
+        numb.sold.kits * price.sold.kit, #pr farm margin
+      sum(kit.list$skin.price, na.rm = T), #income from skins
+      number.of.females.start.of.year *variable.costs, #variable costs
+      fixed.costs, #fixed costs
+      ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs, #pelting costs
+      (feed.intake+feed.usage.breeders)*feed.price, #feeding costs
+      numb.sold.kits*price.sold.kit,
+      (feed.intake+feed.usage.breeders)*feed.price,      
       (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),
       mean(kit.list$skin.price),
       0,
       0,
       0,
+      stat.crate[8],
+      number.of.females.start.of.year,
+      ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
+      (number.of.females.start.of.year *
+         variable.costs +
+         feed.intake * feed.price + fixed.costs +  ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs) /ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
+      (number.of.females.start.of.year *
+         variable.costs +
+         feed.intake * feed.price + fixed.costs +  ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs)/number.of.females.start.of.year,
+      
       sep = "\t",
       file = con
     )  } else if (selection.method == phenotypic) {
@@ -204,17 +242,36 @@ RunFirstYear <-
       stat.crate[4],
       stat.crate[5],
       stat.crate[6],
-      stat.crate[7], # survived kits
-      mean(kit.list.for.stats$live.qual), # avg live quality
-      var(kit.list.for.stats$live.qual),  #variance of live quality
-      stat[[1,3]], # skin length phenotype, male
+      stat.crate[7],
+      mean(kit.list.nomasked$live.qual),
+      var(kit.list.nomasked$live.qual),
+      stat[[1,3]],
       stat[[2,3]],
       #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
       feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
       sum(kit.list$skin.price, na.rm =T)/n.females,
-      sum(kit.list$skin.price, na.rm =T)-(nrow(kit.list)*variable.costs)-feed.intake*feed.price, #pr farm margin
-      (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),
-      mean(kit.list$skin.price),
+      sum(kit.list$skin.price, na.rm = T) - number.of.females.start.of.year *
+        variable.costs -
+        feed.intake * feed.price - fixed.costs - nrow(kit.list) * pelting.costs +
+        numb.sold.kits * price.sold.kit, #pr farm margin
+      sum(kit.list$skin.price, na.rm = T), #income from skins
+      number.of.females.start.of.year *variable.costs, #variable costs
+      fixed.costs, #fixed costs
+      ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs, #pelting costs
+      (feed.intake+feed.usage.breeders)*feed.price, #feeding costs
+      numb.sold.kits*price.sold.kit,
+      (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),  
+      mean(kit.list$skin.price),  
+      stat.crate[8],  
+      number.of.females.start.of.year,
+      ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
+      (number.of.females.start.of.year *
+         variable.costs +
+         feed.intake * feed.price + fixed.costs +  ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs) /ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
+      (number.of.females.start.of.year *
+         variable.costs +
+         feed.intake * feed.price + fixed.costs +  ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs)/number.of.females.start.of.year,
+      
       sep = "\t",
       file = con
     )
@@ -226,9 +283,9 @@ RunFirstYear <-
     WriteFertObservations(mating.list,year,p)
   }
   if (selection.method == phenotypic){ 
-  return( list(next.gen,next.gen.males,pedfile))
+  return( list(next.gen,next.gen.males,pedfile,fert.memory,n.females))
   } else if (selection.method == blup) {
-    return( list(next.gen,next.gen.males,pedfile,big.pedfile))
+    return( list(next.gen,next.gen.males,pedfile,big.pedfile,fert.memory,n.females))
     }
 }
 RunFirstYear <-compiler::cmpfun(RunFirstYear,options= c(suppressAll=TRUE)) # performance boost
