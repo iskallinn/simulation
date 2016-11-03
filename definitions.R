@@ -39,6 +39,7 @@ feed.price    <- 2.85          # feed price per kg feed
 variable.costs <- 531          # variable costs per female
 pelting.costs <-  12           # pelting costs pr skin
 fixed.costs <- 286*n.females   # fixed costs at start of simulation 
+price.sold.kit <- 80           # price per sold kit in july
 true.sire.chance <- 0.85       # probability of kits being sired by 2nd male
 trace.ped <- 0       # if 1 then DmuTrace is used to prunce ped 5 gens back
 mask.phenotypes <- 1 # 0 no masking, 1 mask phenotypes of kits from small litters
