@@ -1850,7 +1850,7 @@ IndSelectionOldFemales <- function (x,
                                     year,
                                     weight.bw.old.females,
                                     weight.fert.old.females,
-                                    weight.qual.old.females) {
+                                    weight.qual.old.females,n.females,prop.oldfemales) {
   # x = next.gen, y = solutions, z = solutions.bw
   # delete last years index
   if("blup.fert" %in% colnames(x)) {
@@ -1895,7 +1895,7 @@ IndSelFemaleKits <-
             mblup,
             weight.bw.kits,
             weight.fert.kits,
-            weight.qual.kits) {
+            weight.qual.kits,n.females) {
     # x = kit.list , y = solutions q = old.females
     x <-
       merge(x, y, by = "id", all.x = TRUE) # merge to solutions of blup of fertility
@@ -1940,7 +1940,7 @@ IndSelMaleKits <- function (x, # x = kit.list
                             y, # y = solutions
                             weight.bw.kits,
                             weight.fert.kits,
-                            weight.qual.kits) {
+                            weight.qual.kits,n.males) {
 
   x <- merge(x, y, by= "id", all.x=TRUE) # merge to solutions 
   x[, `:=`(index.bw   = 100+ (blup.bwnov-mean(x$blup.bwnov))/(sqrt(var(x$blup.bwnov)))*10,
@@ -3552,7 +3552,7 @@ return(feed.used.breeders)
      sold.kit.id <- sample(kit.list$id, size = sold.kit.numb)
      
      sd <-
-       setdiff(kit.list$id, sold.kit.id) # remove the next.gen females from kit.list
+       setdiff(kit.list$id, sold.kit.id) # remove the sold kits from kit.list
      sd <- is.element(kit.list$id, sd)
      kit.list <- kit.list[sd, ] 
      

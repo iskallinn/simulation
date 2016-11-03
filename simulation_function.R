@@ -247,7 +247,7 @@ Simulation <- function (
       "pelting.costs",
       "gross.feeding.costs",
       "income.fr.sold.kits",
-      "feeding.cost",
+      "feeding.cost.pr.skin",
       "avg.skin.price",
       "cage_utilization",
       "n.females",

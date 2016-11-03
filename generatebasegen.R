@@ -191,15 +191,14 @@ RunFirstYear <-
         variable.costs -
         sum(kit.list$skin.price, na.rm = T) - number.of.females.start.of.year *
         variable.costs -
-        feed.intake * feed.price - fixed.costs - nrow(kit.list) * pelting.costs +
+        (feed.intake+feed.usage.breeders) * feed.price - fixed.costs - nrow(kit.list) * pelting.costs +
         numb.sold.kits * price.sold.kit, #pr farm margin
       sum(kit.list$skin.price, na.rm = T), #income from skins
       number.of.females.start.of.year *variable.costs, #variable costs
       fixed.costs, #fixed costs
       ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs, #pelting costs
       (feed.intake+feed.usage.breeders)*feed.price, #feeding costs
-      numb.sold.kits*price.sold.kit,
-      (feed.intake+feed.usage.breeders)*feed.price,      
+      numb.sold.kits*price.sold.kit, #income from sold kits
       (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),
       mean(kit.list$skin.price),
       0,

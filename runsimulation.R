@@ -125,7 +125,7 @@ RunSimulation <-
   set(mating.list,
       j = which(colnames(mating.list) %in% c("semen.quality", "dam.age")) ,
       value = NULL)
-  stat.crate[1] <- nrow(mating.list)
+  stat.crate[1] <- nrow(mating.list) #number of mated females
   mating.list <- subset(mating.list, obs_fert > 0)
   stat.crate[2] <- (stat.crate[1] - nrow(mating.list))
   stat.crate[5] <- mean(mating.list$sire.id.1st == mating.list$sire.id.2nd) # percentage of females mated with 1st male
@@ -178,7 +178,7 @@ RunSimulation <-
         )
       stat.crate[4] <-nrow(kit.list)
     kit.list <- RandCull(kit.list,cull.ratio)
-    stat.crate[7] <- nrow(kit.list)
+    stat.crate[7] <- nrow(kit.list) #number of kits after culling
     fert.memory[year] <- stat.crate[7]/n.females
     kit.list <- SellExtraKits(kit.list, stat.crate[1], n.cages)
     numb.sold.kits <- stat.crate[7]-nrow(kit.list)
@@ -230,7 +230,7 @@ RunSimulation <-
       IndSelectionOldFemales (next.gen, solutions, year,
                               weight.bw.old.females,
                               weight.fert.old.females,
-                              weight.qual.old.females)
+                              weight.qual.old.females,n.females,prop.oldfemales)
     next.gen       <-
       IndSelFemaleKits (
         kit.list,
@@ -239,14 +239,16 @@ RunSimulation <-
         mblup,
         weight.bw.kits,
         weight.fert.kits,
-        weight.qual.kits
+        weight.qual.kits,
+        n.females
       )
     next.gen.males <-
       IndSelMaleKits (kit.list,
                       solutions,
                       weight.bw.kits,
                       weight.fert.kits,
-                      weight.qual.kits)
+                      weight.qual.kits,
+                      n.males)
   }
   if ("f0.dam" %in% colnames(old.females)) {
     set(old.females,
@@ -270,7 +272,8 @@ RunSimulation <-
   feed.intake <- sum(kit.list$FI)
   kit.list.masked <- kit.list
   kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year)
-  skin.price <- sum(kit.list$skin.price, na.rm =T)/n.females
+  skin.price <- sum(kit.list$skin.price, na.rm =T)/number.of.females.start.of.year
+  income <- sum(kit.list$skin.price, na.rm =T)
   # if (year == n) {
   #   save(kit.list, file="last.year.Rdata")
   # }
@@ -322,17 +325,16 @@ RunSimulation <-
     #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
     feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
     skin.price,
-    sum(kit.list$skin.price, na.rm = T) - number.of.females.start.of.year *
+   income - number.of.females.start.of.year *
       variable.costs -
       feed.intake * feed.price - fixed.costs - nrow(kit.list) * pelting.costs +
       numb.sold.kits * price.sold.kit, #pr farm margin
-    sum(kit.list$skin.price, na.rm = T), #income from skins
+    income, #income from skins
     number.of.females.start.of.year *variable.costs, #variable costs
     fixed.costs, #fixed costs
     ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs, #pelting costs
     (feed.intake+feed.usage.breeders)*feed.price, #feeding costs
     numb.sold.kits*price.sold.kit, #sold kits
-    (feed.intake+feed.usage.breeders)*feed.price,    
     (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),   
     skin.price*n.females/nrow(kit.list.nomasked), 
     coef(lm1)[2],
