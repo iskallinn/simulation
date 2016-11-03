@@ -143,6 +143,7 @@ RunFirstYear <-
   next.gen <- rbind(next.gen, old.females,fill=TRUE)
   feed.intake <- sum(kit.list$FI)
   kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year)
+  income <- sum(kit.list$skin.price, na.rm =T)
   # # add in next gen and kit.list to big pedigree
   if (selection.method ==blup){
     big.pedfile <- update.big.pedigree (big.pedfile, next.gen, next.gen.males)
@@ -187,13 +188,11 @@ RunFirstYear <-
       #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
       feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
       sum(kit.list$skin.price, na.rm =T)/n.females,
-      sum(kit.list$skin.price, na.rm = T) - number.of.females.start.of.year *
+      income - number.of.females.start.of.year *
         variable.costs -
-        sum(kit.list$skin.price, na.rm = T) - number.of.females.start.of.year *
-        variable.costs -
-        (feed.intake+feed.usage.breeders) * feed.price - fixed.costs - nrow(kit.list) * pelting.costs +
+        feed.intake * feed.price - fixed.costs - nrow(kit.list) * pelting.costs +
         numb.sold.kits * price.sold.kit, #pr farm margin
-      sum(kit.list$skin.price, na.rm = T), #income from skins
+      income, #income from skins
       number.of.females.start.of.year *variable.costs, #variable costs
       fixed.costs, #fixed costs
       ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs, #pelting costs
