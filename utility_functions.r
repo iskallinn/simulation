@@ -3548,7 +3548,7 @@ return(feed.used.breeders)
      old.female.cages.needed <- numb.of.old.females # keeps track of how many cages are needed for old females
      
      
-     sold.kit.numb <- ceiling(nrow(kit.list)/2)-(n.cages-old.female.cages.needed) 
+     sold.kit.numb <- (ceiling(nrow(kit.list)/2)-(n.cages-old.female.cages.needed) )*2
      sold.kit.id <- sample(kit.list$id, size = sold.kit.numb)
      
      sd <-
@@ -3565,7 +3565,7 @@ return(feed.used.breeders)
    if (year == 1 ) { 
      objective <- fert.memory[1]/2
    } else if (year > 1 ) {
-       objective <- mean(fert.memory[year-1:year])*0.45
+       objective <- mean(fert.memory[year-1:year])*0.4
      }
    f.obj <- c(1,1)
    f.con <- matrix (c(objective,1,1,-1), nrow=2, byrow=TRUE)

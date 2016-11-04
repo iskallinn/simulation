@@ -327,7 +327,7 @@ RunSimulation <-
     skin.price,
    income - number.of.females.start.of.year *
       variable.costs -
-      feed.intake * feed.price - fixed.costs - nrow(kit.list) * pelting.costs +
+      feed.intake * feed.price - fixed.costs - ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males-numb.sold.kits) * pelting.costs +
       numb.sold.kits * price.sold.kit, #pr farm margin
     income, #income from skins
     number.of.females.start.of.year *variable.costs, #variable costs
@@ -342,7 +342,7 @@ RunSimulation <-
     coef(lm3)[2],
     stat.crate[8],
     number.of.females.start.of.year,
-    ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
+    ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males-numb.sold.kits),
     (number.of.females.start.of.year *
        variable.costs +
        feed.intake * feed.price + fixed.costs + nrow(kit.list) * pelting.costs) /ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
@@ -389,7 +389,7 @@ RunSimulation <-
       sum(kit.list$skin.price, na.rm =T)/n.females,
       sum(kit.list$skin.price, na.rm = T) - number.of.females.start.of.year *
         variable.costs -
-        feed.intake * feed.price - fixed.costs - nrow(kit.list) * pelting.costs +
+        feed.intake * feed.price - fixed.costs - ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males-numb.sold.kits) * pelting.costs +
         numb.sold.kits * price.sold.kit, #pr farm margin
       sum(kit.list$skin.price, na.rm = T), #income from skins
       number.of.females.start.of.year *variable.costs, #variable costs
@@ -401,7 +401,7 @@ RunSimulation <-
       mean(kit.list$skin.price),  
       stat.crate[8],  
       number.of.females.start.of.year,   
-      ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
+      ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males-numb.sold.kits),
       (number.of.females.start.of.year *
         variable.costs +
         feed.intake * feed.price + fixed.costs + nrow(kit.list) * pelting.costs) /ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
