@@ -169,7 +169,8 @@ GenerateBaseMales <- function (leg2,
                                male.ratio,
                                male.inf,
                                qual.classes,
-                               intensity.remating) 
+                               intensity.remating,
+                               n.females) 
   {
   mating.willingness.1st <-  numeric( n.males )  
   mating.willingness.2nd  <-  numeric( n.males)
