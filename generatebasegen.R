@@ -64,7 +64,8 @@ RunFirstYear <-
                                      male.ratio,
                                      male.inf,
                                      qual.classes,
-                                     intensity.remating) # create males
+                                     intensity.remating,
+                                     n.females) # create males
   ################## assign each female a male,  based on his mating willingness ####
   mating.list <- mate (
     effgen0.males,
