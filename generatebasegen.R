@@ -143,6 +143,7 @@ RunFirstYear <-
   }
   next.gen <- rbind(next.gen, old.females,fill=TRUE)
   feed.intake <- sum(kit.list$FI)
+  feed.intake.pr.kit <- feed.intake/nrow(kit.list)
   kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year)
   income <- sum(kit.list$skin.price, na.rm =T)
   # # add in next gen and kit.list to big pedigree
@@ -213,7 +214,7 @@ RunFirstYear <-
       (number.of.females.start.of.year *
          variable.costs +
          feed.intake * feed.price + fixed.costs +  ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs)/number.of.females.start.of.year,
-      
+      feed.intake.pr.kit,
       sep = "\t",
       file = con
     )  } else if (selection.method == phenotypic) {
@@ -270,7 +271,7 @@ RunFirstYear <-
       (number.of.females.start.of.year *
          variable.costs +
          feed.intake * feed.price + fixed.costs +  ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs)/number.of.females.start.of.year,
-      
+      feed.intake.pr.kit,
       sep = "\t",
       file = con
     )

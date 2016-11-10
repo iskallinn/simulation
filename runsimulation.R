@@ -270,6 +270,7 @@ RunSimulation <-
   next.gen$FI <- NULL
   next.gen <- rbind(next.gen, old.females, fill = T)
   feed.intake <- sum(kit.list$FI)
+  feed.intake.pr.kit <- feed.intake/nrow(kit.list)
   kit.list.masked <- kit.list
   kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year)
   skin.price <- sum(kit.list$skin.price, na.rm =T)/number.of.females.start.of.year
@@ -349,6 +350,7 @@ RunSimulation <-
     (number.of.females.start.of.year *
        variable.costs +
        feed.intake * feed.price + fixed.costs + nrow(kit.list) * pelting.costs)/number.of.females.start.of.year,
+   feed.intake.pr.kit,
     sep = "\t",
     file = con
   )
@@ -408,6 +410,7 @@ RunSimulation <-
       (number.of.females.start.of.year *
          variable.costs +
          feed.intake * feed.price + fixed.costs + nrow(kit.list) * pelting.costs)/number.of.females.start.of.year,
+      feed.intake.pr.kit,
       sep = "\t",  
       file = con
     )  

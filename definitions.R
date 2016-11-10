@@ -89,14 +89,37 @@ var.skin.length.c.female   <- 1.49        # perm env of skin length female
 var.skin.length.res.female <- 9.29        # residual of skin length female
 
 ################# RR parameters ###################
+BW.mean.females <-  1.695159
+BW.mean.males   <-  3.438562
 # Note that the working folder in the simulation_working needs to be set 
-G_BWF <- as.matrix(read.table("G_BWF.txt"))
-P_BWF <- as.matrix(read.table("P_BWF.txt"))
-P_BWM <- as.matrix(read.table("P_BWM.txt"))
+# G_BWF <- as.matrix(read.table("G_BWF.txt"))
+# P_BWF <- as.matrix(read.table("P_BWF.txt"))
+# P_BWM <- as.matrix(read.table("P_BWM.txt"))
 P_RFI <- as.matrix(read.table("P_RFI.txt"))
 # Correlation matrix between traits
 G_sigma <- as.matrix(read.table("G_sigma.txt"),header=T, row.names = 1)
 # Vector that holds all the genetic variances
+# variances <-
+#   c(
+#     0.12,                  # live.qual
+#     0.07,                  # h.length
+#     1.53,                  # skin.qual
+#     11.6,                  # skin.length.male
+#     8.94,                  # skin.length.female
+#     0.01222,               # litter.size
+#     0.187570056965907E-01, # bw1.f
+#     0.105996930807828E-01, # bw2.f
+#     0.108406600737242E-02, # bw3.f
+#     0.499379849225065E-01, # bw1.m
+#     0.341965058424113E-01, # bw2.m
+#     0.375707107280707E-02, # bw3.m
+#     0.583035959863543,     # rfi1.m
+#     1.015749852,           # rfi2.m
+#     0.502027738625064,     # rfi1.f
+#     0.851297595421713      # rfi2.f
+#   )
+
+# new variances without RR for body weight
 variances <-
   c(
     0.12,                  # live.qual
@@ -105,33 +128,36 @@ variances <-
     11.6,                  # skin.length.male
     8.94,                  # skin.length.female
     0.01222,               # litter.size
-    0.187570056965907E-01, # bw1.f
-    0.105996930807828E-01, # bw2.f
-    0.108406600737242E-02, # bw3.f
-    0.499379849225065E-01, # bw1.m
-    0.341965058424113E-01, # bw2.m
-    0.375707107280707E-02, # bw3.m
+    0.121036,              # body weight males
+    0.036198,              # body weight females
     0.583035959863543,     # rfi1.m
     1.015749852,           # rfi2.m
     0.502027738625064,     # rfi1.f
     0.851297595421713      # rfi2.f
   )
+
+pe.var.bw.female <- 0.010295 # common litter (PE) for females
+pe.var.bw.male   <- 0.035977 # common litter (PE) for males 
 # vector that holds the regression coeffs of permanent environment
-pe.var.bw.female <-
-  c(0.463272591471770E-02,
-    0.110671108702861E-02,
-    0.295290173247113E-03)
-pe.var.bw.male <-
-  c(0.140998088558170E-01,
-    0.310587884472959E-02,
-    0.721913463410233E-03)
+# pe.var.bw.female <-
+#   c(0.463272591471770E-02,
+#     0.110671108702861E-02,
+#     0.295290173247113E-03)
+# pe.var.bw.male <-
+#   c(0.140998088558170E-01,
+#     0.310587884472959E-02,
+#     0.721913463410233E-03)
 
 # Reads the residual variances for BW
 # note that the residual variances are adjusted to get the proper h^2 
-bw.res.male <- as.matrix(read.table(file="RES_BWM.txt"))
-bw.res.male[8] <- bw.res.male[8] *32 # this is the adjustment needed to get the proper heritability
-bw.res.female <- as.matrix(read.table(file="RES_BWF.txt"))
-bw.res.female[8] <- bw.res.female[8]*54 # this is the adjustment needed to get the proper heritability
+# bw.res.male <- as.matrix(read.table(file="RES_BWM.txt"))
+# bw.res.male[8] <- bw.res.male[8] *32 # this is the adjustment needed to get the proper heritability
+# bw.res.female <- as.matrix(read.table(file="RES_BWF.txt"))
+# bw.res.female[8] <- bw.res.female[8]*54 # this is the adjustment needed to get the proper heritability
+
+bw.res.male <-  0.0963   # residual body weight males
+bw.res.female <-0.036818 # residual body weight females
+
 # Vector that holds the permanent environment of residual feed intake
 pe.var.rfi <- c(
   0.686214714336812,

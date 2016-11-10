@@ -206,6 +206,7 @@ Simulation <- function (
     "sold.skins",
     "costs.pr.sold.skin",
     "costs.pr.female",
+    "FI.pr.kit",
     sep = "\t",
     file = con
   )  } else if (selection.method == 1) { # phenotypic
@@ -254,6 +255,7 @@ Simulation <- function (
       "sold.skins",
       "costs.pr.sold.skin",
       "costs.pr.female",
+      "FI.pr.kit",
       sep = "\t",
       file = con
     )

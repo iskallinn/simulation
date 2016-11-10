@@ -23,12 +23,8 @@ GenerateBaseFemales <- function ( leg2,
       "skin.length.male",
       "skin.length.female",
       "litter.size",
-      "bw1_f",
-      "bw2_f",
-      "bw3_f",
-      "bw1_m",
-      "bw2_m",
-      "bw3_m",
+      "bw_f",
+      "bw_m",
       "rfi1_m",
       "rfi2_m",
       "rfi1_f",
@@ -42,11 +38,7 @@ GenerateBaseFemales <- function ( leg2,
   mating.will.1st.round <-
     rbinom(n.females, 1, mating.will.yearling.1st)
   mating.will.2nd.round <- numeric(n.females)
-  perm.env.bw <- rmvnorm(n.females, sigma = P_BWF,method="svd" )
-  perm.env.bw <- t(t(perm.env.bw)*sqrt(pe.var.bw.female))
-  colnames(perm.env.bw) <- c("pe1.bw.f", "pe2.bw.f", "pe3.bw.f")
-  #create breeding value of fertility for females
-  
+
   gen0.females <-  data.table(
     id,
     add.gen,
@@ -56,20 +48,16 @@ GenerateBaseFemales <- function ( leg2,
     dam.id,
     birthyear,
     mating.will.1st.round,
-    mating.will.2nd.round,
-    perm.env.bw
-  )
+    mating.will.2nd.round
+    )
   gen0.females$mating.will.2nd.round <-
     ifelse (gen0.females$mating.will.1st.round == 1,
             rbinom(sum(gen0.females$mating.will.1st.round),1,mating.will.yearling.2nd
       ), 0 )
-  # this q keeps the LP for the given time, this case 210 days
-  q <- as.matrix(as.data.frame(polynomial.values(polynomials = leg2, x =t[6])))
 
-  const <- 0.9+ q %*% FR.females # contains the fixed regression and the overall intercept for BW
-  gen0.females[,`:=`(phenotype.bw.oct =(const + q[1]*bw1_f+q[2]*bw2_f+q[3]*bw3_f + 
-                       q[1]*pe1.bw.f+q[2]*pe2.bw.f+q[3]*pe3.bw.f+ 
-                    rnorm(nrow(gen0.females))*sqrt(bw.res.female[8]))  ,
+    gen0.females[,`:=`(phenotype.bw.oct =(BW.mean.females +
+                   bw_f + rnorm(nrow(gen0.females))*sqrt(pe.var.bw.female)+
+                     rnorm(nrow(gen0.females))*sqrt(bw.res.female))  ,
                     phenotype.live.qual = live.qual + 
                       rnorm(nrow(gen0.females))*sqrt(var.live.qual.res),
                     phenotype.skin.length = mean.skin.length.female + skin.length.female + 
@@ -157,8 +145,6 @@ GenerateBaseFemales <- function ( leg2,
                            )
                          ))]
   }
-  set( gen0.females, j=which(colnames(gen0.females) %in% 
-                    c("pe1.bw.f", "pe2.bw.f", "pe3.bw.f"))  , value=NULL )
   return (gen0.females)
 }
 ############### Creation of Gen0 males#######################################
