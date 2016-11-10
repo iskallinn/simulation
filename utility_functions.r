@@ -742,9 +742,7 @@ mate <- function (x,
         0
       )
     if (purebreeding == 0 ) {  
-      #####################d######
-      
-      
+
       #subset mating.list.allowed into two, those done and those left
       
       mating.list.remated <-
