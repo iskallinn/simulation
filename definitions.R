@@ -94,8 +94,8 @@ sib.effect.male <- -0.0134       # Effect on body size of (male) one extra kit i
 sib.effect.female <- -0.0186      # Effect on body size of (female) one extra kit in litter, Hansen(1997)
 bw.eff.damage           <-  0.0345          # effect of dam age on weight of males
 
-BW.mean.females <-  1.695159
-BW.mean.males   <-  3.438562
+BW.mean.females <-  1.845159
+BW.mean.males   <-  3.548562
 # Note that the working folder in the simulation_working needs to be set 
 # G_BWF <- as.matrix(read.table("G_BWF.txt"))
 # P_BWF <- as.matrix(read.table("P_BWF.txt"))
