@@ -46,7 +46,8 @@ RunSimulation <-
             variable.costs,
             fixed.costs,
             pelting.costs,
-            price.sold.kit) 
+            price.sold.kit,
+            cheat) 
 {
     # browser()
   stat.crate <- c(0,0,0,0,0,0,0)
@@ -196,7 +197,7 @@ RunSimulation <-
     if (mblup == 0) {
      WriteObservations(mating.list, next.gen,next.gen.males,kit.list,year,p,sorting.prop)
       solutions <- CalculateBLUP ()
-    } else if (mblup ==1 ) { WriteMBLUPObservations(mating.list, next.gen, next.gen.males, kit.list, year,p)
+    } else if (mblup ==1 ) { WriteMBLUPObservations(mating.list, next.gen, next.gen.males, kit.list, year,p,cheat)
      solutions <- CalculateMBLUP ()
       }
   }
@@ -289,7 +290,7 @@ RunSimulation <-
     stat1 <- subset(kit.list, sex==1)#males
     lm1  <- lm(data=kit.list, litter.size~blup.fert )
     lm2  <- lm(data=kit.list, live.qual~blup.qual )
-    lm3  <- lm(data=kit.list, add.gen.bw.m~blup.bwnov )
+    lm3  <- lm(data=kit.list, bw_m~blup.bwnov )
     
     cat (
     year,
@@ -298,11 +299,11 @@ RunSimulation <-
     mean(kit.list$f0),
     mean(mating.list$obs_fert),
     stat[[2,2]],
-    mean(kit.list$add.gen.bw.m),
+    mean(kit.list$bw_m),
     stat[[1,2]],
-    var(kit.list$add.gen.bw.m,na.rm=T),
-    cor(kit.list$add.gen.bw.m, kit.list$blup.bwnov,use="complete"),
-    cor(stat1$add.gen.bw.m, stat1$phenotype.bw.oct), #only males
+    var(kit.list$bw_m,na.rm=T),
+    cor(kit.list$bw_m, kit.list$blup.bwnov,use="complete"),
+    cor(stat1$bw_m, stat1$phenotype.bw.oct), #only males
     mean(kit.list$skin.length.male),
     var(kit.list$skin.length.male),
     mean(kit.list$skin.qual),
@@ -366,10 +367,10 @@ RunSimulation <-
       mean(mating.list$f0.dam),
       mean(mating.list$obs_fert),
       stat[[2,2]], # avg oct weight of females
-      mean(kit.list.nomasked$add.gen.bw.m),
+      mean(kit.list.nomasked$bw_m),
       stat[[1,2]], # avg oct weight of males
-      var(kit.list.nomasked$add.gen.bw.m),
-      cor(stat1$add.gen.bw.m, stat1$phenotype.bw.oct),
+      var(kit.list.nomasked$bw_m),
+      cor(stat1$bw_m, stat1$phenotype.bw.oct),
       mean(kit.list.nomasked$skin.length.male),
       var(kit.list.nomasked$skin.length.male),
       mean(kit.list.nomasked$skin.qual),

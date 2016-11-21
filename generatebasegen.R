@@ -38,7 +38,8 @@ RunFirstYear <-
             variable.costs,
             fixed.costs,
             pelting.costs,
-            price.sold.kit
+            price.sold.kit,
+            cheat
   )
   {
     number.of.females.start.of.year <- n.females
@@ -125,7 +126,7 @@ RunFirstYear <-
   if (selection.method == blup) {
     big.pedfile <- WriteBigPedigree(kit.list, pedfile,year,p)
     WriteObservations(mating.list, gen0.females,effgen0.males,kit.list,year,p,sorting.prop)
-    WriteMBLUPObservations(mating.list, gen0.females, effgen0.males, kit.list, year,p)
+    WriteMBLUPObservations(mating.list, gen0.females, effgen0.males, kit.list, year,p,cheat)
     }
   kit.list$birthyear.dam <- NULL # to  do figure out error
   # ############### Selection of first generation #########################################

@@ -26,7 +26,10 @@ A variety of key figures and plots will be generated
 ### Summary statistics
 ```{r results="asis", echo=FALSE}
 library(ggplot2)
-  setwd("C:/Users/au384062/Dropbox/Projects/Kopenhagen Fur/Analysis results/Scenarios/Skejby_0811/Standard/Raw_Data//")
+  # setwd("C:/Users/au384062/Dropbox/Projects/Kopenhagen Fur/Analysis results/Scenarios/Skejby_0811/Standard/Raw_Data//")
+   setwd("C:/Users/au384062/Dropbox/Projects/simulation of mink farm/Output/DMU analysis")
+
+
 library(doBy)        #
     results <- read.table("results", header = T, row.names = NULL)
 
@@ -41,7 +44,7 @@ summarized <-
         cor.ls.own.to.ls+mated.females+barren.females+numb.false.sires+numb.kits+
         remating.perc+perc.single.mat+mean.gen.val.qual+var.gen.val.qual+survived.kits+
         avg.skin.length.male+avg.skin.length.female+feed.per.skin+skin.price+
-      margin+feeding.cost+avg.skin.price+margin+income.from.skins+variable.costs+fixed.costs+pelting.costs+income.fr.sold.kits+
+      margin+feeding.cost.pr.skin+avg.skin.price+margin+income.from.skins+variable.costs+fixed.costs+pelting.costs+income.fr.sold.kits+
         gross.feeding.costs+cage_utilization+n.females+sold.skins+costs.pr.sold.skin+costs.pr.female
 
     ~ Gen,
@@ -280,11 +283,11 @@ qplot(Gen, skin.qual.mean.mean, data = summarized) + geom_errorbar(
 Note that this is a beta version with all the feeding costs, minus the amount kits eat in weeks 6-9
 
 ```{r, echo= FALSE}
-qplot(Gen, feeding.cost.mean, data = summarized) + geom_errorbar(
+qplot(Gen, feeding.cost.pr.skin.mean, data = summarized) + geom_errorbar(
   aes(
     x = Gen,
-    ymin = feeding.cost.mean - sqrt(feeding.cost.var),
-    ymax = feeding.cost.mean + sqrt(feeding.cost.var)
+    ymin = feeding.cost.pr.skin.mean - sqrt(feeding.cost.pr.skin.var),
+    ymax = feeding.cost.pr.skin.mean + sqrt(feeding.cost.pr.skin.var)
   ),
   width = 0.25,
   data = summarized

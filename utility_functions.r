@@ -1855,12 +1855,8 @@ MakeKitsGenN <- function (x,
                   "sire.id.1st",
                   "dam.fert",
                   "sire.fert.1st",
-                  "sire.bw1_f.1st",
-                  "sire.bw2_f.1st",
-                  "sire.bw3_f.1st",
-                  "sire.bw1_m.1st",
-                  "sire.bw2_m.1st",
-                  "sire.bw3_m.1st",
+                  "sire.bw_f.1st",
+                  "sire.bw_m.1st",
                   "sire.rfi1_m.1st",
                   "sire.rfi2_m.1st",
                   "sire.rfi1_f.1st",
@@ -1871,12 +1867,8 @@ MakeKitsGenN <- function (x,
                   "sire.live.qual.1st",
                   "sire.h.length.1st",
                   "obs_fert",
-                  "dam.bw1_f",
-                  "dam.bw2_f",
-                  "dam.bw3_f",
-                  "dam.bw1_m",
-                  "dam.bw2_m",
-                  "dam.bw3_m",
+                  "dam.bw_f",
+                  "dam.bw_m",
                   "dam.rfi1_m",
                   "dam.rfi2_m",
                   "dam.rfi1_f",
@@ -1886,21 +1878,13 @@ MakeKitsGenN <- function (x,
                   "dam.skin.qual",
                   "dam.live.qual",
                   "dam.h.length",
-                  "pe1.bw.f",
-                  "pe2.bw.f",
-                  "pe3.bw.f",
-                  "pe1.bw.m", 
-                  "pe2.bw.m", 
-                  "pe3.bw.m",
+                  "perm.env.bw.f",
+                  "perm.env.bw.m",
                   "birthyear.dam",
                   "sire.id.2nd",
                   "sire.fert.2nd",
-                  "sire.bw1_f.2nd",
-                  "sire.bw2_f.2nd",
-                  "sire.bw3_f.2nd",
-                  "sire.bw1_m.2nd",
-                  "sire.bw2_m.2nd",
-                  "sire.bw3_m.2nd",
+                  "sire.bw_f.2nd",
+                  "sire.bw_m.2nd",
                   "sire.rfi1_m.2nd",
                   "sire.rfi2_m.2nd",
                   "sire.rfi1_f.2nd",
@@ -1917,7 +1901,7 @@ MakeKitsGenN <- function (x,
                   "pe2.rfi.f"
                 )                  
                 , with=F] #specify which columns to incl.
-  
+
   id <- seq(1:sum(x$obs_fert)) + max(z$id) # makes ID
   
   birthyear <- rep (year, sum(x$obs_fert)) # makes birthyear
@@ -1935,12 +1919,8 @@ MakeKitsGenN <- function (x,
       "mend.skin.length.male",
       "mend.skin.length.female",
       "mend.litter.size",
-      "mend.bw1_f",
-      "mend.bw2_f",
-      "mend.bw3_f",
-      "mend.bw1_m",
-      "mend.bw2_m",
-      "mend.bw3_m",
+      "mend.bw_f",
+      "mend.bw_m",
       "mend.rfi1_m",
       "mend.rfi2_m",
       "mend.rfi1_f",
@@ -1964,41 +1944,17 @@ MakeKitsGenN <- function (x,
       kit.list$sire.fert.1st,
       kit.list$sire.fert.2nd
     )
-  kit.list$sire.bw1_f.2nd <-
+  kit.list$sire.bw_f.2nd <-
     ifelse(
       kit.list$true.sire.check == TRUE,
-      kit.list$sire.bw1_f.1st,
-      kit.list$sire.bw1_f.2nd
+      kit.list$sire.bw_f.1st,
+      kit.list$sire.bw_f.2nd
     )
-  kit.list$sire.bw2_f.2nd <-
+  kit.list$sire.bw_m.2nd <-
     ifelse(
       kit.list$true.sire.check == TRUE,
-      kit.list$sire.bw2_f.1st,
-      kit.list$sire.bw2_f.2nd
-    )
-  kit.list$sire.bw3_f.2nd <-
-    ifelse(
-      kit.list$true.sire.check == TRUE,
-      kit.list$sire.bw3_f.1st,
-      kit.list$sire.bw3_f.2nd
-    )
-  kit.list$sire.bw1_m.2nd <-
-    ifelse(
-      kit.list$true.sire.check == TRUE,
-      kit.list$sire.bw1_m.1st,
-      kit.list$sire.bw1_m.2nd
-    )
-  kit.list$sire.bw2_m.2nd <-
-    ifelse(
-      kit.list$true.sire.check == TRUE,
-      kit.list$sire.bw2_m.1st,
-      kit.list$sire.bw2_m.2nd
-    )
-  kit.list$sire.bw3_m.2nd <-
-    ifelse(
-      kit.list$true.sire.check == TRUE,
-      kit.list$sire.bw3_m.1st,
-      kit.list$sire.bw3_m.2nd
+      kit.list$sire.bw_m.1st,
+      kit.list$sire.bw_m.2nd
     )
   kit.list$sire.rfi1_m.2nd <-
     ifelse(
@@ -2065,24 +2021,12 @@ MakeKitsGenN <- function (x,
   kit.list[, `:=`(true.sire.fert = 
                     ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
                            kit.list$sire.fert.2nd, kit.list$sire.fert.1st), 
-                  true.sire.bw1_m = 
+                  true.sire.bw_m = 
                     ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                           kit.list$sire.bw1_m.2nd, kit.list$sire.bw1_m.1st),
-                  true.sire.bw2_m = 
+                           kit.list$sire.bw_m.2nd, kit.list$sire.bw_m.1st),
+                  true.sire.bw_f = 
                     ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                           kit.list$sire.bw2_m.2nd, kit.list$sire.bw2_m.1st),
-                  true.sire.bw3_m = 
-                    ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                           kit.list$sire.bw3_m.2nd, kit.list$sire.bw3_m.1st),
-                  true.sire.bw1_f = 
-                    ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                           kit.list$sire.bw1_f.2nd, kit.list$sire.bw1_f.1st),
-                  true.sire.bw2_f = 
-                    ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                           kit.list$sire.bw2_f.2nd, kit.list$sire.bw2_f.1st),
-                  true.sire.bw3_f = 
-                    ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                           kit.list$sire.bw3_f.2nd, kit.list$sire.bw3_f.1st),
+                           kit.list$sire.bw_f.2nd, kit.list$sire.bw_f.1st),
                   true.sire.rfi1_m = 
                     ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
                            kit.list$sire.rfi1_m.2nd, kit.list$sire.rfi1_m.1st),
@@ -2150,15 +2094,11 @@ MakeKitsGenN <- function (x,
   
   ###### Now calculate the breeding values
   
-
+  
   kit.list[, `:=`(litter.size = 0.5*(dam.fert + true.sire.fert) + 
                     mend.litter.size,  # Breeding value of offspring, littersize
-                  bw1_f = 0.5*(true.sire.bw1_f + dam.bw1_f) + mend.bw1_f*(1-f0),
-                  bw2_f = 0.5*(true.sire.bw2_f + dam.bw2_f) + mend.bw2_f*(1-f0),
-                  bw3_f = 0.5*(true.sire.bw3_f + dam.bw3_f) + mend.bw3_f*(1-f0),
-                  bw1_m = 0.5*(true.sire.bw1_m + dam.bw1_m) + mend.bw1_m*(1-f0),
-                  bw2_m = 0.5*(true.sire.bw2_m + dam.bw2_m) + mend.bw2_m*(1-f0),
-                  bw3_m = 0.5*(true.sire.bw3_m + dam.bw3_m) + mend.bw3_m*(1-f0),
+                  bw_f = 0.5*(true.sire.bw_f + dam.bw_f) + mend.bw_f*(1-f0),
+                  bw_m = 0.5*(true.sire.bw_m + dam.bw_m) + mend.bw_m*(1-f0),
                   rfi1_m = 0.5*(true.sire.rfi1_m + dam.rfi1_m) + mend.rfi1_m*(1-f0),
                   rfi2_m = 0.5*(true.sire.rfi2_m + dam.rfi2_m) + mend.rfi2_m*(1-f0),
                   rfi1_f = 0.5*(true.sire.rfi1_f + dam.rfi1_f) + mend.rfi1_f*(1-f0),
@@ -2172,19 +2112,33 @@ MakeKitsGenN <- function (x,
                   skin.qual = 0.5*(dam.skin.qual + true.sire.skin.qual)+ (mend.skin.qual)*(1-f0),
                   h.length = 0.5*(dam.h.length + true.sire.h.length)+ (mend.h.length)*(1-f0)
   )]# Breeding value of offspring, body size
-  t <- c(63,84,105,126,147,168,189,210)
-  t <- StandardTime(t)
-  t <- t[3:8]
-  
-  q <- as.matrix(as.data.frame(polynomial.values(polynomials = leg2, x =t[6])))
-  
-  kit.list[, `:=`(add.gen.bw.f =  q[1]*bw1_f+q[2]*bw2_f+q[3]*bw3_f,
-                  add.gen.bw.m =  q[1]*bw1_m+q[2]*bw2_m+q[3]*bw3_m)]
-  # kit.list$dam.age <- ifelse( z - kit.list$birthyear.dam > 1, 1,0 )
-  
   
   setnames(kit.list, "obs_fert", "own_littersize") # changes obs fert into the littersize of the kit
-
+  
+  kit.list$dam.age <-
+    ifelse(year - kit.list$birthyear.dam > 1, 1, 0)
+  kit.list$phenotype.bw.oct <- ifelse(
+    kit.list$sex == 1,
+    MakePhenotypesBWMalesOct(
+      BW.mean.males ,
+      kit.list$bw_m ,
+      kit.list$perm.env.bw.m ,
+      kit.list$own_littersize,
+      kit.list$dam.age,
+      x
+    )
+    ,
+    MakePhenotypesBWFemalesOct(
+      BW.mean.females ,
+      kit.list$bw_f ,
+      kit.list$perm.env.bw.f,
+      kit.list$own_littersize,
+      x
+    )
+  )
+  
+  
+  
   kit.list[, `:=`( 
     phenotype.live.qual = live.qual  + rnorm(nrow(kit.list)) *
       sqrt(var.live.qual.res),
@@ -2202,12 +2156,8 @@ MakeKitsGenN <- function (x,
   ]  
   set( kit.list, j=which(colnames(kit.list) %in% c(
     "sire.fert.1st",
-    "sire.bw1_f.1st",
-    "sire.bw2_f.1st",
-    "sire.bw3_f.1st",
-    "sire.bw1_m.1st",
-    "sire.bw2_m.1st",
-    "sire.bw3_m.1st",
+    "sire.bw_f.1st",
+    "sire.bw_m.1st",
     "sire.rfi1_m.1st",
     "sire.rfi2_m.1st",
     "sire.rfi1_f.1st",
@@ -2221,12 +2171,8 @@ MakeKitsGenN <- function (x,
     "sire.h.length.1st",
     "sire.id.1st",
     "dam.fert",
-    "dam.bw1_f",
-    "dam.bw2_f",
-    "dam.bw3_f",
-    "dam.bw1_m",
-    "dam.bw2_m",
-    "dam.bw3_m",
+    "dam.bw_f",
+    "dam.bw_m",
     "dam.rfi1_m",
     "dam.rfi2_m",
     "dam.rfi1_f",
@@ -2235,19 +2181,12 @@ MakeKitsGenN <- function (x,
     "dam.skin.length.female",
     "dam.skin.qual",
     "dam.live.qual",
-    "dam.bw.june",
-    "dam.bw.june.maternal",
     "dam.h.length",
     "sire.bw.oct.1st",
     "sire.bw.sept.1st",
-    "specific.env.bw",
     "sire.fert.2nd",
-    "sire.bw1_f.2nd",
-    "sire.bw2_f.2nd",
-    "sire.bw3_f.2nd",
-    "sire.bw1_m.2nd",
-    "sire.bw2_m.2nd",
-    "sire.bw3_m.2nd",
+    "sire.bw_f.2nd",
+    "sire.bw_m.2nd",
     "sire.rfi1_m.2nd",
     "sire.rfi2_m.2nd",
     "sire.rfi1_f.2nd",
@@ -2256,15 +2195,9 @@ MakeKitsGenN <- function (x,
     "sire.skin.length.female.2nd",
     "sire.skin.qual.2nd",
     "sire.live.qual.2nd",
-    "sire.bw.june.2nd",
-    "sire.bw.june.maternal.2nd",
     "sire.h.length.2nd",
-    "mend.bw1_f",
-    "mend.bw2_f",
-    "mend.bw3_f",
-    "mend.bw1_m",
-    "mend.bw2_m",
-    "mend.bw3_m",
+    "mend.bw_f",
+    "mend.bw_m",
     "mend.rfi1_m",
     "mend.rfi2_m",
     "mend.rfi1_f",
@@ -2276,12 +2209,8 @@ MakeKitsGenN <- function (x,
     "mend.skin.length.female",
     "true.sire.check",
     "true.sire.fert",
-    "true.sire.bw1_f",
-    "true.sire.bw2_f",
-    "true.sire.bw3_f",
-    "true.sire.bw1_m",
-    "true.sire.bw2_m",
-    "true.sire.bw3_m",
+    "true.sire.bw_f",
+    "true.sire.bw_m",
     "true.sire.rfi1_m",
     "true.sire.rfi2_m",
     "true.sire.rfi1_f",
@@ -2290,8 +2219,10 @@ MakeKitsGenN <- function (x,
     "true.sire.skin.length.female",
     "true.sire.skin.qual",
     "true.sire.live.qual",
-    "true.sire.h.length"
-    # "dam.age"
+    "true.sire.h.length",
+    "perm.env.bw.f",
+    "perm.env.bw.m",
+    "dam.age"
   )) , value=NULL ) # removes bv of parents
   if (qual.classes == 5) {
     truncs <- qnorm(
@@ -2373,8 +2304,7 @@ MakeKitsGenN <- function (x,
   
   return(kit.list)
 } 
-MakeKitsGenN <-compiler::cmpfun(MakeKitsGenN,options= c(suppressAll=TRUE)) # performance boost
-############### write observation file #########################
+MakeKitsGenN <-compiler::cmpfun(MakeKitsGenN,options= c(suppressAll=TRUE)) # performance boost############### write observation file #########################
 # This function writes to file in the manner that DMU requires the observed litter size
 # in the year which it is performed and the replicate
 WriteFertObservations <- function (x,year,p) { # x = mating.list
@@ -2765,7 +2695,7 @@ RandCull <- function (kitlist,cull.ratio) {
  }
  
  ################ MBLUP write observation file #####################
- WriteMBLUPObservations <- function (mating.list, next.gen, next.gen.males,kit.list,year,p) {
+ WriteMBLUPObservations <- function (mating.list, next.gen, next.gen.males,kit.list,year,p,cheat) {
    matinglist <- mating.list[,c("dam.id","obs_fert"),with=FALSE]
    setnames(matinglist, "dam.id", "id")
    if("obs_fert" %in% colnames(next.gen)) {
@@ -2794,27 +2724,73 @@ RandCull <- function (kitlist,cull.ratio) {
      writefile$live.score <- as.integer(-9999)
      
    }
-   kit.list[,`:=`(dam.age= as.integer(0), obs_fert = as.integer(-9999))] 
-   temp <- kit.list[, c("id", "dam.id","phenotype.bw.oct", "live.score", "dam.age","sex", "birthyear","own_littersize" ,"obs_fert"), with=FALSE]
-   writefile <- rbind (writefile, temp)
-   writefile[is.na(writefile)]	=	as.integer(-9999)
-   writefile[,`:=`(inter= as.integer(1), year= as.integer(year))]
-   writefile[, c("dam.id","sex","birthyear","id","own_littersize")
-             :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("dam.id","sex","birthyear","id","own_littersize")]
-   
-   if (year == 1) {
-     MBLUP_Y <- file(description = paste("MBLUP_Y",p, sep=""), open="w")
-   } else if (year > 1) {
-     MBLUP_Y <- file(description = paste("MBLUP_Y",p, sep=""), open="a")
+   # browser()
+   if (cheat == 1 ) {
+
+     kit.list[,`:=`(
+       bw.p.m = ifelse(
+         sex == 1,
+         phenotype.bw.oct,
+         (BW.mean.males +bw_m+  rnorm(nrow(kit.list)) *
+            (sqrt(bw.res.male))) 
+       ),bw.p.f =
+         ifelse(
+           sex == 2,
+           phenotype.bw.oct,
+           (BW.mean.females +bw_f + rnorm(nrow(kit.list)) *
+              (sqrt(bw.res.female)))
+         )
+       
+     )]
+     kit.list[,`:=`(dam.age= as.integer(0), obs_fert = as.integer(-9999))] 
+     writefile[,`:=`(bw.p.m= as.integer(-9999), bw.p.f = phenotype.bw.oct)]
+     if("phenotype.bw.oct" %in% colnames(writefile)) {
+       set( writefile, j=which(colnames(writefile) %in% 
+                                "phenotype.bw.oct")  , value=NULL )
+     }
      
-   }
-   writefile[,`:=`(bw.female = ifelse(sex == 2, phenotype.bw.oct, -9999.0),
-                  phenotype.bw.oct = ifelse(sex ==1, phenotype.bw.oct, -9999.0))]
-   write.table(format(writefile[,.(id,dam.id,year,dam.age,birthyear,sex,own_littersize,inter,phenotype.bw.oct,live.score,obs_fert,bw.female)], nsmall=1, digits=2), 
-               file= MBLUP_Y, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
-   close(con=MBLUP_Y)
+     temp <- kit.list[, c("id", "dam.id","bw.p.m", "live.score", "dam.age","sex", "birthyear","own_littersize" ,"obs_fert","bw.p.f"), with=FALSE]
+     writefile <- rbind (writefile, temp)
+     writefile[is.na(writefile)]	=	as.integer(-9999)
+     writefile[,`:=`(inter= as.integer(1), year= as.integer(year))]
+     writefile[, c("dam.id","sex","birthyear","id","own_littersize")
+               :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("dam.id","sex","birthyear","id","own_littersize")]
+     
+     if (year == 1) {
+       MBLUP_Y <- file(description = paste("MBLUP_Y",p, sep=""), open="w")
+     } else if (year > 1) {
+       MBLUP_Y <- file(description = paste("MBLUP_Y",p, sep=""), open="a")
+       
+     } 
+     write.table(format(writefile[,.(id,dam.id,year,dam.age,birthyear,sex,own_littersize,inter,bw.p.m,live.score,obs_fert,bw.p.f)], nsmall=1, digits=2), 
+                 file= MBLUP_Y, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
+     close(con=MBLUP_Y)
+        } else if (cheat == 0 ) {
+          kit.list[,`:=`(dam.age= as.integer(0), obs_fert = as.integer(-9999))] 
+          temp <- kit.list[, c("id", "dam.id","bw.p.m", "live.score", "dam.age","sex", "birthyear","own_littersize" ,"obs_fert","bw.p.f"), with=FALSE]
+          writefile <- rbind (writefile, temp)
+          writefile[is.na(writefile)]	=	as.integer(-9999)
+          writefile[,`:=`(inter= as.integer(1), year= as.integer(year))]
+          writefile[, c("dam.id","sex","birthyear","id","own_littersize")
+                    :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("dam.id","sex","birthyear","id","own_littersize")]
+          
+     writefile[,`:=`(bw.female = ifelse(sex == 2, phenotype.bw.oct, -9999.0),
+                     phenotype.bw.oct = ifelse(sex ==1, phenotype.bw.oct, -9999.0))]
+          if (year == 1) {
+            MBLUP_Y <- file(description = paste("MBLUP_Y",p, sep=""), open="w")
+          } else if (year > 1) {
+            MBLUP_Y <- file(description = paste("MBLUP_Y",p, sep=""), open="a")
+            
+          } 
+          write.table(format(writefile[,.(id,dam.id,year,dam.age,birthyear,sex,own_littersize,inter,phenotype.bw.oct,live.score,obs_fert,bw.female)], nsmall=1, digits=2), 
+                      file= MBLUP_Y, append= TRUE,col.names = FALSE, row.names = FALSE, quote = FALSE)
+          close(con=MBLUP_Y)
+          
+           }
    
+  
  }
+ 
  
  ######################## Skin price function ##############################
  SkinPrices <- function (kitlist, next.gen, next.gen.males,y) {

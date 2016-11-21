@@ -63,7 +63,6 @@ Simulation <- function (
     use.blup.to.assort.mat <- 0
   }
   n.males =  ceiling( n.females/male.ratio ) # calculates needed amount of males 
-  cheat <- 0 # workaround because of unknown bug
   #setwd("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
   setwd("C:/Users/au384062/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
   WriteLogFile( n.females,
@@ -301,7 +300,8 @@ Simulation <- function (
                       variable.costs,
                       fixed.costs,
                       pelting.costs,
-                      price.sold.kit
+                      price.sold.kit,
+                      cheat
     )
     
     for (y in 1:n) {
@@ -355,7 +355,8 @@ Simulation <- function (
           variable.costs,
           fixed.costs,
           pelting.costs,
-          price.sold.kit
+          price.sold.kit,
+          cheat
           )
       
     }
