@@ -88,7 +88,12 @@ mean.skin.length.female    <- 75.62       # mean of skin length female
 var.skin.length.c.female   <- 1.49        # perm env of skin length female
 var.skin.length.res.female <- 9.29        # residual of skin length female
 
-################# RR parameters ###################
+################# Body weight parameters ###################
+# TODO CLEAN UP THIS FILE!
+sib.effect.male <- -0.0134       # Effect on body size of (male) one extra kit in litter, Hansen(1997)
+sib.effect.female <- -0.0186      # Effect on body size of (female) one extra kit in litter, Hansen(1997)
+bw.eff.damage           <-  0.0345          # effect of dam age on weight of males
+
 BW.mean.females <-  1.695159
 BW.mean.males   <-  3.438562
 # Note that the working folder in the simulation_working needs to be set 

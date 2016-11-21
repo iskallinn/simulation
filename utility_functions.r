@@ -1011,73 +1011,57 @@ setkey(y, id)
 # subsequent generation is more complex this is the only instance of it
 MakeKitsGen0 <- function (x,y, z, leg2,qual.classes,true.sire.chance) { #x = mating.list, y= effgen0.males, z = year, leg2 = legendre poly
   kit.list <- x[rep(seq(nrow(x)), obs_fert), 
-            c("dam.id",
-              "sire.id.1st",
-              "dam.fert",
-              "sire.fert.1st",
-              "sire.bw1_f.1st",
-              "sire.bw2_f.1st",
-              "sire.bw3_f.1st",
-              "sire.bw1_m.1st",
-              "sire.bw2_m.1st",
-              "sire.bw3_m.1st",
-              "sire.rfi1_m.1st",
-              "sire.rfi2_m.1st",
-              "sire.rfi1_f.1st",
-              "sire.rfi2_f.1st",
-              "sire.skin.length.male.1st",
-              "sire.skin.length.female.1st",
-              "sire.skin.qual.1st",
-              "sire.live.qual.1st",
-              "sire.h.length.1st",
-              "f0",
-              "obs_fert",
-              "dam.bw1_f",
-              "dam.bw2_f",
-              "dam.bw3_f",
-              "dam.bw1_m",
-              "dam.bw2_m",
-              "dam.bw3_m",
-              "dam.rfi1_m",
-              "dam.rfi2_m",
-              "dam.rfi1_f",
-              "dam.rfi2_f",
-              "dam.skin.length.male",
-              "dam.skin.length.female",
-              "dam.skin.qual",
-              "dam.live.qual",
-              "dam.h.length",
-              "pe1.bw.f",
-              "pe2.bw.f",
-              "pe3.bw.f",
-              "pe1.bw.m", 
-              "pe2.bw.m", 
-              "pe3.bw.m",
-              "birthyear.dam",
-              "sire.id.2nd",
-              "sire.fert.2nd",
-              "sire.bw1_f.2nd",
-              "sire.bw2_f.2nd",
-              "sire.bw3_f.2nd",
-              "sire.bw1_m.2nd",
-              "sire.bw2_m.2nd",
-              "sire.bw3_m.2nd",
-              "sire.rfi1_m.2nd",
-              "sire.rfi2_m.2nd",
-              "sire.rfi1_f.2nd",
-              "sire.rfi2_f.2nd",
-              "sire.skin.length.male.2nd",
-              "sire.skin.length.female.2nd",
-              "sire.skin.qual.2nd",
-              "sire.live.qual.2nd",
-              "sire.h.length.2nd",
-              "specific.env.skin",
-              "pe1.rfi.m", 
-              "pe2.rfi.m",
-              "pe1.rfi.f", 
-              "pe2.rfi.f"
-            ) 
-            , with=F] #specify which columns to incl.
+                c("dam.id",
+                  "sire.id.1st",
+                  "dam.fert",
+                  "sire.fert.1st",
+                  "sire.bw_f.1st",
+                  "sire.bw_m.1st",
+                  "sire.rfi1_m.1st",
+                  "sire.rfi2_m.1st",
+                  "sire.rfi1_f.1st",
+                  "sire.rfi2_f.1st",
+                  "sire.skin.length.male.1st",
+                  "sire.skin.length.female.1st",
+                  "sire.skin.qual.1st",
+                  "sire.live.qual.1st",
+                  "sire.h.length.1st",
+                  "f0",
+                  "obs_fert",
+                  "dam.bw_f",
+                  "dam.bw_m",
+                  "dam.rfi1_m",
+                  "dam.rfi2_m",
+                  "dam.rfi1_f",
+                  "dam.rfi2_f",
+                  "dam.skin.length.male",
+                  "dam.skin.length.female",
+                  "dam.skin.qual",
+                  "dam.live.qual",
+                  "dam.h.length",
+                  "perm.env.bw.f",
+                  "perm.env.bw.m",
+                  "birthyear.dam",
+                  "sire.id.2nd",
+                  "sire.fert.2nd",
+                  "sire.bw_f.2nd",
+                  "sire.bw_m.2nd",
+                  "sire.rfi1_m.2nd",
+                  "sire.rfi2_m.2nd",
+                  "sire.rfi1_f.2nd",
+                  "sire.rfi2_f.2nd",
+                  "sire.skin.length.male.2nd",
+                  "sire.skin.length.female.2nd",
+                  "sire.skin.qual.2nd",
+                  "sire.live.qual.2nd",
+                  "sire.h.length.2nd",
+                  "specific.env.skin",
+                  "pe1.rfi.m", 
+                  "pe2.rfi.m",
+                  "pe1.rfi.f", 
+                  "pe2.rfi.f"
+                ) 
+                , with=F] #specify which columns to incl.
   id <- seq(1:sum(x$obs_fert)) + max(y$id) # makes ID
   birthyear <- rep (1, sum(x$obs_fert)) # makes birthyear
   sex <- rbinom(sum(x$obs_fert),1,0.5)+1 # makes sex, TODO check if this is true
@@ -1094,12 +1078,8 @@ MakeKitsGen0 <- function (x,y, z, leg2,qual.classes,true.sire.chance) { #x = mat
       "mend.skin.length.male",
       "mend.skin.length.female",
       "mend.litter.size",
-      "mend.bw1_f",
-      "mend.bw2_f",
-      "mend.bw3_f",
-      "mend.bw1_m",
-      "mend.bw2_m",
-      "mend.bw3_m",
+      "mend.bw_f",
+      "mend.bw_m",
       "mend.rfi1_m",
       "mend.rfi2_m",
       "mend.rfi1_f",
@@ -1120,41 +1100,17 @@ MakeKitsGen0 <- function (x,y, z, leg2,qual.classes,true.sire.chance) { #x = mat
       kit.list$sire.fert.1st,
       kit.list$sire.fert.2nd
     )
-  kit.list$sire.bw1_f.2nd <-
+  kit.list$sire.bw_f.2nd <-
     ifelse(
       kit.list$true.sire.check == TRUE,
-      kit.list$sire.bw1_f.1st,
-      kit.list$sire.bw1_f.2nd
+      kit.list$sire.bw_f.1st,
+      kit.list$sire.bw_f.2nd
     )
-  kit.list$sire.bw2_f.2nd <-
+  kit.list$sire.bw_m.2nd <-
     ifelse(
       kit.list$true.sire.check == TRUE,
-      kit.list$sire.bw2_f.1st,
-      kit.list$sire.bw2_f.2nd
-    )
-  kit.list$sire.bw3_f.2nd <-
-    ifelse(
-      kit.list$true.sire.check == TRUE,
-      kit.list$sire.bw3_f.1st,
-      kit.list$sire.bw3_f.2nd
-    )
-  kit.list$sire.bw1_m.2nd <-
-    ifelse(
-      kit.list$true.sire.check == TRUE,
-      kit.list$sire.bw1_m.1st,
-      kit.list$sire.bw1_m.2nd
-    )
-  kit.list$sire.bw2_m.2nd <-
-    ifelse(
-      kit.list$true.sire.check == TRUE,
-      kit.list$sire.bw2_m.1st,
-      kit.list$sire.bw2_m.2nd
-    )
-  kit.list$sire.bw3_m.2nd <-
-    ifelse(
-      kit.list$true.sire.check == TRUE,
-      kit.list$sire.bw3_m.1st,
-      kit.list$sire.bw3_m.2nd
+      kit.list$sire.bw_m.1st,
+      kit.list$sire.bw_m.2nd
     )
   kit.list$sire.rfi1_m.2nd <-
     ifelse(
@@ -1213,86 +1169,72 @@ MakeKitsGen0 <- function (x,y, z, leg2,qual.classes,true.sire.chance) { #x = mat
   kit.list$true.sire.check <- ifelse( kit.list$sire.id.1st != kit.list$sire.id.2nd, rbinom(nrow(kit.list), 1, true.sire.chance), 1) # 85% chance that the kits are sired by 2nd mating
   kit.list$true.sire <- ifelse( kit.list$true.sire.check == 0, kit.list$sire.id.1st, kit.list$sire.id.2nd)
   kit.list[, `:=`(true.sire.fert = 
-                ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                       kit.list$sire.fert.2nd, kit.list$sire.fert.1st), 
-                true.sire.bw1_m = 
-                  ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                         kit.list$sire.bw1_m.2nd, kit.list$sire.bw1_m.1st),
-                true.sire.bw2_m = 
-                  ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                         kit.list$sire.bw2_m.2nd, kit.list$sire.bw2_m.1st),
-                true.sire.bw3_m = 
-                  ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                         kit.list$sire.bw3_m.2nd, kit.list$sire.bw3_m.1st),
-                true.sire.bw1_f = 
-                  ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                         kit.list$sire.bw1_f.2nd, kit.list$sire.bw1_f.1st),
-                true.sire.bw2_f = 
-                  ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                         kit.list$sire.bw2_f.2nd, kit.list$sire.bw2_f.1st),
-                true.sire.bw3_f = 
-                  ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                         kit.list$sire.bw3_f.2nd, kit.list$sire.bw3_f.1st),
-                true.sire.rfi1_m = 
-                  ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                         kit.list$sire.rfi1_m.2nd, kit.list$sire.rfi1_m.1st),
-                true.sire.rfi2_m = 
-                  ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                         kit.list$sire.rfi2_m.2nd, kit.list$sire.rfi2_m.1st),
-                true.sire.rfi1_f = 
-                  ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                         kit.list$sire.rfi1_f.2nd, kit.list$sire.rfi1_f.1st),
-                true.sire.rfi2_f = 
-                  ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                         kit.list$sire.rfi2_f.2nd, kit.list$sire.rfi2_f.1st),              
-              true.sire.skin.length.male = 
-                ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                       kit.list$sire.skin.length.male.2nd, kit.list$sire.skin.length.male.1st),
-              true.sire.skin.length.female = 
-                ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                       kit.list$sire.skin.length.female.2nd, kit.list$sire.skin.length.female.1st),
-              true.sire.skin.qual = 
-                ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                       kit.list$sire.skin.qual.2nd, kit.list$sire.skin.qual.1st),
-              true.sire.live.qual = 
-                ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                       kit.list$sire.live.qual.2nd, kit.list$sire.live.qual.1st),
-              true.sire.h.length = 
-                ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
-                       kit.list$sire.h.length.2nd, kit.list$sire.h.length.1st)
+                    ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
+                           kit.list$sire.fert.2nd, kit.list$sire.fert.1st), 
+                  true.sire.bw_m = 
+                    ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
+                           kit.list$sire.bw_m.2nd, kit.list$sire.bw_m.1st),
+                  true.sire.bw_f = 
+                    ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
+                           kit.list$sire.bw_f.2nd, kit.list$sire.bw_f.1st),
+                  true.sire.rfi1_m = 
+                    ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
+                           kit.list$sire.rfi1_m.2nd, kit.list$sire.rfi1_m.1st),
+                  true.sire.rfi2_m = 
+                    ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
+                           kit.list$sire.rfi2_m.2nd, kit.list$sire.rfi2_m.1st),
+                  true.sire.rfi1_f = 
+                    ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
+                           kit.list$sire.rfi1_f.2nd, kit.list$sire.rfi1_f.1st),
+                  true.sire.rfi2_f = 
+                    ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
+                           kit.list$sire.rfi2_f.2nd, kit.list$sire.rfi2_f.1st),              
+                  true.sire.skin.length.male = 
+                    ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
+                           kit.list$sire.skin.length.male.2nd, kit.list$sire.skin.length.male.1st),
+                  true.sire.skin.length.female = 
+                    ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
+                           kit.list$sire.skin.length.female.2nd, kit.list$sire.skin.length.female.1st),
+                  true.sire.skin.qual = 
+                    ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
+                           kit.list$sire.skin.qual.2nd, kit.list$sire.skin.qual.1st),
+                  true.sire.live.qual = 
+                    ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
+                           kit.list$sire.live.qual.2nd, kit.list$sire.live.qual.1st),
+                  true.sire.h.length = 
+                    ifelse(kit.list$true.sire == kit.list$sire.id.2nd, 
+                           kit.list$sire.h.length.2nd, kit.list$sire.h.length.1st)
   )]
-
-
+  
+  
   kit.list[, `:=`(litter.size = 0.5*(dam.fert + true.sire.fert) + 
-              mend.litter.size,  # Breeding value of offspring, littersize
-              bw1_f = 0.5*(true.sire.bw1_f + dam.bw1_f) + mend.bw1_f,
-              bw2_f = 0.5*(true.sire.bw2_f + dam.bw2_f) + mend.bw2_f,
-              bw3_f = 0.5*(true.sire.bw3_f + dam.bw3_f) + mend.bw3_f,
-              bw1_m = 0.5*(true.sire.bw1_m + dam.bw1_m) + mend.bw1_m,
-              bw2_m = 0.5*(true.sire.bw2_m + dam.bw2_m) + mend.bw2_m,
-              bw3_m = 0.5*(true.sire.bw3_m + dam.bw3_m) + mend.bw3_m,
-              rfi1_m = 0.5*(true.sire.rfi1_m + dam.rfi1_m) + mend.rfi1_m,
-              rfi2_m = 0.5*(true.sire.rfi2_m + dam.rfi2_m) + mend.rfi2_m,
-              rfi1_f = 0.5*(true.sire.rfi1_f + dam.rfi1_f) + mend.rfi1_f,
-              rfi2_f = 0.5*(true.sire.rfi2_f + dam.rfi2_f) + mend.rfi2_f,
-              perm.env.ls = rnorm(sum(x$obs_fert))*sqrt(var.perm.env.ls), # perm env for litter size
-              skin.length.male = 0.5*(dam.skin.length.male + true.sire.skin.length.male) + 
-                mend.skin.length.male,
-              skin.length.female = 0.5*(dam.skin.length.female + true.sire.skin.length.female) + 
-                mend.skin.length.female,
-              live.qual = 0.5*(dam.live.qual + true.sire.live.qual)+ (mend.live.qual),
-              skin.qual = 0.5*(dam.skin.qual + true.sire.skin.qual)+ (mend.skin.qual),
-              h.length = 0.5*(dam.h.length + true.sire.h.length)+ (mend.h.length)
-              )]# Breeding value of offspring, body size
+                    mend.litter.size,  # Breeding value of offspring, littersize
+                  bw_f = 0.5*(true.sire.bw_f + dam.bw_f) + mend.bw_f,
+                  bw_m = 0.5*(true.sire.bw_m + dam.bw_m) + mend.bw_m,
+                  rfi1_m = 0.5*(true.sire.rfi1_m + dam.rfi1_m) + mend.rfi1_m,
+                  rfi2_m = 0.5*(true.sire.rfi2_m + dam.rfi2_m) + mend.rfi2_m,
+                  rfi1_f = 0.5*(true.sire.rfi1_f + dam.rfi1_f) + mend.rfi1_f,
+                  rfi2_f = 0.5*(true.sire.rfi2_f + dam.rfi2_f) + mend.rfi2_f,
+                  perm.env.ls = rnorm(sum(x$obs_fert))*sqrt(var.perm.env.ls), # perm env for litter size
+                  skin.length.male = 0.5*(dam.skin.length.male + true.sire.skin.length.male) + 
+                    mend.skin.length.male,
+                  skin.length.female = 0.5*(dam.skin.length.female + true.sire.skin.length.female) + 
+                    mend.skin.length.female,
+                  live.qual = 0.5*(dam.live.qual + true.sire.live.qual)+ (mend.live.qual),
+                  skin.qual = 0.5*(dam.skin.qual + true.sire.skin.qual)+ (mend.skin.qual),
+                  h.length = 0.5*(dam.h.length + true.sire.h.length)+ (mend.h.length)
+  )]# Breeding value of offspring, body size
   q <- as.matrix(as.data.frame(polynomial.values(polynomials = leg2, x =t[6])))
   
-kit.list[, `:=`(add.gen.bw.f =  q[1]*bw1_f+q[2]*bw2_f+q[3]*bw3_f,
-                add.gen.bw.m =  q[1]*bw1_m+q[2]*bw2_m+q[3]*bw3_m)]
+  
   setnames(kit.list, c("obs_fert","sire.id.2nd"), c("own_littersize","sire.assumed")) # renames obs_fert to own littersize of kits
   kit.list$dam.age <- ifelse( z - kit.list$birthyear.dam > 1, 1,0 )
   
-  # kit.list$phenotype.bw.oct <- ifelse( kit.list$sex == 1,MakePhenotypesBWMalesOct(mean.body.size.male.oct , kit.list$bw.oct , kit.list$specific.env.bw , kit.list$own_littersize, kit.list$dam.age,x  )
-  #                                  , MakePhenotypesBWFemalesOct(mean.body.size.female.oct , kit.list$bw.oct , kit.list$specific.env.bw,kit.list$own_littersize,x ))
+  ## Make phenotypes for body weight
+  kit.list$phenotype.bw.oct <- ifelse(
+    kit.list$sex == 1,
+    MakePhenotypesBWMalesOct(BW.mean.males , kit.list$bw_m , kit.list$perm.env.bw.m , kit.list$own_littersize, kit.list$dam.age,x  )
+    , MakePhenotypesBWFemalesOct(BW.mean.females , kit.list$bw_f , kit.list$perm.env.bw.f, kit.list$own_littersize,x ))
   # kit.list$phenotype.bw.sept <- ifelse( kit.list$sex == 1,
   #                                   MakePhenotypesBWMalesSept(mean.body.size.male.sept , kit.list$bw.sept , kit.list$specific.env.bw , kit.list$own_littersize, kit.list$dam.age,x  )
   #                                   , MakePhenotypesBWFemalesOct(mean.body.size.female.sept , kit.list$bw.sept , kit.list$specific.env.bw,kit.list$own_littersize,x ))
@@ -1310,17 +1252,13 @@ kit.list[, `:=`(add.gen.bw.f =  q[1]*bw1_f+q[2]*bw2_f+q[3]*bw3_f,
       skin.qual + rnorm(nrow(kit.list))*sqrt(var.skin.qual.res),
     phenotype.h.length = h.length+ rnorm(nrow(kit.list))*
       sqrt(var.h.length.res)
-    )
+  )
   ]  
-
-    set( kit.list, j=which(colnames(kit.list) %in% c(
+  
+  set( kit.list, j=which(colnames(kit.list) %in% c(
     "sire.fert.1st",
-    "sire.bw1_f.1st",
-    "sire.bw2_f.1st",
-    "sire.bw3_f.1st",
-    "sire.bw1_m.1st",
-    "sire.bw2_m.1st",
-    "sire.bw3_m.1st",
+    "sire.bw_f.1st",
+    "sire.bw_m.1st",
     "sire.rfi1_m.1st",
     "sire.rfi2_m.1st",
     "sire.rfi1_f.1st",
@@ -1334,12 +1272,8 @@ kit.list[, `:=`(add.gen.bw.f =  q[1]*bw1_f+q[2]*bw2_f+q[3]*bw3_f,
     "sire.h.length.1st",
     "sire.id.1st",
     "dam.fert",
-    "dam.bw1_f",
-    "dam.bw2_f",
-    "dam.bw3_f",
-    "dam.bw1_m",
-    "dam.bw2_m",
-    "dam.bw3_m",
+    "dam.bw_f",
+    "dam.bw_m",
     "dam.rfi1_m",
     "dam.rfi2_m",
     "dam.rfi1_f",
@@ -1355,12 +1289,8 @@ kit.list[, `:=`(add.gen.bw.f =  q[1]*bw1_f+q[2]*bw2_f+q[3]*bw3_f,
     "sire.bw.sept.1st",
     "specific.env.bw",
     "sire.fert.2nd",
-    "sire.bw1_f.2nd",
-    "sire.bw2_f.2nd",
-    "sire.bw3_f.2nd",
-    "sire.bw1_m.2nd",
-    "sire.bw2_m.2nd",
-    "sire.bw3_m.2nd",
+    "sire.bw_f.2nd",
+    "sire.bw_m.2nd",
     "sire.rfi1_m.2nd",
     "sire.rfi2_m.2nd",
     "sire.rfi1_f.2nd",
@@ -1372,12 +1302,8 @@ kit.list[, `:=`(add.gen.bw.f =  q[1]*bw1_f+q[2]*bw2_f+q[3]*bw3_f,
     "sire.bw.june.2nd",
     "sire.bw.june.maternal.2nd",
     "sire.h.length.2nd",
-    "mend.bw1_f",
-    "mend.bw2_f",
-    "mend.bw3_f",
-    "mend.bw1_m",
-    "mend.bw2_m",
-    "mend.bw3_m",
+    "mend.bw_f",
+    "mend.bw_m",
     "mend.rfi1_m",
     "mend.rfi2_m",
     "mend.rfi1_f",
@@ -1389,12 +1315,8 @@ kit.list[, `:=`(add.gen.bw.f =  q[1]*bw1_f+q[2]*bw2_f+q[3]*bw3_f,
     "mend.skin.length.female",
     "true.sire.check",
     "true.sire.fert",
-    "true.sire.bw1_f",
-    "true.sire.bw2_f",
-    "true.sire.bw3_f",
-    "true.sire.bw1_m",
-    "true.sire.bw2_m",
-    "true.sire.bw3_m",
+    "true.sire.bw_f",
+    "true.sire.bw_m",
     "true.sire.rfi1_m",
     "true.sire.rfi2_m",
     "true.sire.rfi1_f",
@@ -1410,9 +1332,9 @@ kit.list[, `:=`(add.gen.bw.f =  q[1]*bw1_f+q[2]*bw2_f+q[3]*bw3_f,
     truncs <- qnorm(
       p = c(0.05, 0.3, 0.7, 0.95),
       mean = mean(kit.list$live.qual),
-                  sd = sqrt(var(
-                    kit.list$live.qual
-                  )),
+      sd = sqrt(var(
+        kit.list$live.qual
+      )),
       lower.tail = TRUE
     )
     kit.list[, `:=`(live.score = ifelse(
@@ -1438,9 +1360,9 @@ kit.list[, `:=`(add.gen.bw.f =  q[1]*bw1_f+q[2]*bw2_f+q[3]*bw3_f,
       qnorm(
         p = c(0.01, 0.05, 0.15, 0.3, 0.5, 0.7, 0.85, 0.95, 0.99),
         mean = mean(kit.list$live.qual),
-                    sd = sqrt(var(
-                      kit.list$live.qual
-                    )),
+        sd = sqrt(var(
+          kit.list$live.qual
+        )),
         lower.tail = TRUE
       )
     kit.list[, `:=`(live.score =
@@ -3438,3 +3360,19 @@ return(feed.used.breeders)
    return(n.females)
  }
  
+ 
+ ############### Make phenotype for body weight ######
+ MakePhenotypesBWMalesOct <- function(x,y,z,t,u,mat) {
+   # x = mean, y = additive genetic, z = specific env, t = number of  sibs, mat =mating.list
+   value <- x+ y + z + 
+     rnorm( sum(mat$obs_fert))*(sqrt(bw.res.male))+
+     t*sib.effect.male+ u * bw.eff.damage
+   return(value)
+ } 
+ MakePhenotypesBWFemalesOct <- function(x,y,z,t,mat) {
+   # x = mean, y = additive genetic, z = specific env, t = number of sibs, mat=mating.list
+   value <- x+ y + z + 
+     rnorm( sum(mat$obs_fert))*(sqrt(bw.res.female))+
+     t*sib.effect.female 
+   return(value)
+ } 

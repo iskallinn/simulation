@@ -162,11 +162,11 @@ RunFirstYear <-
       0, #avg inbreeding
       mean(mating.list$obs_fert), #observed fertility
       stat[[2,2]], #avg phenotype, october females
-      mean(kit.list.for.stats$add.gen.bw.m), #avg gen val oct weight
+      mean(kit.list.for.stats$bw_m), #avg gen val oct weight
       stat[[1,2]], #avg phenotype oct males
-      var(kit.list.for.stats$add.gen.bw.m), #variance oct weight
+      var(kit.list.for.stats$bw_m), #variance oct weight
       0, #correlation bw blup and phenotype
-      cor(stat1$add.gen.bw.m, stat1$phenotype.bw.oct), #correlation bw phenotype and genetic value
+      cor(stat1$bw_m, stat1$phenotype.bw.oct), #correlation bw phenotype and genetic value
       mean(kit.list.for.stats$skin.length.male), # avg genetic value for skin length
       var(kit.list.for.stats$skin.length.male),  # var of skin length
       mean(kit.list.for.stats$skin.qual), # avg genetic value of skin qual
@@ -227,10 +227,10 @@ RunFirstYear <-
       0,
       mean(mating.list$obs_fert),
       stat[[2,2]],
-      mean(kit.list.for.stats$add.gen.bw.m),
+      mean(kit.list.for.stats$bw_m),
       stat[[1,2]],
-      var(kit.list.for.stats$add.gen.bw.m),
-      cor(stat1$add.gen.bw.m, stat1$phenotype.bw.oct),
+      var(kit.list.for.stats$bw_m),
+      cor(stat1$bw_m, stat1$phenotype.bw.oct),
       mean(kit.list.for.stats$skin.length.male),
       var(kit.list.for.stats$skin.length.male),
       mean(kit.list.for.stats$skin.qual),
