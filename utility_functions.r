@@ -2767,15 +2767,16 @@ RandCull <- function (kitlist,cull.ratio) {
      close(con=MBLUP_Y)
         } else if (cheat == 0 ) {
           kit.list[,`:=`(dam.age= as.integer(0), obs_fert = as.integer(-9999))] 
-          temp <- kit.list[, c("id", "dam.id","bw.p.m", "live.score", "dam.age","sex", "birthyear","own_littersize" ,"obs_fert","bw.p.f"), with=FALSE]
+          
+          temp <- kit.list[, c("id", "dam.id","phenotype.bw.oct", "live.score", "dam.age","sex", "birthyear","own_littersize" ,"obs_fert"), with=FALSE]
           writefile <- rbind (writefile, temp)
-          writefile[is.na(writefile)]	=	as.integer(-9999)
+          writefile[,`:=`(bw.female = ifelse(sex == 2, phenotype.bw.oct, -9999.0),
+                          phenotype.bw.oct = ifelse(sex ==1, phenotype.bw.oct, -9999.0))]
+                    writefile[is.na(writefile)]	=	as.integer(-9999)
           writefile[,`:=`(inter= as.integer(1), year= as.integer(year))]
           writefile[, c("dam.id","sex","birthyear","id","own_littersize")
                     :=lapply(.SD, function(x) as.integer(x)), .SDcols=c("dam.id","sex","birthyear","id","own_littersize")]
           
-     writefile[,`:=`(bw.female = ifelse(sex == 2, phenotype.bw.oct, -9999.0),
-                     phenotype.bw.oct = ifelse(sex ==1, phenotype.bw.oct, -9999.0))]
           if (year == 1) {
             MBLUP_Y <- file(description = paste("MBLUP_Y",p, sep=""), open="w")
           } else if (year > 1) {
