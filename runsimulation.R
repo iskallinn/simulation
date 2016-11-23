@@ -290,7 +290,7 @@ RunSimulation <-
     stat1 <- subset(kit.list, sex==1)#males
     lm1  <- lm(data=kit.list, litter.size~blup.fert )
     lm2  <- lm(data=kit.list, live.qual~blup.qual )
-    lm3  <- lm(data=kit.list, bw_m~blup.bwnov )
+    lm3  <- lm(data=kit.list, bw_m~blup.bw.male )
     
     cat (
     year,
@@ -302,7 +302,7 @@ RunSimulation <-
     mean(kit.list$bw_m),
     stat[[1,2]],
     var(kit.list$bw_m,na.rm=T),
-    cor(kit.list$bw_m, kit.list$blup.bwnov,use="complete"),
+    cor(kit.list$bw_m, kit.list$blup.bw.male,use="complete"),
     cor(stat1$bw_m, stat1$phenotype.bw.oct), #only males
     mean(kit.list$skin.length.male),
     var(kit.list$skin.length.male),

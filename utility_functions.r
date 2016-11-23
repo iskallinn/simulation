@@ -1641,9 +1641,9 @@ IndSelectionOldFemales <- function (x,
     set( x, j=which(colnames(x) %in% 
                       c("blup.fert"))  , value=NULL )
   }
-  if("blup.bwnov" %in% colnames(x)) {
+  if("blup.bw.male" %in% colnames(x)) {
     set( x, j=which(colnames(x) %in% 
-                      c("blup.bwnov"))  , value=NULL )
+                      c("blup.bw.male"))  , value=NULL )
   }
   if("blup.qual" %in% colnames(x)) {
     set( x, j=which(colnames(x) %in% 
@@ -1651,7 +1651,7 @@ IndSelectionOldFemales <- function (x,
   }
   x <- merge(x, y, by ="id", all.x=TRUE) # merge solutions from blup to data.table containing the old females
   setkey(x, blup.fert)
-  x[, `:=`(index.bw   = 100+ (blup.bwnov-mean(x$blup.bwnov))/(sqrt(var(x$blup.bwnov)))*10,
+  x[, `:=`(index.bw   = 100+ (blup.bw.male-mean(x$blup.bw.male))/(sqrt(var(x$blup.bw.male)))*10,
            index.fert = 100+ (blup.fert-mean(x$blup.fert))/(sqrt(var(x$blup.fert)))*10,
            index.qual = 100+ (blup.qual-mean(x$blup.qual))/(sqrt(var(x$blup.qual)))*10) ]
   x <- transform(x, comb.ind = index.bw*weight.bw.old.females+
@@ -1684,7 +1684,7 @@ IndSelFemaleKits <-
     x <-
       merge(x, y, by = "id", all.x = TRUE) # merge to solutions of blup of fertility
     x[, `:=`(
-      index.bw   = 100 + (blup.bwnov - mean(x$blup.bwnov)) / (sqrt(var(x$blup.bwnov))) *
+      index.bw   = 100 + (blup.bw.female - mean(x$blup.bw.female)) / (sqrt(var(x$blup.bw.female))) *
         10,
       index.fert = 100 + (blup.fert - mean(x$blup.fert)) / (sqrt(var(x$blup.fert))) *
         10,
@@ -1727,7 +1727,7 @@ IndSelMaleKits <- function (x, # x = kit.list
                             weight.qual.kits,n.males) {
 
   x <- merge(x, y, by= "id", all.x=TRUE) # merge to solutions 
-  x[, `:=`(index.bw   = 100+ (blup.bwnov-mean(x$blup.bwnov))/(sqrt(var(x$blup.bwnov)))*10,
+  x[, `:=`(index.bw   = 100+ (blup.bw.male-mean(x$blup.bw.male))/(sqrt(var(x$blup.bw.male)))*10,
            index.fert = 100+ (blup.fert-mean(x$blup.fert))/(sqrt(var(x$blup.fert)))*10,
            index.qual = 100+ (blup.qual-mean(x$blup.qual))/(sqrt(var(x$blup.qual)))*10) ]
   x <- transform(x, comb.ind = index.bw*weight.bw.kits+
@@ -2389,7 +2389,7 @@ CalculateBLUP <- function () {
   solutions <- as.data.table(solutions)
   solutions <- subset(solutions, V1 == 4 & V2==1 ) # BW
   set (solutions, j=c("V1","V2","V3", "V4", "V6", "V7","V9"), value= NULL)
-  setnames(solutions, c("V5","V8"),c("id", "blup.bwnov"))
+  setnames(solutions, c("V5","V8"),c("id", "blup.bw.male"))
   temp <- as.matrix(read.table(file="MBLUP.SOL"))
   temp <- as.data.table(temp)
   temp <- subset(temp, V1 == 4 & V2==2 ) # qual
@@ -3037,24 +3037,25 @@ file = skin.metrics.males
    system2("run_dmu4.bat", " MBLUP_full")
    # read the solutions and only keep the predictions of BV (they're not that right)
    
-   solutions <- as.matrix(read.table(file="MBLUP_full.SOL"))
-   solutions <- as.data.table(solutions)
-   solutions <- subset(solutions, V1 == 4 & V2==1 ) # BW
-   set (solutions, j=c("V1","V2","V3", "V4", "V6", "V7","V9"), value= NULL)
-   setnames(solutions, c("V5","V8"),c("id", "blup.bwnov"))
    temp <- as.matrix(read.table(file="MBLUP_full.SOL"))
+   solutions <- as.data.table(temp)
    temp <- as.data.table(temp)
-   temp <- subset(temp, V1 == 4 & V2==2 ) # qual
-   set (temp, j=c("V1","V2","V3", "V4", "V6", "V7","V9"), value= NULL)
-   setnames(temp, c("V5","V8"),c("id", "blup.qual"))
-   solutions <- merge(solutions, temp, by="id")
-   temp <- as.matrix(read.table(file="MBLUP_full.SOL"))
-   temp <- as.data.table(temp)
-   temp <- subset(temp, V1 == 4 & V2==3 ) # litter size
-   set (temp, j=c("V1","V2","V3", "V4", "V6", "V7","V9"), value= NULL)
-   setnames(temp, c("V5","V8"),c("id", "blup.fert"))
-   solutions <- merge(solutions, temp, by="id")
    
+   solutions <- subset(solutions, V1 == 4 & V2==1 ) # Male BW
+   set (solutions, j=c("V1","V2","V3", "V4", "V6", "V7","V9"), value= NULL)
+   setnames(solutions, c("V5","V8"),c("id", "blup.bw.male"))
+   temp1 <- subset(temp, V1 == 4 & V2==2 ) # qual
+   set (temp1, j=c("V1","V2","V3", "V4", "V6", "V7","V9"), value= NULL)
+   setnames(temp1, c("V5","V8"),c("id", "blup.qual"))
+   solutions <- merge(solutions, temp1, by="id")
+   temp1 <- subset(temp, V1 == 4 & V2==3 ) # litter size
+   set (temp1, j=c("V1","V2","V3", "V4", "V6", "V7","V9"), value= NULL)
+   setnames(temp1, c("V5","V8"),c("id", "blup.fert"))
+   solutions <- merge(solutions, temp1, by="id")
+   temp1 <- subset(temp, V1 == 4 & V2==4 ) # female bw
+   set (temp1, j=c("V1","V2","V3", "V4", "V6", "V7","V9"), value= NULL)
+   setnames(temp1, c("V5","V8"),c("id", "blup.bw.female"))
+   solutions <- merge(solutions, temp1, by="id")
    return(solutions)
  }
  ################# Write the log file #####################
