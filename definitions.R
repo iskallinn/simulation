@@ -133,8 +133,8 @@ variances <-
     11.6,                  # skin.length.male
     8.94,                  # skin.length.female
     0.01222,               # litter.size
-    0.121036,              # body weight males
     0.036198,              # body weight females
+    0.121036,              # body weight males
     0.583035959863543,     # rfi1.m
     1.015749852,           # rfi2.m
     0.502027738625064,     # rfi1.f
