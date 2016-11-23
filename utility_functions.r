@@ -1649,6 +1649,11 @@ IndSelectionOldFemales <- function (x,
     set( x, j=which(colnames(x) %in% 
                       c("blup.qual"))  , value=NULL )
   }
+  if("blup.bw.female" %in% colnames(x)) {
+    set( x, j=which(colnames(x) %in% 
+                      c("blup.bw.female"))  , value=NULL )
+  }
+  
   x <- merge(x, y, by ="id", all.x=TRUE) # merge solutions from blup to data.table containing the old females
   setkey(x, blup.fert)
   x[, `:=`(index.bw   = 100+ (blup.bw.male-mean(x$blup.bw.male))/(sqrt(var(x$blup.bw.male)))*10,
