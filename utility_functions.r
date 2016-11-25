@@ -2338,18 +2338,23 @@ write.table(format(x[,.(dam.id,prodyear,dam.age,obs_fert)], nsmall=1), file= out
 }
 } 
 ############### make dam.age checks #################
-YearlingEffectOnFertility <- function (x,y,yearling.effect){ # x = mating.list, y = year
-  dam.age <- numeric(nrow(x))
-  for (i in 1:nrow(x)) { # this is to change the parity into a two class thing
-    if (y - x$birthyear.dam[i] == 1) {
-      dam.age [i] <- yearling.effect
-    }
-    else {
-      dam.age[i] <- 0
-    }
+YearlingEffectOnFertility <- function (mating.list,year,yearling.effect){ # x = mating.list, y = year
+  # dam.age <- numeric(nrow(x))
+  # for (i in 1:nrow(x)) { # this is to change the parity into a two class thing
+  #   if (y - x$birthyear.dam[i] == 1) {
+  #     dam.age [i] <- yearling.effect
+  #   }
+  #   else {
+  #     dam.age[i] <- 0
+  #   }
+  # }
+  # x <- cbind(x, dam.age)
+  mating.list[,`:=`(dam.age = 
+            ifelse( year-mating.list$birthyear.dam == 1, 1, 0))]
+  if (year == 1 ){
+    mating.list[,`:=`(dam.age = rbinom(nrow(mating.list),1 , prob = prop.oldfemales))]
   }
-  x <- cbind(x, dam.age)
-  return(x)
+  return(mating.list)
 }
 
 ############  Write pedigree file to DMU
