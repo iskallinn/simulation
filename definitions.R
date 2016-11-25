@@ -10,6 +10,7 @@ library(lpSolve)      # for the lp solution to number of breeding females
 ############## Switches, best left alone ###########
 phenotypic <- 1
 blup <- 2
+random <- 3
 sept <- 1 # weigh kits in september CURRENTLY DEFUNCT, ONLY SEPT <- 1 SUPPORTED
 oct <- 0  # weigh kits in october CURRENTLY DEFUNCT
 use.blup.to.assort.mat <- 1 # if 1 then the males and females will be sorted on 

@@ -1,6 +1,7 @@
 Simulation <- function (  
   phenotypic = 1,  
   blup = 2,
+  random = 3,
   cheat = 0,# to make bw obs for both males and females, only for estimating var comps
   sept = 1, # weigh kits in september CURRENTLY DEFUNCT, ONLY SEPT = 1 SUPPORTED
   oct = 0,  # weigh kits in october CURRENTLY DEFUNCT
@@ -74,7 +75,8 @@ Simulation <- function (
   # price per kit sold
 ) # closing paranthesis for definitions 
   { # opening curly brace for function 
-  if (selection.method == phenotypic) {
+  # browser()
+  if (selection.method != blup) {
     use.blup.to.assort.mat <- 0
   }
   n.males =  ceiling( n.females/male.ratio ) # calculates needed amount of males 
@@ -223,7 +225,7 @@ Simulation <- function (
     "FI.pr.kit",
     sep = "\t",
     file = con
-  )  } else if (selection.method == 1) { # phenotypic
+  )  } else if (selection.method != blup) { # phenotypic or random
     
     con <- file(description = "results", open = "w")
     cat(

@@ -135,13 +135,20 @@ RunFirstYear <-
   # ############### Selection of first generation #########################################
   # # We choose females to fit n.females, based on prop of old females
   # # Note: currently all females are replaced in year 1
+if (selection.method == phenotypic ) 
+  {  
   old.females <- PhenoSelectionOldFemales ( gen0.females,mating.list,year,max.age.females,
                                             n.females,
                                             prop.oldfemales )
   next.gen <- PhenoSelectionFemaleKits (kit.list, old.females, quantile.setting.ls,
                                         quantile.setting.bw,n.females)
   next.gen.males <- PhenoSelectionMaleKits (kit.list,quantile.setting.ls,quantile.setting.bw,n.males)
-  if("f0.dam" %in% colnames(old.females)) {
+} else if (selection.method == random) {
+  old.females <- RandomSelectionOldFemales(gen0.females,n.females,prop.oldfemales,mating.list,year)
+    next.gen <- RandomSelectionYearlings(kit.list, old.females,n.females)
+    next.gen.males <- RandomSelectionMales(kit.list,n.males) 
+}
+if("f0.dam" %in% colnames(old.females)) {
     set( old.females, j=which(colnames(old.females) %in%
                                 "f0.dam")  , value=NULL )
   }
@@ -221,7 +228,8 @@ RunFirstYear <-
       feed.intake.pr.kit,
       sep = "\t",
       file = con
-    )  } else if (selection.method == phenotypic) {
+    )  
+    } else if (selection.method != blup) {
       stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
       stat1 <- subset(kit.list, sex==1)#males
     cat (
@@ -286,7 +294,7 @@ RunFirstYear <-
   if (make.obs.file == 1) {
     WriteFertObservations(mating.list,year,p)
   }
-  if (selection.method == phenotypic){ 
+  if (selection.method != blup){ 
   return( list(next.gen,next.gen.males,pedfile,fert.memory,n.females))
   } else if (selection.method == blup) {
     return( list(next.gen,next.gen.males,pedfile,big.pedfile,fert.memory,n.females))

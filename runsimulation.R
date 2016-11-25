@@ -60,7 +60,7 @@ RunSimulation <-
     pedfile <- rbindlist(x[3])
     fert.memory <- unlist(x[5])
     n.females <- unlist(x[6])
-    } else if (selection.method == phenotypic) {
+    } else if (selection.method != blup) {
     pedfile <- rbindlist(x[3])
     fert.memory <- unlist(x[4])
     n.females <- unlist(x[5])
@@ -113,7 +113,7 @@ RunSimulation <-
   # ############### Inbreeding Coefficient and calculation of breeding value#############################
   mating.list <-
     YearlingEffectOnFertility (mating.list, year,yearling.effect)  # checks the dam age and puts the effect for yearlings
-  
+  # browser()
   if (crossmating == 1) { #arbitrarily have more kits if there is systematic 1+1 crossmating
     mating.list = transform( mating.list,  obs_fert =  rpois(nrow(mating.list),
                                                              lambda = exp(1.99 + perm.env.ls + dam.fert+dam.age))*barren*semen.quality)
@@ -162,7 +162,7 @@ RunSimulation <-
     # guess number of females and adjust male numbers
     n.females <- NumberofBreeders(fert.memory,n.cages,year)
     n.males <- ceiling( n.females/male.ratio )
-    } else if (selection.method == phenotypic) {
+    } else if (selection.method != blup) {
       kit.list <-
         MakeKitsGenN(
           mating.list,
@@ -224,7 +224,11 @@ RunSimulation <-
     next.gen.males <-
       PhenoSelectionMaleKits (kit.list, quantile.setting.ls, quantile.setting.bw,n.males)
     ############### Index selection of next generation #############
-  } else if (selection.method == blup) {
+  } else if (selection.method == random ) {
+    old.females <- RandomSelectionOldFemales(next.gen,n.females,prop.oldfemales,mating.list,year)
+    next.gen <- RandomSelectionYearlings(kit.list, old.females,n.females)
+    next.gen.males <- RandomSelectionMales(kit.list,n.males) 
+  }  else if (selection.method == blup) {
     big.pedfile    <-
       update.big.pedigree (big.pedfile, next.gen, next.gen.males)
     old.females    <-
@@ -355,7 +359,7 @@ RunSimulation <-
     sep = "\t",
     file = con
   )
-  } else if (selection.method == phenotypic) {
+  } else if (selection.method != blup) {
     # browser()
     stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
     stat1 <- subset(kit.list, sex==1)#males
@@ -364,7 +368,7 @@ RunSimulation <-
       year,
       mean(next.gen$litter.size),
       var(next.gen$litter.size),
-      mean(mating.list$f0.dam),
+      mean(mating.list$f0.dam, na.rm=TRUE),
       mean(mating.list$obs_fert),
       stat[[2,2]], # avg oct weight of females
       mean(kit.list.nomasked$bw_m),
@@ -422,7 +426,7 @@ RunSimulation <-
   if (selection.method == blup) {
     return (list(next.gen, next.gen.males, pedfile, big.pedfile,fert.memory,n.females))
     
-  } else if (selection.method == phenotypic) {
+  } else if (selection.method != blup) {
     return (list(next.gen, next.gen.males, pedfile,fert.memory,n.females))
   }
 }

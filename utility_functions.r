@@ -346,7 +346,7 @@ mate <- function (x,
   }
   if (year <= 2) {
     x$comb.ind <- 0
-  } else if( selection.method == phenotypic) {
+  } else if( selection.method !=blup) {
     x$comb.ind <- 0
     y[sample(nrow(y)),]
     
@@ -1312,6 +1312,7 @@ MakeKitsGen0 <- function (x,y, z, leg2,qual.classes,true.sire.chance) { #x = mat
     "mend.rfi2_f",
     "mend.litter.size", 
     "mend.live.qual",
+    "mend.h.length",
     "mend.skin.qual", 
     "mend.skin.length.male",
     "mend.skin.length.female",
@@ -1328,7 +1329,10 @@ MakeKitsGen0 <- function (x,y, z, leg2,qual.classes,true.sire.chance) { #x = mat
     "true.sire.skin.qual",
     "true.sire.live.qual",
     "true.sire.h.length",
-    "dam.age"
+    "dam.age",
+    "perm.env.bw.f",
+    "perm.env.bw.m",
+    "specific.env.skin"
   )) , value=NULL ) # removes bv of parents
   if (qual.classes == 5) {
     truncs <- qnorm(
@@ -1587,47 +1591,67 @@ PhenoSelectionMaleKits <- function (x,quantile.setting.ls,quantile.setting.bw,n.
   
   return (next.gen)
 }
-############### Noselection of old females  ###############
-# nosel.old.females <- function (x) {
-#     old.females <- x[is.element(x$id, sample(x$id, n.females*prop.oldfemales)),]
-#     #safety valve to remove too old females
-#     # here i cbind the observation for litter size in this year to the old.females list
-#     old.females <- merge(old.females, mating.list, by.x="id", by.y="dam.id", all.x=TRUE)
-#     set( old.females, j=which(colnames(old.females) %in% 
-#                                 c("sire.id.y","barren","dam.fert","sire.fert")) 
-#          , value=NULL )
-#      setnames(old.females, "sire.id.x", "sire.id")
-#      old.females[is.na(obs_fert), obs_fert:= 0]   
-#      old.females[is.na(f0), f0:= 0]   
-#         old.females[old.females,own_littersize:=0]  # adds a column named own littersize with value 0 
-#         return (old.females)
-#   }
-# ############### No selection of yearlings ###################
-# nosel.yearlings.females <- function (x) {
-#     selection.candidates.females <-  subset( x,  sex  ==   2  ) 
-#     # kit.file_df in generation after first
-#     # We choose females to fit n.females, based on prop of old females
-#     
-#     next.gen <- sample(selection.candidates.females$id, (n.females-nrow(old.females)))
-#     next.gen <- selection.candidates.females[is.element(selection.candidates.females$id,next.gen),]
-#     obs_fert <- numeric(nrow(next.gen))
-#     next.gen <- cbind(next.gen, obs_fert)
-#      return (next.gen)
-#   }
-# ############### No selection of males #############
-# nosel.males <- function (x) {  
-#     nfem <- ceiling((n.females/male.ratio))
-#     
-#     selection.candidates.males <-  subset( x,  sex  ==   1 ) 
-#     
-#     
-#     next.gen.males <- sample(selection.candidates.males$id, nfem)
-#     next.gen.males <- selection.candidates.males[is.element(selection.candidates.males$id,next.gen.males),]
-#     set( next.gen.males, j=which(colnames(next.gen.males) %in%
-#                                    "perm.env.ls"), value=NULL)
-#     
-#     return (next.gen.males)
-#   }
+############### Random selection of old females  ###############
+RandomSelectionOldFemales <- function (next.gen,n.females,prop.oldfemales,mating.list,year) {
+    old.females <- next.gen[is.element(next.gen$id, sample(next.gen$id, n.females*prop.oldfemales)),]
+    #safety valve to remove too old females
+    # here i cbind the observation for litter size in this year to the old.females list
+   # browser()
+    if("obs_fert" %in% colnames(old.females)) 
+    {         set( old.females, j=which(colnames(old.females) %in% 
+                                          c("obs_fert"))  , value=NULL )
+    }
+    if (year == 1 ) { 
+      old.females$true.sire <- 0
+      } 
+     y <- subset(mating.list, select = c("dam.id", "obs_fert"))
+    old.females <- merge(old.females, y, by.x="id", by.y="dam.id", all.x=TRUE)
+         # old.females[is.na(obs_fert), obs_fert:= 0]
+old.females$obs_fert <- ifelse ( is.na(old.females$obs_fert) == TRUE, 0,old.females$obs_fert)
+
+             if("f0" %in% colnames(old.females)) 
+           {
+               # browser()
+               old.females$f0 <- ifelse ( is.na(old.females$f0) == TRUE, 0,old.females$f0)
+               
+               old.females[,`:=`(own_littersize=ifelse ( is.na(old.females$own_littersize) == TRUE, 0,old.females$own_littersize))]  # adds a column named own littersize with value 0
+     # this is only done in year 1, in other years, animals should have their inbreeding coeff
+           }
+         set( old.females, j=which(colnames(old.females) %in% 
+                                     c("mating.will.1st.round",
+                                       "mating.will.2nd.round"))  , value=NULL )
+         if("dam.age" %in% colnames(old.females)) {
+           set( old.females, j=which(colnames(old.females) %in% 
+                                       c("dam.age"))  , value=NULL )
+         }
+        return (old.females)
+  }
+# ############### Random selection of yearlings ###################
+RandomSelectionYearlings <- function (kit.list, old.females,n.females) { 
+    selection.candidates.females <-  subset( kit.list,  sex  ==   2  )
+    # kit.file_df in generation after first
+    # We choose females to fit n.females, based on prop of old females
+
+    next.gen <- sample(selection.candidates.females$id, (n.females-nrow(old.females)))
+    next.gen <- selection.candidates.females[is.element(selection.candidates.females$id,next.gen),]
+    obs_fert <- numeric(nrow(next.gen))
+    next.gen <- cbind(next.gen, obs_fert)
+    return (next.gen)
+  }
+# ############### Random selection of males #############
+RandomSelectionMales <- function (kit.list, n.males) {
+    nfem <- ceiling((n.females/male.ratio))
+
+    selection.candidates.males <-  subset( kit.list,  sex  ==   1 )
+
+
+    next.gen.males <- sample(selection.candidates.males$id, nfem)
+    next.gen.males <- selection.candidates.males[is.element(selection.candidates.males$id,next.gen.males),]
+    set( next.gen.males, j=which(colnames(next.gen.males) %in%
+                                   "perm.env.ls"), value=NULL)
+
+    return (next.gen.males)
+  }
 ############### Index selection of old females ###############################################
 # currently they are only truncated on their litter size phenotype
 
@@ -2212,6 +2236,7 @@ MakeKitsGenN <- function (x,
     "mend.litter.size", 
     "mend.live.qual",
     "mend.skin.qual", 
+    "mend.h.length",
     "mend.skin.length.male",
     "mend.skin.length.female",
     "true.sire.check",
@@ -2229,7 +2254,10 @@ MakeKitsGenN <- function (x,
     "true.sire.h.length",
     "perm.env.bw.f",
     "perm.env.bw.m",
-    "dam.age"
+    "dam.age",
+    "perm.env.bw.f",
+    "perm.env.bw.m",
+    "specific.env.skin"
   )) , value=NULL ) # removes bv of parents
   if (qual.classes == 5) {
     truncs <- qnorm(
@@ -2311,7 +2339,9 @@ MakeKitsGenN <- function (x,
   
   return(kit.list)
 } 
-MakeKitsGenN <-compiler::cmpfun(MakeKitsGenN,options= c(suppressAll=TRUE)) # performance boost############### write observation file #########################
+MakeKitsGenN <-compiler::cmpfun(MakeKitsGenN,options= c(suppressAll=TRUE)) # performance boost
+
+############### write observation file #########################
 # This function writes to file in the manner that DMU requires the observed litter size
 # in the year which it is performed and the replicate
 WriteFertObservations <- function (x,year,p) { # x = mating.list
@@ -3321,4 +3351,4 @@ return(feed.used.breeders)
      rnorm( sum(mat$obs_fert))*(sqrt(bw.res.female))+
      t*sib.effect.female 
    return(value)
- } 
+}
