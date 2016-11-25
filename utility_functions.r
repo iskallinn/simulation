@@ -8,10 +8,11 @@ GenerateBaseFemales <- function ( leg2,
                                   n.females,
                                  mating.will.yearling.1st,
                                  mating.will.yearling.2nd,
-                                 qual.classes ) 
+                                 qual.classes,
+                                 genetic.means) 
   {
   id        <-  seq(1:n.females)
-  add.gen <- rmvnorm(n.females, sigma = G_sigma,method="svd" ) 
+  add.gen <- rmvnorm(n.females,mean= genetic.means, sigma = G_sigma,method="svd" ) 
   # multiplies the random deviates by the variances
   add.gen <- as.data.table(t(t(add.gen) * sqrt(variances))) 
   
@@ -156,14 +157,15 @@ GenerateBaseMales <- function (leg2,
                                male.inf,
                                qual.classes,
                                intensity.remating,
-                               n.females) 
+                               n.females,
+                               genetic.means) 
   {
   mating.willingness.1st <-  numeric( n.males )  
   mating.willingness.2nd  <-  numeric( n.males)
   semen.quality.1st      <-  numeric( n.males )  
   semen.quality.2nd      <-  numeric( n.males )  
   id                 <-  numeric( n.males )  
-  add.gen <- rmvnorm(n.males, sigma = G_sigma,method="svd" ) 
+  add.gen <- rmvnorm(n.males,mean= genetic.means, sigma = G_sigma,method="svd" ) 
   # multiplies the random deviates by the variances
   add.gen <- as.data.table(t(t(add.gen) * sqrt(variances))) 
   

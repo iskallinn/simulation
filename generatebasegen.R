@@ -39,7 +39,8 @@ RunFirstYear <-
             fixed.costs,
             pelting.costs,
             price.sold.kit,
-            cheat
+            cheat,
+            genetic.means
   )
   {
     number.of.females.start.of.year <- n.females
@@ -58,7 +59,8 @@ RunFirstYear <-
                                        n.females,
                                        mating.will.yearling.1st,
                                        mating.will.yearling.2nd,
-                                       qual.classes ) # create females
+                                       qual.classes,
+                                       genetic.means) # create females
   effgen0.males <- GenerateBaseMales(leg2,
                                      t,
                                      n.males,
@@ -66,7 +68,8 @@ RunFirstYear <-
                                      male.inf,
                                      qual.classes,
                                      intensity.remating,
-                                     n.females) # create males
+                                     n.females,
+                                     genetic.means) # create males
   ################## assign each female a male,  based on his mating willingness ####
   mating.list <- mate (
     effgen0.males,

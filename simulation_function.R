@@ -56,7 +56,22 @@ Simulation <- function (
   variable.costs = 531,          # variable costs per female
   pelting.costs =  12,           # pelting costs pr skin
   fixed.costs = 286*n.females,   # fixed costs at start of simulation 
-  price.sold.kit = 80            # price per kit sold
+  price.sold.kit = 80,
+  genetic.means = c(
+    0,                  # live.qual
+    0,                  # h.length
+    0,                  # skin.qual
+    0,                  # skin.length.male
+    0,                  # skin.length.female
+    0,                  # litter.size
+    0,                  # body weight females
+    0,                  # body weight males
+    0,                  # rfi1.m
+    0,                  # rfi2.m
+    0,                  # rfi1.f
+    0                   # rfi2.f
+  )
+  # price per kit sold
 ) # closing paranthesis for definitions 
   { # opening curly brace for function 
   if (selection.method == phenotypic) {
@@ -301,7 +316,8 @@ Simulation <- function (
                       fixed.costs,
                       pelting.costs,
                       price.sold.kit,
-                      cheat
+                      cheat,
+                      genetic.means
     )
     
     for (y in 1:n) {

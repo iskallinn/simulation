@@ -70,7 +70,22 @@ pr.barren.one.mating.old          <- 0.9 # probability of single mated old femal
 pr.barren.double.mating.old       <- 0.95 # probability of double mated old female being barren
 n.males <-  ceiling( n.females/male.ratio ) # calculates needed amount of males 
 cull.ratio                        <- 0.85 # survival rate of kits, farmwise from 2nd cnt to pelting
+############# Genetic means ##################################
 
+genetic.means <- c(
+  0,                  # live.qual
+  0,                  # h.length
+  0,                  # skin.qual
+  0,                  # skin.length.male
+  0,                  # skin.length.female
+  0,               # litter.size
+  0,              # body weight females
+  0,              # body weight males
+  0,     # rfi1.m
+  0,           # rfi2.m
+  0,     # rfi1.f
+  0      # rfi2.f
+)
 ############# Variance settings for traits ###################
 # fertility
 var.perm.env.ls            <-  0.0004464  # Variance of permanent environment of litter size of dam

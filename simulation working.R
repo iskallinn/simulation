@@ -11,10 +11,10 @@ source("simulation_function.r")
 
 
 Simulation(
-  n =10,
-  nruns = 25,
-  selection.method = 1 ,
-  mblup = 0,
+  n =4,
+  nruns = 15,
+  selection.method = 2 ,
+  mblup = 1,
   make.obs.file = 1,
   cull.ratio = 0.85,
   purebreeding = 0,
@@ -23,7 +23,13 @@ Simulation(
   prop.oldfemales = 0.4,
   max.age.females = 3,
   crossmating = 0,
-  n.cages = 3500
+  n.cages = 7000,
+  n.females = 2000,
+  use.true.sire = 0,
+  pseudo.import = 0,
+  use.blup.to.assort.mat = 1,
+  use.comb.ind.for.males = 1
+  
   # weight.fert.old.females = 0.5,
   # weight.bw.old.females   = 0.250,
   # weight.qual.old.females = 0.25,
