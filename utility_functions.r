@@ -2350,9 +2350,9 @@ YearlingEffectOnFertility <- function (mating.list,year,yearling.effect){ # x = 
   # }
   # x <- cbind(x, dam.age)
   mating.list[,`:=`(dam.age = 
-            ifelse( year-mating.list$birthyear.dam == 1, 1, 0))]
+            ifelse( year-mating.list$birthyear.dam == 1, yearling.effect, 0))]
   if (year == 1 ){
-    mating.list[,`:=`(dam.age = rbinom(nrow(mating.list),1 , prob = prop.oldfemales))]
+    mating.list[,`:=`(dam.age = (rbinom(nrow(mating.list),1 , prob = prop.oldfemales))*yearling.effect)]
   }
   return(mating.list)
 }
