@@ -344,11 +344,11 @@ mate <- function (x,
     setorder(x, -comb.ind)
     setorder(y, -comb.ind)
   }
-  if (year <= 2) {
+  if (year <= 2 & selection.method == 2 ) {
     x$comb.ind <- 0
   } else if( selection.method !=blup) {
-    x$comb.ind <- 0
-    y[sample(nrow(y)),]
+    x$comb.ind <- 0 # no index if there is no blup
+    y <- y[sample(nrow(y)),] # randomize females list 
     
   }
   mating.list <-
@@ -376,7 +376,8 @@ mate <- function (x,
         "comb.ind"
       )
       , with = F] #specify which columns to incl.
-  if (nrow(mating.list) > sum(y$mating.will.1st.round)) {
+  if (nrow(mating.list) > sum(y$mating.will.1st.round)) { 
+    # this is to make sure that there will be no problems if there are more matings than females
     mating.list <- mating.list[1:sum(y$mating.will.1st.round), ]
   }
   
@@ -449,6 +450,8 @@ mate <- function (x,
     "sire.live.score.2nd"
   ) := 0]
   # moved scaling of litter specific environment to the phenotype function later on
+  # this might have to be changed to incorporate phenotypic correlations
+  # even though its called permanent environment, this is litter specific environment
   perm.env.bw.f <- rnorm(nrow(mating.list) )*sqrt(pe.var.bw.male)
   specific.env.skin <- rnorm(nrow(mating.list))
   perm.env.bw.m <- rnorm(nrow(mating.list) )*sqrt(pe.var.bw.male)
@@ -553,6 +556,8 @@ mate <- function (x,
       setorder(x, -comb.ind)
     } else if (use.blup.to.assort.mat == 0 ) {
       setorder(x, -live.score)
+    } else if (selection.method == random ) { 
+      x <- x[sample(nrow(x)),] # randomize male list 
     }
     x <- as.matrix(x[,myvars, with=FALSE])
     
@@ -744,7 +749,7 @@ mate <- function (x,
         0
       )
     if (purebreeding == 0 ) {  
-
+      
       #subset mating.list.allowed into two, those done and those left
       
       mating.list.remated <-
@@ -835,6 +840,8 @@ mate <- function (x,
         setorder(x, -comb.ind)
       } else if (use.blup.to.assort.mat == 0 ) {
         setorder(x, -live.score)
+      } else if (selection.method == 3 ) { 
+        x <- x[sample(nrow(x)),]
       }
       x <- as.matrix(x[,myvars, with=FALSE])
       
