@@ -53,7 +53,9 @@ RunFirstYear <-
     pedigree <- file(description = paste("pedigree_",p, sep=""), open="w")
   }
   year <- 1
-  ModifyDIRFile (p, mblup, trace.ped)
+  # browser ()
+  if(selection.method == 2) {
+  ModifyDIRFile (p, mblup, trace.ped)}
   ############### Create base population ############
   gen0.females <- GenerateBaseFemales( leg2,
                                        t,
@@ -110,6 +112,7 @@ RunFirstYear <-
   # # see utility functions for bv function
   kit.list <- MakeKitsGen0(mating.list, effgen0.males,year,leg2, qual.classes,true.sire.chance)
   # 
+  # browser()
   stat.crate[3] <- mean(kit.list$true.sire == kit.list$sire.assumed)
   stat.crate[4] <-nrow(kit.list)
   kit.list <- RandCull(kit.list,cull.ratio)
@@ -136,7 +139,8 @@ RunFirstYear <-
   # ############### Selection of first generation #########################################
   # # We choose females to fit n.females, based on prop of old females
   # # Note: currently all females are replaced in year 1
-if (selection.method == phenotypic ) 
+# browser()
+  if (selection.method == phenotypic ) 
   {  
   old.females <- PhenoSelectionOldFemales ( gen0.females,mating.list,year,max.age.females,
                                             n.females,

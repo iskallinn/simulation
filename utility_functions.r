@@ -307,11 +307,19 @@ GenerateBaseMales <- function (leg2,
                             )
                           ))]
   }
+  # order the males according to their phenotypes and assign can or not remate
   setorder(gen0.males, -live.score, -phenotype.bw.oct)
-  for (i in 1:ceiling((1-intensity.remating)*nrow(gen0.males))) {
-    gen0.males$can.remate[i] <- 1
-  }
-  
+  # system.time(
+  # for (i in 1:ceiling((1-intensity.remating)*nrow(gen0.males))) {
+  #   gen0.males$can.remate[i] <- 1
+  # })
+  if (intensity.remating != 0 ) {  
+    gen0.males[1:ceiling((1-intensity.remating)*nrow(gen0.males)), `:=`(can.remate = 1)]
+              
+ gen0.males[ceiling((1-intensity.remating)*nrow(gen0.males)+1):nrow(gen0.males),`:=`(can.remate = 0)]
+  } else if (intensity.remating == 0 ){
+  gen0.males[,`:=`(can.remate = 1)] 
+    }
   #make a subset of the males which will mate, this must be moved into the mating function 
   effgen0.males <- subset( gen0.males,  mating.willingness.1st > 0 ) 
 
@@ -349,8 +357,11 @@ mate <- function (x,
   } else if( selection.method !=blup) {
     x$comb.ind <- 0 # no index if there is no blup
     y <- y[sample(nrow(y)),] # randomize females list 
-    
   }
+if (selection.method == 3 ) {
+    x <- x[sample(nrow(x)),]
+  }
+  
   mating.list <-
     x[rep(seq(nrow(x)), mating.willingness.1st),  #expands the male list into a mating list, based on mat.will.1st
       c(
@@ -552,11 +563,11 @@ mate <- function (x,
                 "mating.willingness.2nd") #16 
     setkey(x, id)
     x <- subset(x, can.remate == 1 & mating.willingness.2nd > 0)
-    if (year >2 & use.blup.to.assort.mat == 1 & selection.method ==blup) {
+    if (year >2 & use.blup.to.assort.mat == 1 & selection.method ==2) {
       setorder(x, -comb.ind)
-    } else if (use.blup.to.assort.mat == 0 ) {
+    } else if (use.blup.to.assort.mat == 0 & selection.method == 1) {
       setorder(x, -live.score)
-    } else if (selection.method == random ) { 
+    } else if (selection.method == 3 ) { 
       x <- x[sample(nrow(x)),] # randomize male list 
     }
     x <- as.matrix(x[,myvars, with=FALSE])
@@ -838,7 +849,7 @@ mate <- function (x,
       setkey(x, id)
       if (year >2 & use.blup.to.assort.mat == 1 & selection.method ==blup) {
         setorder(x, -comb.ind)
-      } else if (use.blup.to.assort.mat == 0 ) {
+      } else if (use.blup.to.assort.mat == 0 & selection.method == 1 ) {
         setorder(x, -live.score)
       } else if (selection.method == 3 ) { 
         x <- x[sample(nrow(x)),]
@@ -1000,8 +1011,6 @@ mate <- function (x,
     ),
     value = NULL
   )
-  specific.env.skin <- rnorm(nrow(mating.list))
-  cbind(mating.list, specific.env.skin)
   return(mating.list)
 }
 mate <-compiler::cmpfun(mate,options= c(suppressAll=TRUE)) # performance boost
@@ -1071,6 +1080,7 @@ MakeKitsGen0 <- function (x,y, z, leg2,qual.classes,true.sire.chance) { #x = mat
                   "pe2.rfi.f"
                 ) 
                 , with=F] #specify which columns to incl.
+  # browser()
   id <- seq(1:sum(x$obs_fert)) + max(y$id) # makes ID
   birthyear <- rep (1, sum(x$obs_fert)) # makes birthyear
   sex <- rbinom(sum(x$obs_fert),1,0.5)+1 # makes sex, TODO check if this is true
@@ -1253,9 +1263,9 @@ MakeKitsGen0 <- function (x,y, z, leg2,qual.classes,true.sire.chance) { #x = mat
       sqrt(var.live.qual.res),
     phenotype.skin.length = ifelse(
       sex == 1,
-      mean.skin.length.male + skin.length.male + rnorm(1)*sqrt(var.skin.length.res.male)+
+      mean.skin.length.male + skin.length.male + rnorm(nrow(kit.list))*sqrt(var.skin.length.res.male)+
         specific.env.skin*sqrt(var.skin.length.c.male),
-      mean.skin.length.female + skin.length.female + rnorm(1)*sqrt(var.skin.length.res.female)+
+      mean.skin.length.female + skin.length.female + rnorm(nrow(kit.list))*sqrt(var.skin.length.res.female)+
         specific.env.skin*sqrt(var.skin.length.c.female) ),
     phenotype.skin.qual = 
       skin.qual + rnorm(nrow(kit.list))*sqrt(var.skin.qual.res),
@@ -1647,12 +1657,12 @@ RandomSelectionYearlings <- function (kit.list, old.females,n.females) {
   }
 # ############### Random selection of males #############
 RandomSelectionMales <- function (kit.list, n.males) {
-    nfem <- ceiling((n.females/male.ratio))
+    # nfem <- ceiling((n.females/male.ratio))
 
     selection.candidates.males <-  subset( kit.list,  sex  ==   1 )
 
 
-    next.gen.males <- sample(selection.candidates.males$id, nfem)
+    next.gen.males <- sample(selection.candidates.males$id, n.males)
     next.gen.males <- selection.candidates.males[is.element(selection.candidates.males$id,next.gen.males),]
     set( next.gen.males, j=which(colnames(next.gen.males) %in%
                                    "perm.env.ls"), value=NULL)
@@ -1808,24 +1818,28 @@ PrepareMalesForMating <-
             weight.qual.kits) {
     # x = next.gen.males
     setkey(x, id)
-  #   next.gen.males[next.gen.males,semen.quality:=rbinom( nrow(next.gen.males),  1,  male.inf )]
-  #   next.gen.males[next.gen.males,mating.willingness:=rZIP( nrow(next.gen.males),  mu = male.ratio,  sigma = 0.05 )]
+    # browser()
   x[,`:=`( semen.quality.1st=  rbinom( nrow(x),  1,  male.inf ),  
                         mating.willingness.1st = rZIP( nrow(x),  mu = male.ratio,  sigma = 0.05 ),
                         mating.willingness.2nd = rZIP( nrow(x), mu = 7.5, sigma = 0.05),
                         can.remate = rep(0, times=nrow(x)))]
-  # truncation.point <- quantile(x$live.score, probs= 1/3 )
-  x[,`:=`(semen.quality.2nd = semen.quality.1st)]
-  if (use.comb.ind.for.males == 1 & year > 2 & selection.method ==blup) {
+  
+    x[,`:=`(semen.quality.2nd = semen.quality.1st)]
+  if (use.comb.ind.for.males == 1 & year != 1 & selection.method ==2) {
   setorder(x, -comb.ind)  
-  } else if (use.comb.ind.for.males == 0 & weighing.method == sept){
-    setorder(x,-live.score,-phenotype.bw.sept) 
-  } else if (use.comb.ind.for.males == 0 & weighing.method == oct) {
-    setorder(x,-live.score,-phenotype.bw.oct)
+    x[1:ceiling((1-intensity.remating)*nrow(x)), `:=`(can.remate = 1)]
+    
+  } else if (use.comb.ind.for.males == 0 & selection.method == 1){
+    setorder(x,-live.score,-phenotype.bw.oct) 
+  } else if (intensity.remating == 0 & selection.method == 3) {
+    x[,`:=`( can.remate = rep(1, times=nrow(x)))]
+    
   } 
-for (i in 1:ceiling((1-intensity.remating)*nrow(x))) {
-  x$can.remate[i] <- 1
-}
+    if (intensity.remating != 0 ) {  
+      x[1:ceiling((1-intensity.remating)*nrow(x)), `:=`(can.remate = 1)]
+      
+      # x[ceiling((1-intensity.remating)*nrow(x)+1):nrow(x),`:=`(can.remate = 0)]
+    }
   x <- subset( x, mating.willingness.1st > 0 ) 
   if (pseudo.import == 1) {
   x <- MaskPseudoImport (pseudo.import,
@@ -2182,9 +2196,9 @@ MakeKitsGenN <- function (x,
       sqrt(var.live.qual.res),
     phenotype.skin.length = ifelse(
       sex == 1,
-      mean.skin.length.male + skin.length.male + rnorm(1)*sqrt(var.skin.length.res.male)+
+      mean.skin.length.male + skin.length.male + rnorm(nrow(kit.list))*sqrt(var.skin.length.res.male)+
         specific.env.skin*sqrt(var.skin.length.c.male),
-      mean.skin.length.female + skin.length.female + rnorm(1)*sqrt(var.skin.length.res.female)+
+      mean.skin.length.female + skin.length.female + rnorm(nrow(kit.list))*sqrt(var.skin.length.res.female)+
         specific.env.skin*sqrt(var.skin.length.c.female) ),
     phenotype.skin.qual = 
       skin.qual + rnorm(nrow(kit.list))*sqrt(var.skin.qual.res),
@@ -2389,7 +2403,7 @@ YearlingEffectOnFertility <- function (mating.list,year,yearling.effect){ # x = 
   mating.list[,`:=`(dam.age = 
             ifelse( year-mating.list$birthyear.dam == 1, yearling.effect, 0))]
   if (year == 1 ){
-    mating.list[,`:=`(dam.age = (rbinom(nrow(mating.list),1 , prob = prop.oldfemales))*yearling.effect)]
+    mating.list[,`:=`(dam.age = (rbinom(nrow(mating.list),1 , prob = (1-prop.oldfemales)))*yearling.effect)]
   }
   return(mating.list)
 }

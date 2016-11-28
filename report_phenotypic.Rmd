@@ -207,6 +207,25 @@ qplot(Gen, bw.var.mean, data = summarized) + geom_errorbar(
   labs(title= "Genetic variance of body weight", x = "Simulation Year", y = "Genetic variance [kg^2]")
 
 ```
+
+
+### Genetic variance of body weight
+
+```{r,echo=FALSE}
+qplot(Gen, skin.length.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = skin.length.mean - sqrt(skin.length.var),
+    ymax = skin.length.mean + sqrt(skin.length.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2)+
+  labs(title= "Genetic variance of body weight", x = "Simulation Year", y = "Genetic variance [kg^2]")
+
+```
+
+
 ### Skin length phenotype, male skins
 
 This shows the development in average skin length, note that this is within age cohort and includes all animals, even those not pelted

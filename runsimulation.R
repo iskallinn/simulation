@@ -73,6 +73,7 @@ RunSimulation <-
   t <- rbind(next.gen.males, temp, fill = T) # needed down the road
   remove(temp)
   ############### Make barren males ##########################
+  # browser()
   next.gen.males <-
     PrepareMalesForMating(
       next.gen.males,

@@ -279,7 +279,7 @@ Simulation <- function (
   }
   cat("\n", file = con)
   close(con = con)
-  
+  # browser()
   for (p in 1:nruns) {
     year <- 1
     l <- RunFirstYear(p,
