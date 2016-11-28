@@ -3327,12 +3327,12 @@ return(feed.used.breeders)
    return(kit.list)
  }
  ################## Guess number of animals #############################
- NumberofBreeders <- function (fert.memory,n.cages,year) {
+ NumberofBreeders <- function (fert.memory,n.cages,year,risktaking) {
    # browser()
    if (year == 1 ) { 
      objective <- fert.memory[1]/2
    } else if (year > 1 ) {
-       objective <- mean(fert.memory[year-1:year])*0.4
+       objective <- mean(fert.memory[year-1:year])*risktaking
      }
    f.obj <- c(1,1)
    f.con <- matrix (c(objective,1,1,-1), nrow=2, byrow=TRUE)

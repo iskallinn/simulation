@@ -25,6 +25,10 @@ n.females <-  1000             # NUMBER OF FEMALES
 n.cages <- 5500                # number of cages on farm
 nruns <- 1                     # how many replicates of the simulation
 n <- 5                         # number of generation per replicate
+risktaking <- 0.5                  # factor that determines risktaking in number of breeders, with max risk, 
+# it should be set to 0.5, as this will only use info from farm in guessing the number of females needed
+# with phenotypic selection, a factor of 0.4 has worked ok in guessing the
+# numbers needed without having way to many females
 assortative <- 1
 mating.method <- assortative   # mating method, random or assortative
 selection.method <- phenotypic       # selection strategy, 

@@ -9,6 +9,7 @@ Simulation <- function (
   #their combined index before mating
   use.comb.ind.for.males = 1, # if 1 then the usage of the males will depend on 
   # their combined index, not quality & weight
+  risktaking = 0.4,
   mblup = 0, # If == 1 then MBLUP will be used for selection index, note that 
   n.females =  1000,             # NUMBER OF FEMALES
   nruns = 1,                     # how many replicates of the simulation
@@ -319,7 +320,8 @@ Simulation <- function (
                       pelting.costs,
                       price.sold.kit,
                       cheat,
-                      genetic.means
+                      genetic.means,
+                      risktaking
     )
     
     for (y in 1:n) {
@@ -374,7 +376,8 @@ Simulation <- function (
           fixed.costs,
           pelting.costs,
           price.sold.kit,
-          cheat
+          cheat,
+          risktaking
           )
       
     }

@@ -40,7 +40,8 @@ RunFirstYear <-
             pelting.costs,
             price.sold.kit,
             cheat,
-            genetic.means
+            genetic.means,
+            risktaking
   )
   {
     number.of.females.start.of.year <- n.females

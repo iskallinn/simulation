@@ -47,7 +47,8 @@ RunSimulation <-
             fixed.costs,
             pelting.costs,
             price.sold.kit,
-            cheat) 
+            cheat,
+            risktaking) 
 {
     # browser()
   stat.crate <- c(0,0,0,0,0,0,0)
@@ -160,7 +161,7 @@ RunSimulation <-
     kit.list.nomasked <- kit.list
     kit.list <- MaskKits(kit.list)
     # guess number of females and adjust male numbers
-    n.females <- NumberofBreeders(fert.memory,n.cages,year)
+    n.females <- NumberofBreeders(fert.memory,n.cages,year,risktaking)
     n.males <- ceiling( n.females/male.ratio )
     } else if (selection.method != blup) {
       kit.list <-
@@ -187,7 +188,7 @@ RunSimulation <-
     kit.list <- RFI(kit.list, leg2, leg1, t)
     kit.list.nomasked <- kit.list
     kit.list <- MaskKits(kit.list)
-    n.females <- NumberofBreeders(fert.memory,n.cages,year)
+    n.females <- NumberofBreeders(fert.memory,n.cages,year,risktaking)
     n.males <- ceiling( n.females/male.ratio )
     }
   if (selection.method == blup) {
