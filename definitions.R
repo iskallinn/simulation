@@ -34,7 +34,7 @@ mating.method <- assortative   # mating method, random or assortative
 selection.method <- phenotypic       # selection strategy, 
 weighing.method <- oct         # control for when to weigh kits for selection cands
 crossmating <- 0               # 1 = systematic crossmating
-purebreeding <- 1
+purebreeding <- 0
 yearling.effect <- -0.07       # Change at own risk, currently gives ~0.6 fewer kits on yearlings
 qual.classes <- 5              # quality classes, 5 or 10 are supported
 intensity.remating <- 0.2      # this controls how many males are chosen not to be remated

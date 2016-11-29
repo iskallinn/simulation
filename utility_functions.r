@@ -2931,22 +2931,27 @@ RandCull <- function (kitlist,cull.ratio) {
    # the loop function here below is to make sure that the skins are allocated
    # into legal classes, i.e. no purple skins in velvet 3 and no purple skins
    # in klassik
-for (k in 1:nrow(kitlist)) {
-  if (kitlist$P15[k] == 1) {
-    set( kitlist,i=k, j=which(colnames(kitlist) %in% c("P11","P12","P14")), value=0)
-    kitlist$P13[k] <- 1                       
-  }
-  if(kitlist$P18[k] == 1 & kitlist$P11[k] == 1) {
-    
-    set( kitlist,i=k, j=which(colnames(kitlist) %in% c("P11")), value=0)
-    set( kitlist,i=k, j=which(colnames(kitlist) %in% c("P12")), value=1)
-  }
-  if (kitlist$P19[k] == 1 ) {
-    set( kitlist,i=k, j=which(colnames(kitlist) %in% c("P11","P12","P13")), value=0)
-    set( kitlist,i=k, j=which(colnames(kitlist) %in% c("P14")), value=1)
-  }
-}
-kits.males <- subset(kitlist, sex == 1, select=
+   mat <- as.matrix(kitlist)
+   for (k in 1:nrow(mat)) {
+     if (mat[k,47] == 1) {
+       mat[[k,43]] <- 0
+       mat[[k,44]] <- 0
+       mat[[k,46]] <- 0
+       mat[[k,45]] <- 1                       
+     }
+     if(mat[k,50] == 1 & mat[k,43] == 1) {
+       mat[k,43] <- 0
+       mat[k,44] <- 0
+     }
+     if (mat[k,51] == 1 ) {
+       mat[k,43] <- 0
+       mat[k,44] <- 0
+       mat[k,45] <- 0
+       mat[k,46] <- 1
+     }
+   }
+   kitlist <- as.data.table(mat)
+   kits.males <- subset(kitlist, sex == 1, select=
                           c("id",
                             "P1", #50
                             "P2",#40

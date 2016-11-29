@@ -209,19 +209,19 @@ qplot(Gen, bw.var.mean, data = summarized) + geom_errorbar(
 ```
 
 
-### Genetic variance of body weight
+### Genetic trend of male skin length
 
 ```{r,echo=FALSE}
-qplot(Gen, skin.length.mean, data = summarized) + geom_errorbar(
+qplot(Gen, skin.length.mean.mean, data = summarized) + geom_errorbar(
   aes(
     x = Gen,
-    ymin = skin.length.mean - sqrt(skin.length.var),
-    ymax = skin.length.mean + sqrt(skin.length.var)
+    ymin = skin.length.mean.mean - sqrt(skin.length.var.mean),
+    ymax = skin.length.mean.mean + sqrt(skin.length.var.mean)
   ),
   width = 0.25,
   data = summarized
 ) + geom_line(linetype =2)+
-  labs(title= "Genetic variance of body weight", x = "Simulation Year", y = "Genetic variance [kg^2]")
+  labs(title= "Genetic trend of skin length", x = "Simulation Year", y = "Genetic variance [kg^2]")
 
 ```
 
