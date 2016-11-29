@@ -140,7 +140,7 @@ RunFirstYear <-
   # # We choose females to fit n.females, based on prop of old females
   # # Note: currently all females are replaced in year 1
 # browser()
-  if (selection.method == phenotypic ) 
+  if (selection.method != 3 ) 
   {  
   old.females <- PhenoSelectionOldFemales ( gen0.females,mating.list,year,max.age.females,
                                             n.females,

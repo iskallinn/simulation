@@ -2933,15 +2933,17 @@ RandCull <- function (kitlist,cull.ratio) {
    # in klassik
    mat <- as.matrix(kitlist)
    for (k in 1:nrow(mat)) {
-     if (mat[k,47] == 1) {
-       mat[[k,43]] <- 0
-       mat[[k,44]] <- 0
-       mat[[k,46]] <- 0
-       mat[[k,45]] <- 1                       
+     # this one puts all skins in velvet 3 into burgundy category 
+     if (mat[k,47] == 1) { # P15 (velvet 3 )
+       mat[[k,43]] <- 0   # P11, purple
+       mat[[k,44]] <- 0   # P12  platinum
+       mat[[k,46]] <- 0   # P14 ivory
+       mat[[k,45]] <- 1   # P13 burgundy                    
      }
      if(mat[k,50] == 1 & mat[k,43] == 1) {
-       mat[k,43] <- 0
-       mat[k,44] <- 0
+       # this one puts all klassik skins that are also purple into platinum cat
+       mat[k,43] <- 0 # P11, purple
+       mat[k,44] <- 1 # P12, platinum 
      }
      if (mat[k,51] == 1 ) {
        mat[k,43] <- 0

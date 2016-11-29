@@ -9,12 +9,13 @@ source("runsimulation.r")
 source("simulation_function.r")
 
 
-
-Simulation(
-  n =2,
-  nruns = 10,
-  selection.method = 3 ,
-  mblup = 0,
+# library(profvis)
+# profvis({ 
+  Simulation(
+  n =5,
+  nruns = 1,
+  selection.method = 2 ,
+  mblup = 1,
   make.obs.file = 0,
   cull.ratio = 0.85,
   purebreeding = 0,
@@ -61,4 +62,5 @@ Simulation(
   # pr.barren.one.mating.old   =0.80, # probability of single mated old female being barren
   # pr.barren.double.mating.old=0.87
   )
-
+# }
+# )
