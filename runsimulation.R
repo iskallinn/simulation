@@ -48,8 +48,12 @@ RunSimulation <-
             pelting.costs,
             price.sold.kit,
             cheat,
-            risktaking) 
+            risktaking,
+            root,
+            fileoutputpath) 
 {
+    resultfile <- paste(root, fileoutputpath, 'raw_data/results', sep = '/')
+    
     # browser()
   stat.crate <- c(0,0,0,0,0,0,0)
   next.gen <- rbindlist(x[1])
@@ -279,7 +283,7 @@ RunSimulation <-
   feed.intake <- sum(kit.list$FI)
   feed.intake.pr.kit <- feed.intake/nrow(kit.list)
   kit.list.masked <- kit.list
-  kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year)
+  kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year,root,fileoutputpath)
   skin.price <- sum(kit.list$skin.price, na.rm =T)/number.of.females.start.of.year
   income <- sum(kit.list$skin.price, na.rm =T)
   # if (year == n) {
@@ -288,7 +292,7 @@ RunSimulation <-
   if(mean(is.na(next.gen$id)) > 0) {
     stop("NA in id's")
   }
-  con <- file(description = "results", open = "a")
+  con <- file(description =resultfile, open = "a")
   # browser()
   if (selection.method == blup) {
     kit.list <- merge(kit.list.masked, solutions, by= "id", all.x=TRUE) # merge to solutions of blup of fertility

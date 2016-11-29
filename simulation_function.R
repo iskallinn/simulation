@@ -72,7 +72,9 @@ Simulation <- function (
     0,                  # rfi2.m
     0,                  # rfi1.f
     0                   # rfi2.f
-  )
+  ),
+  fileoutputpath = "simulation of mink farm/Output/DMU analysis/",
+  root = 'C:/Users/au384062/Dropbox/Projects'
   # price per kit sold
 ) # closing paranthesis for definitions 
   { # opening curly brace for function 
@@ -111,11 +113,13 @@ Simulation <- function (
                 use.true.sire,
                 use.blup.to.assort.mat,
                 trace.ped,
-                intensity.remating
+                intensity.remating,
+                fileoutputpath,
+                root
   )
   
-  skin.metrics.males <- file(description = "skin_metrics_males", open ="w")
-  skin.metrics.females <- file(description = "skin_metrics_females", open ="w")
+  skin.metrics.males <- file(description = paste(root, fileoutputpath,"raw_data/skin_metrics_males", sep = '/'), open ="w")
+  skin.metrics.females <- file(description = paste(root, fileoutputpath,"raw_data/skin_metrics_females", sep = '/'), open ="w")
   cat(
     "Gen",
     "S50", #50
@@ -171,7 +175,7 @@ Simulation <- function (
     file = skin.metrics.females
   ) 
   if (selection.method == 2) { # 2 = blup
-  con <- file(description = "results", open = "w")
+  con <- file(description = paste(root, fileoutputpath,"raw_data/results", sep = '/'), open = "w")
   cat(
     "Gen",
     "Gmean",
@@ -228,7 +232,7 @@ Simulation <- function (
     file = con
   )  } else if (selection.method != blup) { # phenotypic or random
     
-    con <- file(description = "results", open = "w")
+    con <- file(description = paste(root, fileoutputpath,"raw_data/results", sep = '/'), open = "w")
     cat(
       "Gen",
       "Gmean",
@@ -321,7 +325,9 @@ Simulation <- function (
                       price.sold.kit,
                       cheat,
                       genetic.means,
-                      risktaking
+                      risktaking,
+                      root,
+                      fileoutputpath
     )
     
     for (y in 1:n) {
@@ -377,15 +383,17 @@ Simulation <- function (
           pelting.costs,
           price.sold.kit,
           cheat,
-          risktaking
+          risktaking,
+          root,
+          fileoutputpath
           )
       
     }
   }
-  templog <- readLines("log.log")
+  templog <- readLines(paste(root, fileoutputpath,"log.log", sep = '/'))
   templog[3] <- c(paste(  "Simulation ended",
                           format(Sys.time(), " %b %d %X"), sep="")) 
-  writeLines(templog, "log.log")
-  
+  writeLines(templog, paste(root, fileoutputpath,"log.log", sep = '/'))
+  ReadAndSummarize (fileoutputpath,root)
   closeAllConnections()
 }

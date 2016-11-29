@@ -2857,7 +2857,7 @@ RandCull <- function (kitlist,cull.ratio) {
  
  
  ######################## Skin price function ##############################
- SkinPrices <- function (kitlist, next.gen, next.gen.males,y) {
+ SkinPrices <- function (kitlist, next.gen, next.gen.males,y,root,fileoutputpath) {
    
    sd <-
      setdiff(kitlist$id, next.gen$id) # remove the next.gen females from kit.list
@@ -2977,8 +2977,16 @@ RandCull <- function (kitlist,cull.ratio) {
                             "P19")#long nap
    )
 skin.metric.bin <- colSums(kits.males)
-skin.metrics.males <- file(description = "skin_metrics_males", open ="a")
-skin.metrics.females <- file(description = "skin_metrics_females", open ="a")
+skin.metrics.males <-
+  file(
+    description = paste(root, fileoutputpath, "raw_data/skin_metrics_males", sep = '/'),
+    open = "a"
+  )
+skin.metrics.females <-
+  file(
+    description = paste(root, fileoutputpath, "raw_data/skin_metrics_females", sep = '/'),
+    open = "a"
+  )
 
 cat(
   y,
@@ -3159,10 +3167,12 @@ file = skin.metrics.males
                  use.true.sire,
                  use.blup.to.assort.mat,
                  trace.ped,
-                 intensity.remating
+                 intensity.remating,
+                 fileoutputpath,
+                 root
    ) 
      {
-     logfile <- file(description = "log.log", open = "w")
+     logfile <- file(description = paste(root,fileoutputpath,"log.log", sep='/'), open = "w")
    cat("Logfile from MinkSim",file=logfile)
    cat("\n", file = logfile)
    cat("Simulation started",file=logfile,sep = "\t")
@@ -3380,4 +3390,233 @@ return(feed.used.breeders)
      rnorm( sum(mat$obs_fert))*(sqrt(bw.res.female))+
      t*sib.effect.female 
    return(value)
-}
+ }
+ ############### Read results and summarize ##################
+ ReadAndSummarize <-  function ( fileoutputpath ,root) { 
+   # fileoutput <- fileoutputpath # note that the function works from
+   # browser()
+   
+   # setwd(paste("C:/Users/au384062/Dropbox/Projects/Kopenhagen Fur/Analysis results/Scenarios",fileoutput,sep="/"))
+   # setwd(paste("C:/Users/Notandi/Dropbox/Projects/Kopenhagen Fur/Analysis results/Scenarios",fileoutput,sep="/"))
+   
+   
+   results <- read.table(paste(root, fileoutputpath, "raw_data/results",sep = '/'), header = T, row.names = NULL)
+   if("cor.ls.blup" %in% colnames(results)) {
+     summarized <-
+       summaryBy(
+         Gen + Gmean + Gvar + Fis + Obs.fert + mean.phenotype.bw.females + gen.value.bs +
+           mean.phenotype.bw.males + bw.var+cor.bw.to.blup+cor.bw.phenotype+skin.length.mean+
+           skin.length.var+
+           skin.qual.mean+
+           skin.qual.var+
+           cor.ls.blup+
+           cor.ls.own.to.ls+
+           mated.females+
+           barren.females+
+           numb.false.sires+
+           numb.kits+
+           remating.perc+
+           perc.single.mat+
+           mean.gen.val.qual+
+           var.gen.val.qual+
+           cor.blup.qual.gen.val.qual+
+           cor.live.score.skin.qa+
+           cor.blup.qual.to.skin.qual+
+           survived.kits+feed.per.skin+avg.skin.length.male+skin.price+avg.skin.length.female
+         +margin+feeding.cost.pr.skin+avg.skin.price+income.from.skins+variable.costs+fixed.costs+pelting.costs+income.fr.sold.kits+
+           gross.feeding.costs+cage_utilization+n.females+sold.skins+costs.pr.sold.skin+costs.pr.female+reg_EBV_TBV_LS+reg_EBV_TBV_qual+reg_EBV_TBV_size~ Gen,
+         data = results, 
+         FUN = c(mean, var), 
+         na.rm = T
+       ) 
+     con <-
+       file(
+         description = paste(root, fileoutputpath, "Summarized/summarized", sep = '/'),
+         open = "w"
+       )
+     write.table(summarized,
+                 file = con,
+                 quote = F,
+                 row.names = F)
+     close(con)
+     
+     
+     
+     
+     
+     skin.metrics.females <-
+       read.table(
+         paste(root, fileoutputpath, "raw_data/skin_metrics_females", sep = '/'),
+         header = T,
+         row.names = NULL
+       )
+     female.skins <- summaryBy(S50/numb.animals + 
+                                 S40/numb.animals +
+                                 S30/numb.animals+
+                                 S00/numb.animals+
+                                 S0/numb.animals+
+                                 S1/numb.animals+
+                                 S2/numb.animals+
+                                 S3/numb.animals+
+                                 S4/numb.animals+
+                                 S5/numb.animals+
+                                 purple/numb.animals+
+                                 platinum/numb.animals+
+                                 burgundy/numb.animals+
+                                 ivory/numb.animals+
+                                 vel3/numb.animals+
+                                 vel2/numb.animals+
+                                 vel1/numb.animals+
+                                 kl/numb.animals+
+                                 long.nap/numb.animals+
+                                 avg.price.females
+                               ~ Gen, data=skin.metrics.females,FUN = c(mean, var))
+     con <-
+       file(
+         description = paste(root, fileoutputpath, "Summarized/female_skins", sep = '/'),
+         open = "w"
+       )
+     write.table(female.skins, file=con, quote=F, row.names=F)
+     close(con)
+     
+     
+     skin.metrics.males <-
+       read.table(
+         paste(root, fileoutputpath, "raw_data/skin_metrics_males", sep = '/'),
+         header = T,
+         row.names = NULL
+       )
+     
+     male.skins <- summaryBy(S50/numb.animals + 
+                               S40/numb.animals +
+                               S30/numb.animals+
+                               S00/numb.animals+
+                               S0/numb.animals+
+                               S1/numb.animals+
+                               S2/numb.animals+
+                               S3/numb.animals+
+                               S4/numb.animals+
+                               S5/numb.animals+
+                               purple/numb.animals+
+                               platinum/numb.animals+
+                               burgundy/numb.animals+
+                               ivory/numb.animals+
+                               vel3/numb.animals+
+                               vel2/numb.animals+
+                               vel1/numb.animals+
+                               kl/numb.animals+
+                               long.nap/numb.animals+
+                               avg.price.males
+                             ~ Gen, data=skin.metrics.males,FUN = c(mean, var))
+     con <- file(description = paste(root, fileoutputpath, "Summarized/male_skins", sep = '/'),open="w")
+     write.table(male.skins, file=con, quote=F, row.names=F)
+     close(con)
+     
+   } else {
+     summarized <-
+       summaryBy(
+         Gen + Gmean + Gvar + Fis + Obs.fert + mean.phenotype.bw.females + gen.value.bs +
+           mean.phenotype.bw.males + bw.var+cor.bw.phenotype +
+           skin.length.mean+
+           skin.length.var+
+           skin.qual.mean+
+           skin.qual.var+
+           cor.ls.own.to.ls+mated.females+barren.females+numb.false.sires+numb.kits+
+           remating.perc+perc.single.mat+mean.gen.val.qual+var.gen.val.qual+survived.kits+
+           avg.skin.length.male+avg.skin.length.female+feed.per.skin+skin.price+
+           margin+feeding.cost.pr.skin+avg.skin.price+income.from.skins+variable.costs+fixed.costs+pelting.costs+income.fr.sold.kits+
+           gross.feeding.costs+cage_utilization+n.females+sold.skins+costs.pr.sold.skin+costs.pr.female
+         ~ Gen,
+         data = results,
+         FUN = c(mean, var),
+         na.rm = T
+       )
+     
+     # browser()
+     con <-
+       file(
+         description = paste(root, fileoutputpath, "Summarized/summarized", sep = '/'),
+         open = "w"
+       )
+     write.table(summarized, file=con, quote=F, row.names=F)
+     close(con)
+     
+     
+     
+     
+     
+     skin.metrics.females <-
+       read.table(
+         paste(root, fileoutputpath, "raw_data/skin_metrics_females", sep = '/'),
+         header = T,
+         row.names = NULL
+       )
+     female.skins <- summaryBy(S50/numb.animals + 
+                                 S40/numb.animals +
+                                 S30/numb.animals+
+                                 S00/numb.animals+
+                                 S0/numb.animals+
+                                 S1/numb.animals+
+                                 S2/numb.animals+
+                                 S3/numb.animals+
+                                 S4/numb.animals+
+                                 S5/numb.animals+
+                                 purple/numb.animals+
+                                 platinum/numb.animals+
+                                 burgundy/numb.animals+
+                                 ivory/numb.animals+
+                                 vel3/numb.animals+
+                                 vel2/numb.animals+
+                                 vel1/numb.animals+
+                                 kl/numb.animals+
+                                 long.nap/numb.animals+
+                                 avg.price.females
+                               ~ Gen, data=skin.metrics.females,FUN = c(mean, var))
+     con <-
+       file(
+         description = paste(root, fileoutputpath, "Summarized/female_skins", sep = '/'),
+         open = "w"
+       )
+     write.table(female.skins, file=con, quote=F, row.names=F)
+     close(con)
+     
+     
+     skin.metrics.males <-
+       read.table(
+         paste(root, fileoutputpath, "raw_data/skin_metrics_males", sep = '/'),
+         header = T,
+         row.names = NULL
+       )
+     
+     male.skins <- summaryBy(S50/numb.animals + 
+                               S40/numb.animals +
+                               S30/numb.animals+
+                               S00/numb.animals+
+                               S0/numb.animals+
+                               S1/numb.animals+
+                               S2/numb.animals+
+                               S3/numb.animals+
+                               S4/numb.animals+
+                               S5/numb.animals+
+                               purple/numb.animals+
+                               platinum/numb.animals+
+                               burgundy/numb.animals+
+                               ivory/numb.animals+
+                               vel3/numb.animals+
+                               vel2/numb.animals+
+                               vel1/numb.animals+
+                               kl/numb.animals+
+                               long.nap/numb.animals+
+                               avg.price.males
+                             ~ Gen, data=skin.metrics.males,FUN = c(mean, var))
+     con <-
+       file(
+         description = paste(root, fileoutputpath, "Summarized/male_skins", sep = '/'),
+         open = "w"
+       )
+     write.table(male.skins, file=con, quote=F, row.names=F)
+     close(con)
+     
+   }
+   
+ }

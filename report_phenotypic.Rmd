@@ -27,7 +27,8 @@ A variety of key figures and plots will be generated
 ```{r results="asis", echo=FALSE}
 library(ggplot2)
   # setwd("C:/Users/au384062/Dropbox/Projects/Kopenhagen Fur/Analysis results/Scenarios/Skejby_0811/Standard/Raw_Data//")
-   setwd("C:/Users/au384062/Dropbox/Projects/simulation of mink farm/Output/DMU analysis")
+   # setwd("C:/Users/au384062/Dropbox/Projects/simulation of mink farm/Output/DMU analysis")
+   setwd("C:/Users/au384062/Dropbox/Projects/Kopenhagen Fur/Analysis results/Scenarios/Economic_values_1/Standard/raw_data")
 
 
 library(doBy)        #
@@ -70,6 +71,23 @@ data <- matrix(c(
 knitr::kable(data, caption= "Key Figures",digits = 2)
 ```
 
+### Cage use
+This shows how big a proportion of the cages were occupied in each year of the simulation 
+
+```{r ,echo=FALSE}
+
+
+qplot(Gen, cage_utilization.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = cage_utilization.mean - sqrt(cage_utilization.var),
+    ymax = cage_utilization.mean + sqrt(cage_utilization.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2)+labs( title = "Cage usage", x= "Year of simulation", y= "Proportion")
+
+```
 
 ### Litter size per mated female
 This is defined as kits born alive. Bars show standard deviation of each replicate.

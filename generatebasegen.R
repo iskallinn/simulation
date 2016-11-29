@@ -41,11 +41,13 @@ RunFirstYear <-
             price.sold.kit,
             cheat,
             genetic.means,
-            risktaking
+            risktaking,
+            root,
+            fileoutputpath
   )
   {
     number.of.females.start.of.year <- n.females
-    
+    resultfile <- paste(root, fileoutputpath, 'raw_data/results', sep = '/')
     p <- p
     stat.crate <- c(0,0,0,0,0,0,0,0,0) # temporary holding space for values
     fert.memory <- rep(0, times= n)
@@ -160,14 +162,14 @@ if("f0.dam" %in% colnames(old.females)) {
   next.gen <- rbind(next.gen, old.females,fill=TRUE)
   feed.intake <- sum(kit.list$FI)
   feed.intake.pr.kit <- feed.intake/nrow(kit.list)
-  kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year)
+  kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year,root,fileoutputpath)
   income <- sum(kit.list$skin.price, na.rm =T)
   # # add in next gen and kit.list to big pedigree
   if (selection.method ==blup){
     big.pedfile <- update.big.pedigree (big.pedfile, next.gen, next.gen.males)
   }
   # ############## First year statistics #######################
-  con <- file(description="results",open="a")
+  con <- file(description=resultfile,open="a")
   if (selection.method == blup) {
     stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
     stat1 <- subset(kit.list, sex==1)#males
