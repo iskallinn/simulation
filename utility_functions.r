@@ -2945,10 +2945,11 @@ RandCull <- function (kitlist,cull.ratio) {
        mat[k,43] <- 0 # P11, purple
        mat[k,44] <- 1 # P12, platinum 
      }
-     if (mat[k,51] == 1 ) {
-       mat[k,43] <- 0
-       mat[k,44] <- 0
-       mat[k,45] <- 0
+     if (mat[k,51] == 1 ) { #P51, long nap
+       # this one forces all long nap skins into ivory
+       mat[k,43] <- 0 # purple
+       mat[k,44] <- 0 # platinum
+       mat[k,45] <- 0 # burgundy
        mat[k,46] <- 1
      }
    }
