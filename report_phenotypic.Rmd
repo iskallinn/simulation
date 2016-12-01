@@ -28,7 +28,7 @@ A variety of key figures and plots will be generated
 library(ggplot2)
   # setwd("C:/Users/au384062/Dropbox/Projects/Kopenhagen Fur/Analysis results/Scenarios/Skejby_0811/Standard/Raw_Data//")
    # setwd("C:/Users/au384062/Dropbox/Projects/simulation of mink farm/Output/DMU analysis")
-   setwd("C:/Users/au384062/Dropbox/Projects/Kopenhagen Fur/Analysis results/Scenarios/Economic_values_1/Litter_size2/raw_data")
+   setwd("C:/Users/au384062/Dropbox/Projects/Kopenhagen Fur/Analysis results/Scenarios/Economic_values_1/standard/raw_data")
 
 
 library(doBy)        #

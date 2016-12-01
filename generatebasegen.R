@@ -169,6 +169,8 @@ if("f0.dam" %in% colnames(old.females)) {
   if (selection.method ==blup){
     big.pedfile <- update.big.pedigree (big.pedfile, next.gen, next.gen.males)
   }
+  # browser()
+  labcosts <-  LaborCosts(number.of.females.start.of.year, ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) )
   # ############## First year statistics #######################
   con <- file(description=resultfile,open="a")
   if (selection.method == blup) {
@@ -214,7 +216,7 @@ if("f0.dam" %in% colnames(old.females)) {
         feed.intake * feed.price - fixed.costs - nrow(kit.list) * pelting.costs +
         numb.sold.kits * price.sold.kit, #pr farm margin
       income, #income from skins
-      number.of.females.start.of.year *variable.costs, #variable costs
+      number.of.females.start.of.year *variable.costs+labcosts, #variable costs
       fixed.costs, #fixed costs
       ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs, #pelting costs
       (feed.intake+feed.usage.breeders)*feed.price, #feeding costs
@@ -228,10 +230,10 @@ if("f0.dam" %in% colnames(old.females)) {
       number.of.females.start.of.year,
       ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
       (number.of.females.start.of.year *
-         variable.costs +
+         variable.costs + labcosts +
          feed.intake * feed.price + fixed.costs +  ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs) /ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
       (number.of.females.start.of.year *
-         variable.costs +
+         variable.costs +labcosts +
          feed.intake * feed.price + fixed.costs +  ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs)/number.of.females.start.of.year,
       feed.intake.pr.kit,
       sep = "\t",
@@ -275,7 +277,7 @@ if("f0.dam" %in% colnames(old.females)) {
         feed.intake * feed.price - fixed.costs - nrow(kit.list) * pelting.costs +
         numb.sold.kits * price.sold.kit, #pr farm margin
       sum(kit.list$skin.price, na.rm = T), #income from skins
-      number.of.females.start.of.year *variable.costs, #variable costs
+      number.of.females.start.of.year *variable.costs+labcosts, #variable costs
       fixed.costs, #fixed costs
       ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs, #pelting costs
       (feed.intake+feed.usage.breeders)*feed.price, #feeding costs
@@ -286,10 +288,10 @@ if("f0.dam" %in% colnames(old.females)) {
       number.of.females.start.of.year,
       ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
       (number.of.females.start.of.year *
-         variable.costs +
+         variable.costs +labcosts +
          feed.intake * feed.price + fixed.costs +  ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs) /ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
       (number.of.females.start.of.year *
-         variable.costs +
+         variable.costs +labcosts +
          feed.intake * feed.price + fixed.costs +  ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs)/number.of.females.start.of.year,
       feed.intake.pr.kit,
       sep = "\t",

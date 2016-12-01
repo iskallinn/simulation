@@ -296,6 +296,8 @@ RunSimulation <-
   }
   con <- file(description =resultfile, open = "a")
   # browser()
+  labcosts <-  LaborCosts(number.of.females.start.of.year, ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) )
+  
   if (selection.method == blup) {
     kit.list <- merge(kit.list.masked, solutions, by= "id", all.x=TRUE) # merge to solutions of blup of fertility
     stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
@@ -344,7 +346,7 @@ RunSimulation <-
       feed.intake * feed.price - fixed.costs - ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males-numb.sold.kits) * pelting.costs +
       numb.sold.kits * price.sold.kit, #pr farm margin
     income, #income from skins
-    number.of.females.start.of.year *variable.costs, #variable costs
+    number.of.females.start.of.year *variable.costs+labcosts, #variable costs
     fixed.costs, #fixed costs
     ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs, #pelting costs
     (feed.intake+feed.usage.breeders)*feed.price, #feeding costs
@@ -358,10 +360,10 @@ RunSimulation <-
     number.of.females.start.of.year,
     ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males-numb.sold.kits),
     (number.of.females.start.of.year *
-       variable.costs +
+       variable.costs +labcosts +
        feed.intake * feed.price + fixed.costs + nrow(kit.list) * pelting.costs) /ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
     (number.of.females.start.of.year *
-       variable.costs +
+       variable.costs +labcosts +
        feed.intake * feed.price + fixed.costs + nrow(kit.list) * pelting.costs)/number.of.females.start.of.year,
    feed.intake.pr.kit,
     sep = "\t",
@@ -407,7 +409,7 @@ RunSimulation <-
         feed.intake * feed.price - fixed.costs - ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males-numb.sold.kits) * pelting.costs +
         numb.sold.kits * price.sold.kit, #pr farm margin
       sum(kit.list$skin.price, na.rm = T), #income from skins
-      number.of.females.start.of.year *variable.costs, #variable costs
+      number.of.females.start.of.year *variable.costs+labcosts, #variable costs
         fixed.costs, #fixed costs
       ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs, #pelting costs
       (feed.intake+feed.usage.breeders)*feed.price, #feeding costs
@@ -418,10 +420,10 @@ RunSimulation <-
       number.of.females.start.of.year,   
       ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males-numb.sold.kits),
       (number.of.females.start.of.year *
-        variable.costs +
+        variable.costs +labcosts +
         feed.intake * feed.price + fixed.costs + nrow(kit.list) * pelting.costs) /ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
       (number.of.females.start.of.year *
-         variable.costs +
+         variable.costs +labcosts +
          feed.intake * feed.price + fixed.costs + nrow(kit.list) * pelting.costs)/number.of.females.start.of.year,
       feed.intake.pr.kit,
       sep = "\t",  

@@ -3620,7 +3620,7 @@ return(feed.used.breeders)
    }
    
  }
- ################ Equalize litter numbers #####################
+################ Equalize litter numbers #####################
  
  EqualizeLitters <- function(kitlist) 
 {
@@ -3632,4 +3632,11 @@ return(feed.used.breeders)
   kitlist <- subset(kitlist, mask == 1  )
   kitlist[,c("IDX", "mask"):=NULL]
 return(kitlist)
-  }
+ }
+############## Labor costs ########################
+ LaborCosts <- function (number.of.females.start.of.year, skins) 
+ {
+   laborcosts <- exp(6.92+log(number.of.females.start.of.year)*0.82+log((skins/number.of.females.start.of.year))*0.21)
+   return(laborcosts)  
+ }
+ 

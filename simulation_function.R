@@ -55,7 +55,7 @@ Simulation <- function (
   cull.ratio                        = 0.85, # survival rate of kits, farmwise from 2nd cnt to pelting 
   sorting.prop                      = 1, # proportion of animals to live grade
   n.cages = 5500,
-  variable.costs = 531,          # variable costs per female
+  variable.costs = 165,          # variable costs per female
   pelting.costs =  12,           # pelting costs pr skin
   fixed.costs = 286*n.females,   # fixed costs at start of simulation 
   price.sold.kit = 80,

@@ -41,7 +41,7 @@ intensity.remating <- 0.2      # this controls how many males are chosen not to 
 make.obs.file <- 1             # 1 = make observation file, 0 otherwise
 use.true.sire <- 0             # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
 feed.price    <- 2.85          # feed price per kg feed
-variable.costs <- 531          # variable costs per female
+variable.costs <- 165.3        # variable costs per female, not including labor
 pelting.costs <-  12           # pelting costs pr skin
 fixed.costs <- 286*n.females   # fixed costs at start of simulation 
 price.sold.kit <- 80           # price per sold kit in july
