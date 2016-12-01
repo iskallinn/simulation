@@ -3620,3 +3620,16 @@ return(feed.used.breeders)
    }
    
  }
+ ################ Equalize litter numbers #####################
+ 
+ EqualizeLitters <- function(kitlist) 
+{
+  # this equalizes the litter size before selection in the case of random selection
+  # it keeps two kits from each sex in each litter
+  setkey(kitlist, id)
+  kitlist[, `:=`(IDX = 1:.N) , by = list(dam.id,sex)]
+  kitlist[,`:=`(mask = ifelse( IDX> 2, 0,1))]
+  kitlist <- subset(kitlist, mask == 1  )
+  kitlist[,c("IDX", "mask"):=NULL]
+return(kitlist)
+  }

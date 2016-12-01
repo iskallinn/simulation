@@ -151,6 +151,7 @@ RunFirstYear <-
                                         quantile.setting.bw,n.females)
   next.gen.males <- PhenoSelectionMaleKits (kit.list,quantile.setting.ls,quantile.setting.bw,n.males)
 } else if (selection.method == random) {
+  kit.list <- EqualizeLitters(kit.list.nomasked)
   old.females <- RandomSelectionOldFemales(gen0.females,n.females,prop.oldfemales,mating.list,year)
     next.gen <- RandomSelectionYearlings(kit.list, old.females,n.females)
     next.gen.males <- RandomSelectionMales(kit.list,n.males) 
@@ -160,8 +161,8 @@ if("f0.dam" %in% colnames(old.females)) {
                                 "f0.dam")  , value=NULL )
   }
   next.gen <- rbind(next.gen, old.females,fill=TRUE)
-  feed.intake <- sum(kit.list$FI)
-  feed.intake.pr.kit <- feed.intake/nrow(kit.list)
+  feed.intake <- sum(kit.list.nomasked$FI)
+  feed.intake.pr.kit <- feed.intake/nrow(kit.list.nomasked)
   kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year,root,fileoutputpath)
   income <- sum(kit.list$skin.price, na.rm =T)
   # # add in next gen and kit.list to big pedigree
