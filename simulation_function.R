@@ -228,6 +228,7 @@ Simulation <- function (
     "costs.pr.sold.skin",
     "costs.pr.female",
     "FI.pr.kit",
+    "labor.costs",
     sep = "\t",
     file = con
   )  } else if (selection.method != blup) { # phenotypic or random
@@ -277,6 +278,7 @@ Simulation <- function (
       "costs.pr.sold.skin",
       "costs.pr.female",
       "FI.pr.kit",
+          "labor.costs",
       sep = "\t",
       file = con
     )

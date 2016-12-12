@@ -3280,14 +3280,15 @@ file = skin.metrics.males
  # males are considered to live for 110 days after pelting and females 365 days, use data from Tauson et al 2004
  # & mink nutrition book and assume K_lactation = 0.78 (like in sows)
  FeedUsageBreeders <- function (mating.list, next.gen.males, next.gen )   {
+   # browser()
 next.gen.males$feed.used.males <- (next.gen.males$phenotype.bw.oct^0.75*0.527*110)/5.0208
 feed.used.males <- sum(next.gen.males$feed.used.males)
 feed.used <- numeric(nrow(mating.list))
 mating.list <- cbind(mating.list,feed.used)
-transform(mating.list,feed.used, 13*obs_fert*0.78*4.53
-                          +22.2*obs_fert*0.78*5.14+  
-                            28.6*obs_fert*.78*5.86+
-                            32.8*obs_fert*0.78*5.96)
+mating.list <-transform(mating.list,feed.used = (0.013*obs_fert*0.78*4.53*7
+                          +0.0222*obs_fert*0.78*5.14*7+  
+                            0.0286*obs_fert*.78*5.86*7+
+                            0.0328*obs_fert*0.78*5.96*7)/5.02)
 feed.used.females <- sum(mating.list$feed.used)
 next.gen$feed.used <- (next.gen$phenotype.bw.oct^0.75*0.527*365)/5.020
 feed.used.females <- feed.used.females + sum(next.gen$feed.used)
@@ -3629,14 +3630,15 @@ return(feed.used.breeders)
   setkey(kitlist, id)
   kitlist[, `:=`(IDX = 1:.N) , by = list(dam.id,sex)]
   kitlist[,`:=`(mask = ifelse( IDX> 2, 0,1))]
-  kitlist <- subset(kitlist, mask == 1  )
+  kitlist <- subset(kitlist, mask == 1)
+  kitlist <- subset(kitlist, own_littersize < 13 )
   kitlist[,c("IDX", "mask"):=NULL]
 return(kitlist)
  }
 ############## Labor costs ########################
  LaborCosts <- function (number.of.females.start.of.year, skins) 
  {
-   laborcosts <- exp(6.92+log(number.of.females.start.of.year)*0.82+log((skins/number.of.females.start.of.year))*0.21)
+   laborcosts <- exp(6.081+log(number.of.females.start.of.year)*0.89+log((skins/number.of.females.start.of.year))*0.402)
    return(laborcosts)  
  }
  

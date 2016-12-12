@@ -46,7 +46,7 @@ summarized <-
         remating.perc+perc.single.mat+mean.gen.val.qual+var.gen.val.qual+survived.kits+
         avg.skin.length.male+avg.skin.length.female+feed.per.skin+skin.price+
       margin+feeding.cost.pr.skin+avg.skin.price+margin+income.from.skins+variable.costs+fixed.costs+pelting.costs+income.fr.sold.kits+
-        gross.feeding.costs+cage_utilization+n.females+sold.skins+costs.pr.sold.skin+costs.pr.female
+        gross.feeding.costs+cage_utilization+n.females+sold.skins+costs.pr.sold.skin+costs.pr.female+labor.costs
 
     ~ Gen,
     data = results,
@@ -89,7 +89,7 @@ qplot(Gen, cage_utilization.mean, data = summarized) + geom_errorbar(
 
 ```
 
-### Litter size per mated female
+### Litter size per littered
 This is defined as kits born alive. Bars show standard deviation of each replicate.
 
 ```{r summarized,echo=FALSE}
@@ -106,6 +106,20 @@ qplot(Gen, Obs.fert.mean, data = summarized) + geom_errorbar(
 ) + geom_line(linetype =2)+labs( title = "Kits per mated female", x= "Year of simulation", y= "kits/female")
 
 ```
+
+### Litter size per mated female
+This is defined as kits born alive. Bars show standard deviation of each replicate.
+
+```{r summarized,echo=FALSE}
+
+
+qplot(Gen, ((Obs.fert.mean*(mated.females.mean-barren.females.mean))/(mated.females.mean+barren.females.mean)), data = summarized) + 
+
+  
+  geom_line(linetype =2)+labs( title = "Kits per mated female", x= "Year of simulation", y= "kits/female")
+
+```
+
 
 ### Genetic trend for litter size
 
@@ -353,6 +367,7 @@ qplot(Gen, avg.skin.price.mean, data=summarized) + geom_line(linetype =2) +geom_
 )+
   labs(title ="Average skin price", x="Simulation Year", y="Skinprice [DKK]")
 ```
+
 ### Margin per farm pr year
 
 This is calculated as income from skins minus the variable costs+fixed+pelting+feeding
@@ -393,6 +408,25 @@ qplot(Gen, costs.pr.sold.skin.mean, data=summarized) + geom_line(linetype =2) +g
 
 
 ```
+
+### Labor costs per skin
+
+```{r,echo=FALSE}
+qplot(Gen, labor.costs.mean/sold.skins.mean, data=summarized) + geom_line(linetype =2) +
+  # geom_errorbar(
+  # aes(
+  #   x = Gen,
+  #   ymin = labor.costs.mean - sqrt(labor.costs.var),
+  #   ymax = labor.costs.mean + sqrt(labor.costs.var)
+  # ),
+  # width = 0.25,
+  # data = summarized
+# )+
+  labs(title ="Labor costs pr skin", x="Simulation Year", y="Costs [DKK]")
+
+
+```
+
 
 ### Costs pr female
 

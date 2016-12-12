@@ -231,19 +231,28 @@ RunSimulation <-
       PhenoSelectionMaleKits (kit.list, quantile.setting.ls, quantile.setting.bw,n.males)
     ############### Index selection of next generation #############
   } else if (selection.method == random ) {
+    # browser()
     kit.list <- EqualizeLitters(kit.list.nomasked)
     
-    old.females <- RandomSelectionOldFemales(next.gen,n.females,prop.oldfemales,mating.list,year)
-    next.gen <- RandomSelectionYearlings(kit.list, old.females,n.females)
-    next.gen.males <- RandomSelectionMales(kit.list,n.males) 
+    old.females <-
+      RandomSelectionOldFemales(next.gen, n.females, prop.oldfemales, mating.list, year)
+    next.gen <-
+      RandomSelectionYearlings(kit.list, old.females, n.females)
+    next.gen.males <- RandomSelectionMales(kit.list, n.males)
   }  else if (selection.method == blup) {
     big.pedfile    <-
       update.big.pedigree (big.pedfile, next.gen, next.gen.males)
     old.females    <-
-      IndSelectionOldFemales (next.gen, solutions, year,
-                              weight.bw.old.females,
-                              weight.fert.old.females,
-                              weight.qual.old.females,n.females,prop.oldfemales)
+      IndSelectionOldFemales (
+        next.gen,
+        solutions,
+        year,
+        weight.bw.old.females,
+        weight.fert.old.females,
+        weight.qual.old.females,
+        n.females,
+        prop.oldfemales
+      )
     next.gen       <-
       IndSelFemaleKits (
         kit.list,
@@ -366,6 +375,7 @@ RunSimulation <-
        variable.costs +labcosts +
        feed.intake * feed.price + fixed.costs + nrow(kit.list) * pelting.costs)/number.of.females.start.of.year,
    feed.intake.pr.kit,
+   labcosts,
     sep = "\t",
     file = con
   )
@@ -426,6 +436,7 @@ RunSimulation <-
          variable.costs +labcosts +
          feed.intake * feed.price + fixed.costs + nrow(kit.list) * pelting.costs)/number.of.females.start.of.year,
       feed.intake.pr.kit,
+      labcosts,
       sep = "\t",  
       file = con
     )  
