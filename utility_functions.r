@@ -3007,7 +3007,7 @@ cat(
 file = skin.metrics.males
   )
    # prices for 4 and 5 are made up (size)
-   skin.prices.males <- intercept.bm+(as.matrix(kits.males))[,2:20] %*% (prices.bmales)
+   skin.prices.males <- intercept.bm+(as.matrix(kits.males))[,2:19] %*% (prices.bmales)
    
    cat(
      mean(skin.prices.males),
@@ -3067,7 +3067,7 @@ file = skin.metrics.males
      file = skin.metrics.females
    )
    # prices for 4 and 5 are made up (size)
-   skin.prices.females <- intercept.bfemales+(as.matrix(kits.females))[,2:20] %*% (prices.bfemales)
+   skin.prices.females <- intercept.bfemales+(as.matrix(kits.females))[,2:19] %*% (prices.bfemales)
    cat(
      mean(skin.prices.females),
      nrow(skin.prices.females),
@@ -3657,7 +3657,7 @@ return(kitlist)
  
  ########### Skin truncation points, velvet ###############
   StartPosSkinsVelvet <- function (kit.list,next.gen,next.gen.males) {
-   browser()
+   # browser()
    sd <-
      setdiff(kit.list$id, next.gen$id) # remove the next.gen females from kit.list
    sd <- is.element(kit.list$id, sd)
