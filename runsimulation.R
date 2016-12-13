@@ -65,10 +65,12 @@ RunSimulation <-
     pedfile <- rbindlist(x[3])
     fert.memory <- unlist(x[5])
     n.females <- unlist(x[6])
+    truncs <- unlist(x[7])
     } else if (selection.method != blup) {
     pedfile <- rbindlist(x[3])
     fert.memory <- unlist(x[4])
     n.females <- unlist(x[5])
+    truncs <- unlist(x[6])
     }
   temp <- copy(next.gen)
   
@@ -294,7 +296,7 @@ RunSimulation <-
   feed.intake <- sum(kit.list.nomasked$FI)
   feed.intake.pr.kit <- feed.intake/nrow(kit.list.nomasked)
   kit.list.masked <- kit.list
-  kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year,root,fileoutputpath)
+  kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year,root,fileoutputpath,truncs)
   skin.price <- sum(kit.list$skin.price, na.rm =T)/number.of.females.start.of.year
   income <- sum(kit.list$skin.price, na.rm =T)
   # if (year == n) {
@@ -445,10 +447,10 @@ RunSimulation <-
   # close(con = con)
   closeAllConnections()
   if (selection.method == blup) {
-    return (list(next.gen, next.gen.males, pedfile, big.pedfile,fert.memory,n.females))
+    return (list(next.gen, next.gen.males, pedfile, big.pedfile,fert.memory,n.females,truncs))
     
   } else if (selection.method != blup) {
-    return (list(next.gen, next.gen.males, pedfile,fert.memory,n.females))
+    return (list(next.gen, next.gen.males, pedfile,fert.memory,n.females,truncs))
   }
 }
 RunSimulation <-

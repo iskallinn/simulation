@@ -224,9 +224,10 @@ res.rfi <-  as.matrix(read.table("RES_RFI.txt"))/2
 # first there are truncation points for quality and hair length categories
 # they are based on empirical data on distribution of skins from Scandinavia
 
-truncs <- c(-4.11, -0.47, 4.25) # for qual categories
+# truncs <- c(-4.11, -0.47, 4.25) # for qual categories
+truncs <- c(3.9318, 0.55198, -3.7326) # redo
 
-              # 50 40 30 00 0 1 2
+        # V3<         Vel2    Vel1     KL     < LNap 
 htruncs <- c(-2.21672259, -0.74, 0.457, 1.723) # hair length categories
 
 # Skin price model

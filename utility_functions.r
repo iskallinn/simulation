@@ -361,7 +361,7 @@ mate <- function (x,
 if (selection.method == 3 ) {
     x <- x[sample(nrow(x)),]
   }
-  
+  # browser()
   mating.list <-
     x[rep(seq(nrow(x)), mating.willingness.1st),  #expands the male list into a mating list, based on mat.will.1st
       c(
@@ -474,6 +474,8 @@ if (selection.method == 3 ) {
   # perm.env.bw <- t(t(perm.env.bw)*pe.var.bw.female)
   # here I subset the dam list to throw away those who will not mate on first round
   y <- subset (y, mating.will.1st.round == 1)
+  # here i put the correct values from the female list into the mating list
+  # this could probably be done with one function call and therefore be much faster
   mating.list$dam.id       <- y[1:nrow(mating.list), .(id)]
   mating.list$dam.fert     <- y[1:nrow(mating.list), .(litter.size)]
   mating.list$dam.bw_f    <- y[1:nrow(mating.list), .(bw_f)]
@@ -881,7 +883,7 @@ if (selection.method == 3 ) {
               mating.list.leftover.temp[[s - (j - 1), 12]] <- x[[i, 11]]        # skin.length of female
               mating.list.leftover.temp[[s - (j - 1), 13]] <- x[[i, 12]]        # skin.qual  of male
               mating.list.leftover.temp[[s - (j - 1), 14]] <- x[[i, 13]]        # live.qual  of male
-              mating.list.leftover.temp[[s - (j - 1), 15]] <- x[[i, 14]]        # h.length  of male
+              mating.list.leftover.temp[[s - (j - 1), 15]] <- x[[i, 15]]        # h.length  of male
             } else if ( i > 1) {
               t <- sum(x[1:(i-1), 16])+1
               mating.list.leftover.temp[[t+(j-1), 2]] <- x[[i, 1]]          # id of male
@@ -897,7 +899,7 @@ if (selection.method == 3 ) {
               mating.list.leftover.temp[[t+(j-1), 12]] <- x[[i, 11]]        # skin.length of female
               mating.list.leftover.temp[[t+(j-1), 13]] <- x[[i, 12]]        # skin.qual  of male
               mating.list.leftover.temp[[t+(j-1), 14]] <- x[[i, 13]]        # live.qual  of male
-              mating.list.leftover.temp[[t+(j-1), 15]] <- x[[i, 14]]        # h.length  of male
+              mating.list.leftover.temp[[t+(j-1), 15]] <- x[[i, 15]]        # h.length  of male
             }
           }
           if (s > nrow(mating.list.leftover.temp)) {
@@ -920,7 +922,7 @@ if (selection.method == 3 ) {
                   mating.list.leftover.temp[[s - (j - 1), 12]] <- x[[i, 11]]        # skin.length of female
                   mating.list.leftover.temp[[s - (j - 1), 13]] <- x[[i, 12]]        # skin.qual  of male
                   mating.list.leftover.temp[[s - (j - 1), 14]] <- x[[i, 13]]        # live.qual  of male
-                  mating.list.leftover.temp[[s - (j - 1), 15]] <- x[[i, 14]]        # h.length  of male
+                  mating.list.leftover.temp[[s - (j - 1), 15]] <- x[[i, 15]]        # h.length  of male
                 } else if ( i > 1) {
                   t <- sum(x[1:(i-1), 16])+1
                   mating.list.leftover.temp[[t+(j-1), 2]] <- x[[i, 1]]          # id of male
@@ -936,7 +938,7 @@ if (selection.method == 3 ) {
                   mating.list.leftover.temp[[t+(j-1), 12]] <- x[[i, 11]]        # skin.length of female
                   mating.list.leftover.temp[[t+(j-1), 13]] <- x[[i, 12]]        # skin.qual  of male
                   mating.list.leftover.temp[[t+(j-1), 14]] <- x[[i, 13]]        # live.qual  of male
-                  mating.list.leftover.temp[[t+(j-1), 15]] <- x[[i, 14]]        # h.length  of male
+                  mating.list.leftover.temp[[t+(j-1), 15]] <- x[[i, 15]]        # h.length  of male
                 }
               }
               break
@@ -1225,7 +1227,7 @@ MakeKitsGen0 <- function (x,y, z, leg2,qual.classes,true.sire.chance) { #x = mat
                            kit.list$sire.h.length.2nd, kit.list$sire.h.length.1st)
   )]
   
-  
+  # browser()
   kit.list[, `:=`(litter.size = 0.5*(dam.fert + true.sire.fert) + 
                     mend.litter.size,  # Breeding value of offspring, littersize
                   bw_f = 0.5*(true.sire.bw_f + dam.bw_f) + mend.bw_f,
@@ -1902,6 +1904,7 @@ MakeKitsGenN <- function (x,
                           make.obs.file,
                           qual.classes
 ) { #x = mating.list, y = pedfile, z = big.pedfile
+  # browser()
   kit.list <- x[rep(seq(nrow(x)), obs_fert), # makes the kit list by expanding the mating list
                 c("dam.id",
                   "sire.id.1st",
@@ -2857,8 +2860,7 @@ RandCull <- function (kitlist,cull.ratio) {
  
  
  ######################## Skin price function ##############################
- SkinPrices <- function (kitlist, next.gen, next.gen.males,y,root,fileoutputpath) {
-   
+ SkinPrices <- function (kitlist, next.gen, next.gen.males,y,root,fileoutputpath,truncs) {
    sd <-
      setdiff(kitlist$id, next.gen$id) # remove the next.gen females from kit.list
    sd <- is.element(kitlist$id, sd)
@@ -2866,6 +2868,7 @@ RandCull <- function (kitlist,cull.ratio) {
    sd <- setdiff(kitlist$id, next.gen.males$id)
    sd <- is.element(kitlist$id, sd)
    kitlist <- kitlist[sd, ]
+   # browser()
    kitlist[, `:=`(
      
      P1 = ifelse (
@@ -2899,19 +2902,18 @@ RandCull <- function (kitlist,cull.ratio) {
        1,0),#4
      P10 = ifelse(phenotype.skin.length < 53, 1, 0),#5
      P11 = ifelse(
-       phenotype.skin.qual >= truncs[3],
+       phenotype.skin.qual >= truncs[1],
        1,0),
      # purple
      P12 = ifelse(
-       truncs[2] < phenotype.skin.qual & phenotype.skin.qual <= truncs[3],
+       truncs[2] < phenotype.skin.qual & phenotype.skin.qual <= truncs[1],
        1,0),
      # platinum
      P13= ifelse(
-       phenotype.skin.qual > truncs[1] & phenotype.skin.qual <= truncs[2],
-       1,0),
-     # burgundy
+       phenotype.skin.qual > truncs[3] & phenotype.skin.qual <= truncs[2],
+       1,0), #burg
      P14 = ifelse(phenotype.skin.qual <=
-                    truncs[1], 1, 0), # ivory
+                    truncs[3], 1, 0), # ivory
      P15 = ifelse(phenotype.h.length > htruncs[4] ,
                   1,0), #vel3
      P16 =  ifelse(phenotype.h.length > htruncs[3] & phenotype.h.length < htruncs[4],
@@ -2931,6 +2933,8 @@ RandCull <- function (kitlist,cull.ratio) {
    # the loop function here below is to make sure that the skins are allocated
    # into legal classes, i.e. no purple skins in velvet 3 and no purple skins
    # in klassik
+   # browser()
+   
    mat <- as.matrix(kitlist)
    for (k in 1:nrow(mat)) {
      # this one puts all skins in velvet 3 into burgundy category 
@@ -3640,5 +3644,27 @@ return(kitlist)
  {
    laborcosts <- exp(6.081+log(number.of.females.start.of.year)*0.89+log((skins/number.of.females.start.of.year))*0.402)
    return(laborcosts)  
+ }
+ 
+ ############ Skin truncation points ##############
+ StartPosSkins <- function (kit.list,next.gen,next.gen.males) {
+   # browser()
+   sd <-
+     setdiff(kit.list$id, next.gen$id) # remove the next.gen females from kit.list
+   sd <- is.element(kit.list$id, sd)
+   kit.list <- kit.list[sd, ]
+   sd <- setdiff(kit.list$id, next.gen.males$id)
+   sd <- is.element(kit.list$id, sd)
+   kit.list <- kit.list[sd, ]
+   
+   truncs <- qnorm(
+     p = c(0.96, 0.6, 0.05),
+     mean = mean(kit.list$phenotype.skin.qual),
+     sd = sqrt(var(
+       kit.list$phenotype.skin.qual
+     )),
+     lower.tail = TRUE
+   )
+   return(truncs)
  }
  

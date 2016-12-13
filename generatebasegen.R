@@ -163,7 +163,9 @@ if("f0.dam" %in% colnames(old.females)) {
   next.gen <- rbind(next.gen, old.females,fill=TRUE)
   feed.intake <- sum(kit.list.nomasked$FI)
   feed.intake.pr.kit <- feed.intake/nrow(kit.list.nomasked)
-  kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year,root,fileoutputpath)
+  truncs <- StartPosSkins(kit.list,next.gen,next.gen.males)
+  
+  kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year,root,fileoutputpath,truncs)
   income <- sum(kit.list$skin.price, na.rm =T)
   # # add in next gen and kit.list to big pedigree
   if (selection.method ==blup){
@@ -307,9 +309,9 @@ if("f0.dam" %in% colnames(old.females)) {
     WriteFertObservations(mating.list,year,p)
   }
   if (selection.method != blup){ 
-  return( list(next.gen,next.gen.males,pedfile,fert.memory,n.females))
+  return( list(next.gen,next.gen.males,pedfile,fert.memory,n.females,truncs))
   } else if (selection.method == blup) {
-    return( list(next.gen,next.gen.males,pedfile,big.pedfile,fert.memory,n.females))
+    return( list(next.gen,next.gen.males,pedfile,big.pedfile,fert.memory,n.females,truncs))
     }
 }
 RunFirstYear <-compiler::cmpfun(RunFirstYear,options= c(suppressAll=TRUE)) # performance boost
