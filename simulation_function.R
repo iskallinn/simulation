@@ -140,7 +140,6 @@ Simulation <- function (
     "vel2",#velv2
     "vel1",#vel1
     "kl",#kl
-    "long.nap",#long nap 
     "avg.price.males",
     "numb.animals",
     "\n",
@@ -167,7 +166,6 @@ Simulation <- function (
     "vel2",#velv2
     "vel1",#vel1
     "kl",#kl
-    "long.nap",#long nap 
     "avg.price.females",
     "numb.animals",
     "\n",

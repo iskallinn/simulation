@@ -2920,7 +2920,7 @@ RandCull <- function (kitlist,cull.ratio) {
                    1,0),
      # velv2
      P17 = ifelse(
-       phenotype.h.length > htruncs[3] & phenotype.h.length < htruncs[2],
+       phenotype.h.length < htruncs[3] & phenotype.h.length > htruncs[2],
        1,0),
      # vel1
      P18=ifelse(
@@ -3460,7 +3460,6 @@ return(feed.used.breeders)
                                  vel2/numb.animals+
                                  vel1/numb.animals+
                                  kl/numb.animals+
-                                 long.nap/numb.animals+
                                  avg.price.females
                                ~ Gen, data=skin.metrics.females,FUN = c(mean, var))
      con <-
@@ -3497,7 +3496,6 @@ return(feed.used.breeders)
                                vel2/numb.animals+
                                vel1/numb.animals+
                                kl/numb.animals+
-                               long.nap/numb.animals+
                                avg.price.males
                              ~ Gen, data=skin.metrics.males,FUN = c(mean, var))
      con <- file(description = paste(root, fileoutputpath, "Summarized/male_skins", sep = '/'),open="w")
@@ -3561,7 +3559,6 @@ return(feed.used.breeders)
                                  vel2/numb.animals+
                                  vel1/numb.animals+
                                  kl/numb.animals+
-                                 long.nap/numb.animals+
                                  avg.price.females
                                ~ Gen, data=skin.metrics.females,FUN = c(mean, var))
      con <-
@@ -3598,7 +3595,6 @@ return(feed.used.breeders)
                                vel2/numb.animals+
                                vel1/numb.animals+
                                kl/numb.animals+
-                               long.nap/numb.animals+
                                avg.price.males
                              ~ Gen, data=skin.metrics.males,FUN = c(mean, var))
      con <-
