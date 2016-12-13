@@ -251,8 +251,8 @@ prices.bmales       <-
     0,
     56,
     22,
-    -33,
-    -25)
+    -33
+    )
 prices.bfemales     <-
   c(200,
     195,
@@ -271,6 +271,5 @@ prices.bfemales     <-
     0,
     145,
     129,
-    76,
-    92)
+    76)
 intercept.bfemales <- 18 #intercept + average of auctions

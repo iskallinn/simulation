@@ -2860,7 +2860,7 @@ RandCull <- function (kitlist,cull.ratio) {
  
  
  ######################## Skin price function ##############################
- SkinPrices <- function (kitlist, next.gen, next.gen.males,y,root,fileoutputpath,truncs) {
+ SkinPrices <- function (kitlist, next.gen, next.gen.males,y,root,fileoutputpath,truncs,htruncs) {
    sd <-
      setdiff(kitlist$id, next.gen$id) # remove the next.gen females from kit.list
    sd <- is.element(kitlist$id, sd)
@@ -2914,22 +2914,20 @@ RandCull <- function (kitlist,cull.ratio) {
        1,0), #burg
      P14 = ifelse(phenotype.skin.qual <=
                     truncs[3], 1, 0), # ivory
-     P15 = ifelse(phenotype.h.length > htruncs[4] ,
+     P15 = ifelse(phenotype.h.length < htruncs[1] ,
                   1,0), #vel3
-     P16 =  ifelse(phenotype.h.length > htruncs[3] & phenotype.h.length < htruncs[4],
+     P16 =  ifelse(phenotype.h.length > htruncs[1] & phenotype.h.length < htruncs[2],
                    1,0),
      # velv2
      P17 = ifelse(
-       phenotype.h.length > htruncs[2] & phenotype.h.length < htruncs[3],
+       phenotype.h.length > htruncs[3] & phenotype.h.length < htruncs[2],
        1,0),
      # vel1
      P18=ifelse(
-       phenotype.h.length > htruncs[1] & phenotype.h.length < htruncs[2],
-       1,0),
+       phenotype.h.length > htruncs[3] ,
+       1,0)
      # klassik
-     P19 = ifelse(phenotype.h.length < htruncs[1], 1, 0) # long nap
-     
-   )]
+   )] 
    # the loop function here below is to make sure that the skins are allocated
    # into legal classes, i.e. no purple skins in velvet 3 and no purple skins
    # in klassik
@@ -2948,13 +2946,6 @@ RandCull <- function (kitlist,cull.ratio) {
        # this one puts all klassik skins that are also purple into platinum cat
        mat[k,43] <- 0 # P11, purple
        mat[k,44] <- 1 # P12, platinum 
-     }
-     if (mat[k,51] == 1 ) { #P51, long nap
-       # this one forces all long nap skins into ivory
-       mat[k,43] <- 0 # purple
-       mat[k,44] <- 0 # platinum
-       mat[k,45] <- 0 # burgundy
-       mat[k,46] <- 1
      }
    }
    kitlist <- as.data.table(mat)
@@ -2977,8 +2968,7 @@ RandCull <- function (kitlist,cull.ratio) {
                             "P15",#velv3
                             "P16",#velv2
                             "P17",#vel1
-                            "P18",#kl
-                            "P19")#long nap
+                            "P18")#klassik
    )
 skin.metric.bin <- colSums(kits.males)
 skin.metrics.males <-
@@ -3012,7 +3002,6 @@ cat(
   skin.metric.bin[17],
   skin.metric.bin[18],
   skin.metric.bin[19],
-  skin.metric.bin[20],
   "\t", 
   sep="\t",
 file = skin.metrics.males
@@ -3049,8 +3038,7 @@ file = skin.metrics.males
                               "P15",#velv3
                               "P16",#velv2
                               "P17",#vel1
-                              "P18",#kl
-                              "P19")#long nap
+                              "P18")#kl
    )
    skin.metric.bin <- colSums(kits.females)
    
@@ -3074,7 +3062,6 @@ file = skin.metrics.males
      skin.metric.bin[17],
      skin.metric.bin[18],
      skin.metric.bin[19],
-     skin.metric.bin[20],
      "\t", 
      sep="\t",
      file = skin.metrics.females
@@ -3111,8 +3098,8 @@ file = skin.metrics.males
                              "P15",#velv3
                              "P16",#velv2
                              "P17",#vel1
-                             "P18",#kl
-                             "P19"))  , value=NULL )
+                             "P18"#kl
+                             ))  , value=NULL )
    return(kitlist)
  } 
 ############# calculate MBLUP ############
@@ -3667,4 +3654,27 @@ return(kitlist)
    )
    return(truncs)
  }
+ 
+ ########### Skin truncation points, velvet ###############
+  StartPosSkinsVelvet <- function (kit.list,next.gen,next.gen.males) {
+   browser()
+   sd <-
+     setdiff(kit.list$id, next.gen$id) # remove the next.gen females from kit.list
+   sd <- is.element(kit.list$id, sd)
+   kit.list <- kit.list[sd, ]
+   sd <- setdiff(kit.list$id, next.gen.males$id)
+   sd <- is.element(kit.list$id, sd)
+   kit.list <- kit.list[sd, ]
+   
+   htruncs <- qnorm(
+     p = c(0.001919, 0.2898802, 0.863801),
+     mean = mean(kit.list$phenotype.h.length),
+     sd = sqrt(var(
+       kit.list$phenotype.h.length
+     )),
+     lower.tail = TRUE
+   )
+   return(htruncs)
+ }
+
  
