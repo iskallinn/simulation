@@ -3630,6 +3630,7 @@ return(kitlist)
  }
  
  ############ Skin truncation points ##############
+ # this function is not used currently, only used once when one needs to recalibrate the start points
  StartPosSkins <- function (kit.list,next.gen,next.gen.males) {
    # browser()
    sd <-
@@ -3652,6 +3653,8 @@ return(kitlist)
  }
  
  ########### Skin truncation points, velvet ###############
+  # this function is not used currently, only used once when one needs to recalibrate the start points
+
   StartPosSkinsVelvet <- function (kit.list,next.gen,next.gen.males) {
    # browser()
    sd <-

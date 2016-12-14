@@ -65,16 +65,11 @@ RunSimulation <-
     pedfile <- rbindlist(x[3])
     fert.memory <- unlist(x[5])
     n.females <- unlist(x[6])
-    truncs <- unlist(x[7])
-    htruncs <- unlist(x[8])
     } else if (selection.method != blup) {
     pedfile <- rbindlist(x[3])
     fert.memory <- unlist(x[4])
     n.females <- unlist(x[5])
-    truncs <- unlist(x[6])
-    htruncs <- unlist(x[7])
-
-    }
+        }
   temp <- copy(next.gen)
   
   set(temp, j = which(colnames(temp) %in% c("obs_fert"))  , value =
@@ -450,10 +445,10 @@ RunSimulation <-
   # close(con = con)
   closeAllConnections()
   if (selection.method == blup) {
-    return (list(next.gen, next.gen.males, pedfile, big.pedfile,fert.memory,n.females,truncs,htruncs))
+    return (list(next.gen, next.gen.males, pedfile, big.pedfile,fert.memory,n.females))
     
   } else if (selection.method != blup) {
-    return (list(next.gen, next.gen.males, pedfile,fert.memory,n.females,truncs,htruncs))
+    return (list(next.gen, next.gen.males, pedfile,fert.memory,n.females))
   }
 }
 RunSimulation <-

@@ -225,10 +225,11 @@ res.rfi <-  as.matrix(read.table("RES_RFI.txt"))/2
 # they are based on empirical data on distribution of skins from Scandinavia
 
 # truncs <- c(-4.11, -0.47, 4.25) # for qual categories
-truncs <- c(3.9318, 0.55198, -3.7326) # redo
+truncs <- c(3.9387778, 0.5763382, -3.6862805) # redo
 
         # V3<         Vel2    Vel1     KL     < LNap 
-htruncs <- c(-2.21672259, -0.74, 0.457, 1.723) # hair length categories
+# htruncs <- c(-2.21672259, -0.74, 0.457, 1.723) # hair length categories
+htruncs <- c(-2.0140161, -0.3799152, 0.7744985) # hair length categories
 
 # Skin price model
 # see manual for ordering of variables

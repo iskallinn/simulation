@@ -163,8 +163,8 @@ if("f0.dam" %in% colnames(old.females)) {
   next.gen <- rbind(next.gen, old.females,fill=TRUE)
   feed.intake <- sum(kit.list.nomasked$FI)
   feed.intake.pr.kit <- feed.intake/nrow(kit.list.nomasked)
-  truncs <- StartPosSkins(kit.list,next.gen,next.gen.males)
-  htruncs <- StartPosSkinsVelvet(kit.list,next.gen,next.gen.males)
+  # truncs <- StartPosSkins(kit.list,next.gen,next.gen.males) #defunct
+  # htruncs <- StartPosSkinsVelvet(kit.list,next.gen,next.gen.males)
   kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year,root,fileoutputpath,truncs,htruncs)
   income <- sum(kit.list$skin.price, na.rm =T)
   # # add in next gen and kit.list to big pedigree
@@ -309,9 +309,9 @@ if("f0.dam" %in% colnames(old.females)) {
     WriteFertObservations(mating.list,year,p)
   }
   if (selection.method != blup){ 
-  return( list(next.gen,next.gen.males,pedfile,fert.memory,n.females,truncs,htruncs))
+  return( list(next.gen,next.gen.males,pedfile,fert.memory,n.females))
   } else if (selection.method == blup) {
-    return( list(next.gen,next.gen.males,pedfile,big.pedfile,fert.memory,n.females,truncs,htruncs))
+    return( list(next.gen,next.gen.males,pedfile,big.pedfile,fert.memory,n.females))
     }
 }
 RunFirstYear <-compiler::cmpfun(RunFirstYear,options= c(suppressAll=TRUE)) # performance boost
