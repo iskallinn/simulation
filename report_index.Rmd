@@ -50,8 +50,10 @@ summarized <-
       cor.blup.qual.gen.val.qual+
       cor.live.score.skin.qa+
       cor.blup.qual.to.skin.qual+
-      survived.kits+feed.per.skin+avg.skin.length.male+skin.price+avg.skin.length.female
-    +pr.farm.margin+feeding.cost+avg.skin.price
+        survived.kits+feed.per.skin+avg.skin.length.male+skin.price+avg.skin.length.female
+      +margin+feeding.cost.pr.skin+avg.skin.price+income.from.skins+variable.costs+fixed.costs+pelting.costs+income.fr.sold.kits+
+        gross.feeding.costs+cage_utilization+n.females+sold.skins+costs.pr.sold.skin+costs.pr.female+
+     reg_EBV_TBV_LS+reg_EBV_TBV_qual+reg_EBV_TBV_size ~ Gen,
     
     ~ Gen,
     data = results, 
@@ -177,9 +179,38 @@ qplot(Gen, cor.ls.blup.mean, data = summarized) + geom_errorbar(
   width = 0.25,
   data = summarized
 ) + geom_line(linetype =2) +
-  labs(title = "Accuracy of BLUP", x="Simulation Year", y="Accuracy")
+  labs(title = "Accuracy of BLUP for LS", x="Simulation Year", y="Accuracy")
 
 ```
+
+```{r, echo=FALSE}
+qplot(Gen, cor.blup.qual.gen.val.qual.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = cor.blup.qual.gen.val.qual.mean - sqrt(cor.blup.qual.gen.val.qual.var),
+    ymax = cor.blup.qual.gen.val.qual.mean + sqrt(cor.blup.qual.gen.val.qual.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2) +
+  labs(title = "Accuracy of BLUP for live graded quality", x="Simulation Year", y="Accuracy")
+
+```
+
+```{r, echo=FALSE}
+qplot(Gen, cor.bw.to.blup.mean, data = summarized) + geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = cor.bw.to.blup.mean - sqrt(cor.bw.to.blup.var),
+    ymax = cor.bw.to.blup.mean + sqrt(cor.bw.to.blup.var)
+  ),
+  width = 0.25,
+  data = summarized
+) + geom_line(linetype =2) +
+  labs(title = "Accuracy of BLUP for body weight of males", x="Simulation Year", y="Accuracy")
+
+```
+
 
 ## 2. Body weight and skin length
 
@@ -337,11 +368,11 @@ qplot(Gen, cor.blup.qual.to.skin.qual.mean, data = summarized) + geom_errorbar(
 Note that this is a beta version with all the feeding costs, minus the amount kits eat in weeks 6-9
 
 ```{r, echo= FALSE}
-qplot(Gen, feeding.cost.mean, data = summarized) + geom_errorbar(
+qplot(Gen, feeding.cost.pr.skin.mean, data = summarized) + geom_errorbar(
   aes(
     x = Gen,
-    ymin = feeding.cost.mean - sqrt(feeding.cost.var),
-    ymax = feeding.cost.mean + sqrt(feeding.cost.var)
+    ymin = feeding.cost.pr.skin.mean - sqrt(feeding.cost.pr.skin.var),
+    ymax = feeding.cost.pr.skin.mean + sqrt(feeding.cost.pr.skin.var)
   ),
   width = 0.25,
   data = summarized
@@ -376,11 +407,11 @@ qplot(Gen, avg.skin.price.mean, data=summarized) + geom_line(linetype =2) +geom_
 This is calculated as income from skins minus the variable costs, currently the variable costs are rather simplistic and need to be redone in a more elegant manner. 
 
 ```{r,echo=FALSE}
-qplot(Gen, pr.farm.margin.mean, data=summarized) + geom_line(linetype =2) +geom_errorbar(
+qplot(Gen, margin.mean, data=summarized) + geom_line(linetype =2) +geom_errorbar(
   aes(
     x = Gen,
-    ymin = pr.farm.margin.mean - sqrt(pr.farm.margin.var),
-    ymax = pr.farm.margin.mean + sqrt(pr.farm.margin.var)
+    ymin = margin.mean - sqrt(margin.var),
+    ymax = margin.mean + sqrt(margin.var)
   ),
   width = 0.25,
   data = summarized
@@ -475,3 +506,52 @@ qplot(Gen, avg.price.males.mean, data=male.skins) + geom_line(linetype =2) +geom
 ```
 
 
+### Bias in EBV's
+
+This is calculated as a regression on the True breeding value of animals against the estimated breeding value. For unbiased EBV's the value should be around 1
+
+```{r,echo=FALSE}
+qplot(Gen, reg_EBV_TBV_LS.mean, data=summarized) + geom_line(linetype =2) +geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = reg_EBV_TBV_LS.mean - sqrt(reg_EBV_TBV_LS.var),
+    ymax = reg_EBV_TBV_LS.mean + sqrt(reg_EBV_TBV_LS.var)
+  ),
+  width = 0.25,
+  data = summarized
+)+
+  labs(title ="Litter size Bias", x="Simulation Year", y="regression coeff")
+
+
+```
+
+```{r,echo=FALSE}
+qplot(Gen, reg_EBV_TBV_qual.mean, data=summarized) + geom_line(linetype =2) +geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = reg_EBV_TBV_qual.mean - sqrt(reg_EBV_TBV_qual.var),
+    ymax = reg_EBV_TBV_qual.mean + sqrt(reg_EBV_TBV_qual.var)
+  ),
+  width = 0.25,
+  data = summarized
+)+
+  labs(title ="Live graded quality Bias", x="Simulation Year", y="regression coeff")
+
+
+```
+
+
+```{r,echo=FALSE}
+qplot(Gen, reg_EBV_TBV_size.mean, data=summarized) + geom_line(linetype =2) +geom_errorbar(
+  aes(
+    x = Gen,
+    ymin = reg_EBV_TBV_size.mean - sqrt(reg_EBV_TBV_size.var),
+    ymax = reg_EBV_TBV_size.mean + sqrt(reg_EBV_TBV_size.var)
+  ),
+  width = 0.25,
+  data = summarized
+)+
+  labs(title ="Body weight Bias", x="Simulation Year", y="regression coeff")
+
+
+```

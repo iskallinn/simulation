@@ -1,6 +1,7 @@
 Simulation <- function (  
   phenotypic = 1,  
   blup = 2,
+  random = 3,
   cheat = 0,# to make bw obs for both males and females, only for estimating var comps
   sept = 1, # weigh kits in september CURRENTLY DEFUNCT, ONLY SEPT = 1 SUPPORTED
   oct = 0,  # weigh kits in october CURRENTLY DEFUNCT
@@ -8,6 +9,7 @@ Simulation <- function (
   #their combined index before mating
   use.comb.ind.for.males = 1, # if 1 then the usage of the males will depend on 
   # their combined index, not quality & weight
+  risktaking = 0.4,
   mblup = 0, # If == 1 then MBLUP will be used for selection index, note that 
   n.females =  1000,             # NUMBER OF FEMALES
   nruns = 1,                     # how many replicates of the simulation
@@ -53,17 +55,34 @@ Simulation <- function (
   cull.ratio                        = 0.85, # survival rate of kits, farmwise from 2nd cnt to pelting 
   sorting.prop                      = 1, # proportion of animals to live grade
   n.cages = 5500,
-  variable.costs = 531,          # variable costs per female
+  variable.costs = 165,          # variable costs per female
   pelting.costs =  12,           # pelting costs pr skin
   fixed.costs = 286*n.females,   # fixed costs at start of simulation 
-  price.sold.kit = 80            # price per kit sold
+  price.sold.kit = 80,
+  genetic.means = c(
+    0,                  # live.qual
+    0,                  # h.length
+    0,                  # skin.qual
+    0,                  # skin.length.male
+    0,                  # skin.length.female
+    0,                  # litter.size
+    0,                  # body weight females
+    0,                  # body weight males
+    0,                  # rfi1.m
+    0,                  # rfi2.m
+    0,                  # rfi1.f
+    0                   # rfi2.f
+  ),
+  fileoutputpath = "simulation of mink farm/Output/DMU analysis/",
+  root = 'C:/Users/au384062/Dropbox/Projects'
+  # price per kit sold
 ) # closing paranthesis for definitions 
   { # opening curly brace for function 
-  if (selection.method == phenotypic) {
+  # browser()
+  if (selection.method != blup) {
     use.blup.to.assort.mat <- 0
   }
   n.males =  ceiling( n.females/male.ratio ) # calculates needed amount of males 
-  cheat <- 0 # workaround because of unknown bug
   #setwd("C:/Users/Notandi/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
   setwd("C:/Users/au384062/Dropbox/Projects/simulation of mink farm/Output/DMU analysis/")
   WriteLogFile( n.females,
@@ -94,11 +113,13 @@ Simulation <- function (
                 use.true.sire,
                 use.blup.to.assort.mat,
                 trace.ped,
-                intensity.remating
+                intensity.remating,
+                fileoutputpath,
+                root
   )
   
-  skin.metrics.males <- file(description = "skin_metrics_males", open ="w")
-  skin.metrics.females <- file(description = "skin_metrics_females", open ="w")
+  skin.metrics.males <- file(description = paste(root, fileoutputpath,"raw_data/skin_metrics_males", sep = '/'), open ="w")
+  skin.metrics.females <- file(description = paste(root, fileoutputpath,"raw_data/skin_metrics_females", sep = '/'), open ="w")
   cat(
     "Gen",
     "S50", #50
@@ -119,7 +140,6 @@ Simulation <- function (
     "vel2",#velv2
     "vel1",#vel1
     "kl",#kl
-    "long.nap",#long nap 
     "avg.price.males",
     "numb.animals",
     "\n",
@@ -146,7 +166,6 @@ Simulation <- function (
     "vel2",#velv2
     "vel1",#vel1
     "kl",#kl
-    "long.nap",#long nap 
     "avg.price.females",
     "numb.animals",
     "\n",
@@ -154,7 +173,7 @@ Simulation <- function (
     file = skin.metrics.females
   ) 
   if (selection.method == 2) { # 2 = blup
-  con <- file(description = "results", open = "w")
+  con <- file(description = paste(root, fileoutputpath,"raw_data/results", sep = '/'), open = "w")
   cat(
     "Gen",
     "Gmean",
@@ -206,11 +225,13 @@ Simulation <- function (
     "sold.skins",
     "costs.pr.sold.skin",
     "costs.pr.female",
+    "FI.pr.kit",
+    "labor.costs",
     sep = "\t",
     file = con
-  )  } else if (selection.method == 1) { # phenotypic
+  )  } else if (selection.method != blup) { # phenotypic or random
     
-    con <- file(description = "results", open = "w")
+    con <- file(description = paste(root, fileoutputpath,"raw_data/results", sep = '/'), open = "w")
     cat(
       "Gen",
       "Gmean",
@@ -254,13 +275,15 @@ Simulation <- function (
       "sold.skins",
       "costs.pr.sold.skin",
       "costs.pr.female",
+      "FI.pr.kit",
+          "labor.costs",
       sep = "\t",
       file = con
     )
   }
   cat("\n", file = con)
   close(con = con)
-  
+  # browser()
   for (p in 1:nruns) {
     year <- 1
     l <- RunFirstYear(p,
@@ -299,7 +322,12 @@ Simulation <- function (
                       variable.costs,
                       fixed.costs,
                       pelting.costs,
-                      price.sold.kit
+                      price.sold.kit,
+                      cheat,
+                      genetic.means,
+                      risktaking,
+                      root,
+                      fileoutputpath
     )
     
     for (y in 1:n) {
@@ -353,15 +381,19 @@ Simulation <- function (
           variable.costs,
           fixed.costs,
           pelting.costs,
-          price.sold.kit
+          price.sold.kit,
+          cheat,
+          risktaking,
+          root,
+          fileoutputpath
           )
       
     }
   }
-  templog <- readLines("log.log")
+  templog <- readLines(paste(root, fileoutputpath,"log.log", sep = '/'))
   templog[3] <- c(paste(  "Simulation ended",
                           format(Sys.time(), " %b %d %X"), sep="")) 
-  writeLines(templog, "log.log")
-  
+  writeLines(templog, paste(root, fileoutputpath,"log.log", sep = '/'))
+  ReadAndSummarize (fileoutputpath,root)
   closeAllConnections()
 }

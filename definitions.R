@@ -10,6 +10,7 @@ library(lpSolve)      # for the lp solution to number of breeding females
 ############## Switches, best left alone ###########
 phenotypic <- 1
 blup <- 2
+random <- 3
 sept <- 1 # weigh kits in september CURRENTLY DEFUNCT, ONLY SEPT <- 1 SUPPORTED
 oct <- 0  # weigh kits in october CURRENTLY DEFUNCT
 use.blup.to.assort.mat <- 1 # if 1 then the males and females will be sorted on 
@@ -24,19 +25,23 @@ n.females <-  1000             # NUMBER OF FEMALES
 n.cages <- 5500                # number of cages on farm
 nruns <- 1                     # how many replicates of the simulation
 n <- 5                         # number of generation per replicate
+risktaking <- 0.5                  # factor that determines risktaking in number of breeders, with max risk, 
+# it should be set to 0.5, as this will only use info from farm in guessing the number of females needed
+# with phenotypic selection, a factor of 0.4 has worked ok in guessing the
+# numbers needed without having way to many females
 assortative <- 1
 mating.method <- assortative   # mating method, random or assortative
 selection.method <- phenotypic       # selection strategy, 
 weighing.method <- oct         # control for when to weigh kits for selection cands
 crossmating <- 0               # 1 = systematic crossmating
-purebreeding <- 1
+purebreeding <- 0
 yearling.effect <- -0.07       # Change at own risk, currently gives ~0.6 fewer kits on yearlings
 qual.classes <- 5              # quality classes, 5 or 10 are supported
 intensity.remating <- 0.2      # this controls how many males are chosen not to be remated
 make.obs.file <- 1             # 1 = make observation file, 0 otherwise
 use.true.sire <- 0             # 1 if true sire of kits is wanted for BV prediction, 0 otherwise
 feed.price    <- 2.85          # feed price per kg feed
-variable.costs <- 531          # variable costs per female
+variable.costs <- 165.3        # variable costs per female, not including labor
 pelting.costs <-  12           # pelting costs pr skin
 fixed.costs <- 286*n.females   # fixed costs at start of simulation 
 price.sold.kit <- 80           # price per sold kit in july
@@ -70,7 +75,22 @@ pr.barren.one.mating.old          <- 0.9 # probability of single mated old femal
 pr.barren.double.mating.old       <- 0.95 # probability of double mated old female being barren
 n.males <-  ceiling( n.females/male.ratio ) # calculates needed amount of males 
 cull.ratio                        <- 0.85 # survival rate of kits, farmwise from 2nd cnt to pelting
+############# Genetic means ##################################
 
+genetic.means <- c(
+  0,                  # live.qual
+  0,                  # h.length
+  0,                  # skin.qual
+  0,                  # skin.length.male
+  0,                  # skin.length.female
+  0,               # litter.size
+  0,              # body weight females
+  0,              # body weight males
+  0,     # rfi1.m
+  0,           # rfi2.m
+  0,     # rfi1.f
+  0      # rfi2.f
+)
 ############# Variance settings for traits ###################
 # fertility
 var.perm.env.ls            <-  0.0004464  # Variance of permanent environment of litter size of dam
@@ -88,15 +108,43 @@ mean.skin.length.female    <- 75.62       # mean of skin length female
 var.skin.length.c.female   <- 1.49        # perm env of skin length female
 var.skin.length.res.female <- 9.29        # residual of skin length female
 
-################# RR parameters ###################
+################# Body weight parameters ###################
+# TODO CLEAN UP THIS FILE!
+sib.effect.male <- -0.0134       # Effect on body size of (male) one extra kit in litter, Hansen(1997)
+sib.effect.female <- -0.0186      # Effect on body size of (female) one extra kit in litter, Hansen(1997)
+bw.eff.damage           <-  0.0345          # effect of dam age on weight of males
+
+BW.mean.females <-  1.845159
+BW.mean.males   <-  3.548562
 # Note that the working folder in the simulation_working needs to be set 
-G_BWF <- as.matrix(read.table("G_BWF.txt"))
-P_BWF <- as.matrix(read.table("P_BWF.txt"))
-P_BWM <- as.matrix(read.table("P_BWM.txt"))
+# G_BWF <- as.matrix(read.table("G_BWF.txt"))
+# P_BWF <- as.matrix(read.table("P_BWF.txt"))
+# P_BWM <- as.matrix(read.table("P_BWM.txt"))
 P_RFI <- as.matrix(read.table("P_RFI.txt"))
 # Correlation matrix between traits
 G_sigma <- as.matrix(read.table("G_sigma.txt"),header=T, row.names = 1)
 # Vector that holds all the genetic variances
+# variances <-
+#   c(
+#     0.12,                  # live.qual
+#     0.07,                  # h.length
+#     1.53,                  # skin.qual
+#     11.6,                  # skin.length.male
+#     8.94,                  # skin.length.female
+#     0.01222,               # litter.size
+#     0.187570056965907E-01, # bw1.f
+#     0.105996930807828E-01, # bw2.f
+#     0.108406600737242E-02, # bw3.f
+#     0.499379849225065E-01, # bw1.m
+#     0.341965058424113E-01, # bw2.m
+#     0.375707107280707E-02, # bw3.m
+#     0.583035959863543,     # rfi1.m
+#     1.015749852,           # rfi2.m
+#     0.502027738625064,     # rfi1.f
+#     0.851297595421713      # rfi2.f
+#   )
+
+# new variances without RR for body weight
 variances <-
   c(
     0.12,                  # live.qual
@@ -105,33 +153,36 @@ variances <-
     11.6,                  # skin.length.male
     8.94,                  # skin.length.female
     0.01222,               # litter.size
-    0.187570056965907E-01, # bw1.f
-    0.105996930807828E-01, # bw2.f
-    0.108406600737242E-02, # bw3.f
-    0.499379849225065E-01, # bw1.m
-    0.341965058424113E-01, # bw2.m
-    0.375707107280707E-02, # bw3.m
+    0.036198,              # body weight females
+    0.121036,              # body weight males
     0.583035959863543,     # rfi1.m
     1.015749852,           # rfi2.m
     0.502027738625064,     # rfi1.f
     0.851297595421713      # rfi2.f
   )
+
+pe.var.bw.female <- 0.010295 # common litter (PE) for females
+pe.var.bw.male   <- 0.035977 # common litter (PE) for males 
 # vector that holds the regression coeffs of permanent environment
-pe.var.bw.female <-
-  c(0.463272591471770E-02,
-    0.110671108702861E-02,
-    0.295290173247113E-03)
-pe.var.bw.male <-
-  c(0.140998088558170E-01,
-    0.310587884472959E-02,
-    0.721913463410233E-03)
+# pe.var.bw.female <-
+#   c(0.463272591471770E-02,
+#     0.110671108702861E-02,
+#     0.295290173247113E-03)
+# pe.var.bw.male <-
+#   c(0.140998088558170E-01,
+#     0.310587884472959E-02,
+#     0.721913463410233E-03)
 
 # Reads the residual variances for BW
 # note that the residual variances are adjusted to get the proper h^2 
-bw.res.male <- as.matrix(read.table(file="RES_BWM.txt"))
-bw.res.male[8] <- bw.res.male[8] *32 # this is the adjustment needed to get the proper heritability
-bw.res.female <- as.matrix(read.table(file="RES_BWF.txt"))
-bw.res.female[8] <- bw.res.female[8]*54 # this is the adjustment needed to get the proper heritability
+# bw.res.male <- as.matrix(read.table(file="RES_BWM.txt"))
+# bw.res.male[8] <- bw.res.male[8] *32 # this is the adjustment needed to get the proper heritability
+# bw.res.female <- as.matrix(read.table(file="RES_BWF.txt"))
+# bw.res.female[8] <- bw.res.female[8]*54 # this is the adjustment needed to get the proper heritability
+
+bw.res.male <-  0.0963   # residual body weight males
+bw.res.female <-0.036818 # residual body weight females
+
 # Vector that holds the permanent environment of residual feed intake
 pe.var.rfi <- c(
   0.686214714336812,
@@ -173,10 +224,12 @@ res.rfi <-  as.matrix(read.table("RES_RFI.txt"))/2
 # first there are truncation points for quality and hair length categories
 # they are based on empirical data on distribution of skins from Scandinavia
 
-truncs <- c(-4.11, -0.47, 4.25) # for qual categories
+# truncs <- c(-4.11, -0.47, 4.25) # for qual categories
+truncs <- c(3.9387778, 0.5763382, -3.6862805) # redo
 
-              # 50 40 30 00 0 1 2
-htruncs <- c(-2.21672259, -0.74, 0.457, 1.723) # hair length categories
+        # V3<         Vel2    Vel1     KL     < LNap 
+# htruncs <- c(-2.21672259, -0.74, 0.457, 1.723) # hair length categories
+htruncs <- c(-2.0140161, -0.3799152, 0.7744985) # hair length categories
 
 # Skin price model
 # see manual for ordering of variables
@@ -199,8 +252,8 @@ prices.bmales       <-
     0,
     56,
     22,
-    -33,
-    -25)
+    -33
+    )
 prices.bfemales     <-
   c(200,
     195,
@@ -219,6 +272,5 @@ prices.bfemales     <-
     0,
     145,
     129,
-    76,
-    92)
+    76)
 intercept.bfemales <- 18 #intercept + average of auctions
