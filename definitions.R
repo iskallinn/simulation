@@ -75,6 +75,7 @@ pr.barren.one.mating.old          <- 0.9 # probability of single mated old femal
 pr.barren.double.mating.old       <- 0.95 # probability of double mated old female being barren
 n.males <-  ceiling( n.females/male.ratio ) # calculates needed amount of males 
 cull.ratio                        <- 0.85 # survival rate of kits, farmwise from 2nd cnt to pelting
+maintenance.energy                <- 0.527 # maintenance energy pr kg metabolic weight, from mink nutrition book
 ############# Genetic means ##################################
 
 genetic.means <- c(

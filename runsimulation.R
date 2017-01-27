@@ -50,7 +50,9 @@ RunSimulation <-
             cheat,
             risktaking,
             root,
-            fileoutputpath) 
+            fileoutputpath,
+            feed.price,
+            maintenance.energy) 
 {
     resultfile <- paste(root, fileoutputpath, 'raw_data/results', sep = '/')
     
@@ -128,7 +130,7 @@ RunSimulation <-
                                                              lambda = exp(1.95 + perm.env.ls + dam.fert+dam.age))*barren*semen.quality)
     
   }
-  feed.usage.breeders <- FeedUsageBreeders(mating.list, next.gen.males, next.gen )
+  feed.usage.breeders <- FeedUsageBreeders(mating.list, next.gen.males, next.gen ,maintenance.energy)
   set(mating.list,
       j = which(colnames(mating.list) %in% c("semen.quality", "dam.age")) ,
       value = NULL)
@@ -288,11 +290,11 @@ RunSimulation <-
         j = which(colnames(next.gen) %in% c("obs_fert","dam.age"))  ,
         value = NULL)
   }
-  
+  # browser()
   next.gen$FI <- NULL
   next.gen <- rbind(next.gen, old.females, fill = T)
-  feed.intake <- sum(kit.list.nomasked$FI)
-  feed.intake.pr.kit <- feed.intake/nrow(kit.list.nomasked)
+  feed.intake.kits <- sum(kit.list.nomasked$FI)
+  feed.intake.pr.kit <- feed.intake.kits/nrow(kit.list.nomasked)
   kit.list.masked <- kit.list
   kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year,root,fileoutputpath,truncs,htruncs)
   skin.price <- sum(kit.list$skin.price, na.rm =T)/number.of.females.start.of.year
@@ -348,19 +350,19 @@ RunSimulation <-
     stat[[1,3]],
     stat[[2,3]],
     #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
-    feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
+    feed.intake.kits/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
     skin.price,
    income - number.of.females.start.of.year *
       variable.costs -
-      feed.intake * feed.price - fixed.costs - ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males-numb.sold.kits) * pelting.costs +
-      numb.sold.kits * price.sold.kit, #pr farm margin
+      feed.intake.kits * feed.price - fixed.costs - ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males-numb.sold.kits) * pelting.costs +
+      numb.sold.kits * price.sold.kit-labcosts, #pr farm margin
     income, #income from skins
     number.of.females.start.of.year *variable.costs+labcosts, #variable costs
     fixed.costs, #fixed costs
     ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs, #pelting costs
-    (feed.intake+feed.usage.breeders)*feed.price, #feeding costs
+    (feed.intake.kits+feed.usage.breeders)*feed.price, #feeding costs
     numb.sold.kits*price.sold.kit, #sold kits
-    (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),   
+    (feed.intake.kits+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),   
     skin.price*n.females/nrow(kit.list.nomasked), 
     coef(lm1)[2],
     coef(lm2)[2],
@@ -370,12 +372,14 @@ RunSimulation <-
     ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males-numb.sold.kits),
     (number.of.females.start.of.year *
        variable.costs +labcosts +
-       feed.intake * feed.price + fixed.costs + nrow(kit.list) * pelting.costs) /ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
+       feed.intake.kits * feed.price + fixed.costs + nrow(kit.list) * pelting.costs) /ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
     (number.of.females.start.of.year *
        variable.costs +labcosts +
-       feed.intake * feed.price + fixed.costs + nrow(kit.list) * pelting.costs)/number.of.females.start.of.year,
+       feed.intake.kits * feed.price + fixed.costs + nrow(kit.list) * pelting.costs)/number.of.females.start.of.year,
    feed.intake.pr.kit,
    labcosts,
+   feed.usage.breeders,
+   feed.intake.kits,
     sep = "\t",
     file = con
   )
@@ -412,31 +416,33 @@ RunSimulation <-
       stat[[1,3]],
       stat[[2,3]],
       #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
-      feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
+      feed.intake.kits/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
       sum(kit.list$skin.price, na.rm =T)/n.females,
       sum(kit.list$skin.price, na.rm = T) - number.of.females.start.of.year *
         variable.costs -
-        feed.intake * feed.price - fixed.costs - ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males-numb.sold.kits) * pelting.costs +
-        numb.sold.kits * price.sold.kit, #pr farm margin
+        (feed.intake.kits+feed.usage.breeders) * feed.price - fixed.costs - ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males-numb.sold.kits) * pelting.costs +
+        numb.sold.kits * price.sold.kit-labcosts, #pr farm margin
       sum(kit.list$skin.price, na.rm = T), #income from skins
       number.of.females.start.of.year *variable.costs+labcosts, #variable costs
         fixed.costs, #fixed costs
       ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs, #pelting costs
-      (feed.intake+feed.usage.breeders)*feed.price, #feeding costs
+      (feed.intake.kits+feed.usage.breeders)*feed.price, #feeding costs
       numb.sold.kits*price.sold.kit,
-      (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),  
+      (feed.intake.kits+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),  
       mean(kit.list$skin.price),  
       stat.crate[8],  
       number.of.females.start.of.year,   
       ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males-numb.sold.kits),
       (number.of.females.start.of.year *
         variable.costs +labcosts +
-        feed.intake * feed.price + fixed.costs + nrow(kit.list) * pelting.costs) /ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
+        feed.intake.kits * feed.price + fixed.costs + nrow(kit.list) * pelting.costs) /ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
       (number.of.females.start.of.year *
          variable.costs +labcosts +
-         feed.intake * feed.price + fixed.costs + nrow(kit.list) * pelting.costs)/number.of.females.start.of.year,
+         feed.intake.kits * feed.price + fixed.costs + nrow(kit.list) * pelting.costs)/number.of.females.start.of.year,
       feed.intake.pr.kit,
       labcosts,
+      feed.usage.breeders,
+      feed.intake.kits,
       sep = "\t",  
       file = con
     )  

@@ -43,7 +43,9 @@ RunFirstYear <-
             genetic.means,
             risktaking,
             root,
-            fileoutputpath
+            fileoutputpath,
+            feed.price,
+            maintenance.energy
   )
   {
     number.of.females.start.of.year <- n.females
@@ -105,7 +107,7 @@ RunFirstYear <-
   stat.crate[1] <- nrow(mating.list)
   mating.list <-  subset( mating.list,  obs_fert >  0 ) # remove females who are barren or mated with barren male
   
-  feed.usage.breeders <- FeedUsageBreeders(mating.list, effgen0.males, gen0.females )
+  feed.usage.breeders <- FeedUsageBreeders(mating.list, effgen0.males, gen0.females,maintenance.energy )
   stat.crate[2] <- (stat.crate[1] - nrow(mating.list))
   stat.crate[5] <- mean(mating.list$sire.id.1st == mating.list$sire.id.2nd) # percentage of females mated with 1st male
   stat.crate[6] <- ( mean(mating.list$sire.id.2nd == 0)) # percentage of single mated females
@@ -161,8 +163,8 @@ if("f0.dam" %in% colnames(old.females)) {
                                 "f0.dam")  , value=NULL )
   }
   next.gen <- rbind(next.gen, old.females,fill=TRUE)
-  feed.intake <- sum(kit.list.nomasked$FI)
-  feed.intake.pr.kit <- feed.intake/nrow(kit.list.nomasked)
+  feed.intake.kits <- sum(kit.list.nomasked$FI)
+  feed.intake.kits.pr.kit <- feed.intake.kits/nrow(kit.list.nomasked)
   # truncs <- StartPosSkins(kit.list,next.gen,next.gen.males) #defunct
   # htruncs <- StartPosSkinsVelvet(kit.list,next.gen,next.gen.males)
   kit.list <- SkinPrices(kit.list.nomasked, next.gen, next.gen.males,year,root,fileoutputpath,truncs,htruncs)
@@ -179,51 +181,53 @@ if("f0.dam" %in% colnames(old.females)) {
     stat <- summaryBy(phenotype.bw.oct + phenotype.skin.length ~ sex, data = kit.list, FUN= c(mean))
     stat1 <- subset(kit.list, sex==1)#males
     cat (
-      year, #simulation year
-      mean(kit.list.for.stats$litter.size), #avg genetic value of litter size
-      var(kit.list.for.stats$litter.size), # variance of genetic value of litter size
-      0, #avg inbreeding
-      mean(mating.list$obs_fert), #observed fertility
-      stat[[2,2]], #avg phenotype, october females
-      mean(kit.list.for.stats$bw_m), #avg gen val oct weight
-      stat[[1,2]], #avg phenotype oct males
-      var(kit.list.for.stats$bw_m), #variance oct weight
-      0, #correlation bw blup and phenotype
-      cor(stat1$bw_m, stat1$phenotype.bw.oct), #correlation bw phenotype and genetic value
+      year,                                      # simulation year
+      mean(kit.list.for.stats$litter.size),      # avg genetic value of litter size
+      var(kit.list.for.stats$litter.size),       # variance of genetic value of litter size
+      0,                                         # avg inbreeding
+      mean(mating.list$obs_fert),                # observed fertility
+      stat[[2,2]],                               # avg phenotype, october females
+      mean(kit.list.for.stats$bw_m),             # avg gen val oct weight
+      stat[[1,2]],                               # avg phenotype oct males
+      var(kit.list.for.stats$bw_m),              # variance oct weight
+      0,                                         # correlation bw blup and phenotype
+      cor(stat1$bw_m, stat1$phenotype.bw.oct),   #correlation bw phenotype and genetic value
       mean(kit.list.for.stats$skin.length.male), # avg genetic value for skin length
       var(kit.list.for.stats$skin.length.male),  # var of skin length
-      mean(kit.list.for.stats$skin.qual), # avg genetic value of skin qual
-      var(kit.list.for.stats$skin.qual), # var of skin qual
-      0, # correlation of gen value litter size to blup
-      0, # correlation of own litter size to genetic value 
-      stat.crate[1], # number of mated females
-      stat.crate[2], # number of barren females
-      stat.crate[3], # proportion of kits with true sires
-      stat.crate[4], # number of kits
-      stat.crate[5], # percentages of females mated with "own" male
-      stat.crate[6], # number of females mated once
-      stat.crate[7], # survived kits
-      mean(kit.list.for.stats$live.qual), # avg live quality
-      var(kit.list.for.stats$live.qual),  #variance of live quality
-      0, # correlation bw blup and gen value live qual
+      mean(kit.list.for.stats$skin.qual),        # avg genetic value of skin qual
+      var(kit.list.for.stats$skin.qual),         # var of skin qual
+      0,                                         # correlation of gen value litter size to blup
+      0,                                         # correlation of own litter size to genetic value 
+      stat.crate[1],                             # number of mated females
+      stat.crate[2],                             # number of barren females
+      stat.crate[3],                             # proportion of kits with true sires
+      stat.crate[4],                             # number of kits
+      stat.crate[5],                             # percentages of females mated with "own" male
+      stat.crate[6],                             # number of females mated once
+      stat.crate[7],                             # survived kits
+      mean(kit.list.for.stats$live.qual),        # avg live quality
+      var(kit.list.for.stats$live.qual),         # variance of live quality
+      0,                                         # correlation bw blup and gen value live qual
       0,
       0,
-      stat[[1,3]], # skin length phenotype, male
-      stat[[2,3]], # skin length phenotype, female
+      stat[[1,3]],                               # skin length phenotype, male
+      stat[[2,3]],                               # skin length phenotype, female
       #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
-      feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
+      feed.intake.kits/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
       sum(kit.list$skin.price, na.rm =T)/n.females,
       income - number.of.females.start.of.year *
         variable.costs -
-        feed.intake * feed.price - fixed.costs - nrow(kit.list) * pelting.costs +
-        numb.sold.kits * price.sold.kit, #pr farm margin
-      income, #income from skins
+        (feed.intake.kits+feed.usage.breeders) * feed.price - fixed.costs - nrow(kit.list) * pelting.costs +
+        numb.sold.kits * price.sold.kit,         # pr farm margin
+      income,                                    # income from skins
       number.of.females.start.of.year *variable.costs+labcosts, #variable costs
-      fixed.costs, #fixed costs
-      ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs, #pelting costs
-      (feed.intake+feed.usage.breeders)*feed.price, #feeding costs
-      numb.sold.kits*price.sold.kit, #income from sold kits
-      (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),
+      fixed.costs,                               # fixed costs
+      ceiling(stat.crate[7] - n.females *
+                (1 - prop.oldfemales) - n.males) * 
+        pelting.costs,                           # pelting costs
+      (feed.intake.kits+feed.usage.breeders)*feed.price, # feeding costs
+      numb.sold.kits*price.sold.kit,             # income from sold kits
+      (feed.intake.kits+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),
       mean(kit.list$skin.price),
       0,
       0,
@@ -232,13 +236,17 @@ if("f0.dam" %in% colnames(old.females)) {
       number.of.females.start.of.year,
       ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
       (number.of.females.start.of.year *
-         variable.costs + labcosts +
-         feed.intake * feed.price + fixed.costs +  ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs) /ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
+          variable.costs + labcosts +
+          feed.intake.kits * feed.price + fixed.costs +  ceiling(stat.crate[7] -
+          n.females * (1 - prop.oldfemales) - n.males) * pelting.costs
+      ) /ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
       (number.of.females.start.of.year *
          variable.costs +labcosts +
-         feed.intake * feed.price + fixed.costs +  ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs)/number.of.females.start.of.year,
-      feed.intake.pr.kit,
+         feed.intake.kits * feed.price + fixed.costs +  ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs)/number.of.females.start.of.year,
+      feed.intake.kits.pr.kit,
       labcosts,
+      feed.usage.breeders,
+      feed.intake.kits,
       sep = "\t",
       file = con
     )  
@@ -273,31 +281,33 @@ if("f0.dam" %in% colnames(old.females)) {
       stat[[1,3]],
       stat[[2,3]],
       #sum(kit.list$FI)/(nrow(kit.list)-(n.females*(1-prop.oldfemales)+n.males)),
-      feed.intake/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
+      feed.intake.kits/(stat.crate[7]-(1-prop.oldfemales)*n.females-n.males),
       sum(kit.list$skin.price, na.rm =T)/n.females,
       sum(kit.list$skin.price, na.rm = T) - number.of.females.start.of.year *
         variable.costs -
-        feed.intake * feed.price - fixed.costs - nrow(kit.list) * pelting.costs +
+        (feed.intake.kits+feed.usage.breeders) * feed.price - fixed.costs - nrow(kit.list) * pelting.costs +
         numb.sold.kits * price.sold.kit-labcosts, #pr farm margin
       sum(kit.list$skin.price, na.rm = T), #income from skins
       number.of.females.start.of.year *variable.costs+labcosts, #variable costs
       fixed.costs, #fixed costs
       ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs, #pelting costs
-      (feed.intake+feed.usage.breeders)*feed.price, #feeding costs
+      (feed.intake.kits+feed.usage.breeders)*feed.price, #feeding costs
       numb.sold.kits*price.sold.kit,
-      (feed.intake+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),  
+      (feed.intake.kits+feed.usage.breeders)*feed.price/nrow(kit.list.nomasked),  
       mean(kit.list$skin.price),  
       stat.crate[8],  
       number.of.females.start.of.year,
       ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
       (number.of.females.start.of.year *
          variable.costs +labcosts +
-         feed.intake * feed.price + fixed.costs +  ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs) /ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
+         feed.intake.kits * feed.price + fixed.costs +  ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs) /ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males),
       (number.of.females.start.of.year *
          variable.costs +labcosts +
-         feed.intake * feed.price + fixed.costs +  ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs)/number.of.females.start.of.year,
-      feed.intake.pr.kit,
+         feed.intake.kits * feed.price + fixed.costs +  ceiling(stat.crate[7]-n.females*(1-prop.oldfemales)-n.males) * pelting.costs)/number.of.females.start.of.year,
+      feed.intake.kits.pr.kit,
       labcosts,
+      feed.usage.breeders,
+      feed.intake.kits,
       sep = "\t",
       file = con
     )

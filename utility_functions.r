@@ -3080,8 +3080,7 @@ file = skin.metrics.males
    colnames(skin.prices) <- c("id","skin.price")
    kitlist <- merge(kitlist, skin.prices, by="id")
    set( kitlist, j=which(colnames(kitlist) %in% 
-                           c("id",
-                             "P1", #50
+                           c("P1", #50
                              "P2",#40
                              "P3",#30
                              "P4",#00
@@ -3270,22 +3269,36 @@ file = skin.metrics.males
  # this simple functions used a simple way to generate feeding costs for the breeders
  # males are considered to live for 110 days after pelting and females 365 days, use data from Tauson et al 2004
  # & mink nutrition book and assume K_lactation = 0.78 (like in sows)
- FeedUsageBreeders <- function (mating.list, next.gen.males, next.gen )   {
+ FeedUsageBreeders <- function (mating.list, next.gen.males, next.gen,maintenance.energy )   {
    # browser()
-next.gen.males$feed.used.males <- (next.gen.males$phenotype.bw.oct^0.75*0.527*110)/5.0208
-feed.used.males <- sum(next.gen.males$feed.used.males)
-feed.used <- numeric(nrow(mating.list))
-mating.list <- cbind(mating.list,feed.used)
-mating.list <-transform(mating.list,feed.used = (0.013*obs_fert*0.78*4.53*7
-                          +0.0222*obs_fert*0.78*5.14*7+  
-                            0.0286*obs_fert*.78*5.86*7+
-                            0.0328*obs_fert*0.78*5.96*7)/5.02)
-feed.used.females <- sum(mating.list$feed.used)
-next.gen$feed.used <- (next.gen$phenotype.bw.oct^0.75*0.527*365)/5.020
-feed.used.females <- feed.used.females + sum(next.gen$feed.used)
-feed.used.breeders <- (feed.used.females+feed.used.males)
-return(feed.used.breeders)
-
+   next.gen.males$feed.used.males <-
+     (next.gen.males$phenotype.bw.oct ^ 0.75 * maintenance.energy * 110) / 5.0208
+   # this predicts the maintenance feed a male will use for 110 days, from pelting to after mating season
+   feed.used.males <- sum(next.gen.males$feed.used.males)
+   # sum up the feed used
+   feed.used <- numeric(nrow(mating.list))
+   mating.list <- cbind(mating.list, feed.used)
+   mating.list <-
+     transform(
+       mating.list,
+       feed.used = (
+         0.013 * obs_fert * 0.78 * 4.53 * 7
+         + 0.0222 * obs_fert * 0.78 * 5.14 * 7 +
+           0.0286 * obs_fert * .78 * 5.86 * 7 +
+           0.0328 * obs_fert * 0.78 * 5.96 * 7
+       ) / 5.02
+     )
+   # this predicts the energy required for lactation in each week of lactation for
+   # mink females, based on the amount of kits in each litter
+   feed.used.females <- sum(mating.list$feed.used)
+   next.gen$feed.used <-
+     (next.gen$phenotype.bw.oct ^ 0.75 * maintenance.energy * 365) / 5.020
+   # predict the maintenance requirments for females based on them bein alive for the whole year
+   feed.used.females <-
+     feed.used.females + sum(next.gen$feed.used, na.rm = TRUE)
+   feed.used.breeders <- (feed.used.females + feed.used.males)
+   return(feed.used.breeders)
+   
 } 
  
 ############### Pseudo imported males ##########################
@@ -3397,30 +3410,35 @@ return(feed.used.breeders)
      summarized <-
        summaryBy(
          Gen + Gmean + Gvar + Fis + Obs.fert + mean.phenotype.bw.females + gen.value.bs +
-           mean.phenotype.bw.males + bw.var+cor.bw.to.blup+cor.bw.phenotype+skin.length.mean+
-           skin.length.var+
-           skin.qual.mean+
-           skin.qual.var+
-           cor.ls.blup+
-           cor.ls.own.to.ls+
-           mated.females+
-           barren.females+
-           numb.false.sires+
-           numb.kits+
-           remating.perc+
-           perc.single.mat+
-           mean.gen.val.qual+
-           var.gen.val.qual+
-           cor.blup.qual.gen.val.qual+
-           cor.live.score.skin.qa+
-           cor.blup.qual.to.skin.qual+
-           survived.kits+feed.per.skin+avg.skin.length.male+skin.price+avg.skin.length.female
-         +margin+feeding.cost.pr.skin+avg.skin.price+income.from.skins+variable.costs+fixed.costs+pelting.costs+income.fr.sold.kits+
-           gross.feeding.costs+cage_utilization+n.females+sold.skins+costs.pr.sold.skin+costs.pr.female+reg_EBV_TBV_LS+reg_EBV_TBV_qual+reg_EBV_TBV_size~ Gen,
-         data = results, 
-         FUN = c(mean, var), 
+           mean.phenotype.bw.males + bw.var + cor.bw.to.blup + cor.bw.phenotype +
+           skin.length.mean +
+           skin.length.var +
+           skin.qual.mean +
+           skin.qual.var +
+           cor.ls.blup +
+           cor.ls.own.to.ls +
+           mated.females +
+           barren.females +
+           numb.false.sires +
+           numb.kits +
+           remating.perc +
+           perc.single.mat +
+           mean.gen.val.qual +
+           var.gen.val.qual +
+           cor.blup.qual.gen.val.qual +
+           cor.live.score.skin.qa +
+           cor.blup.qual.to.skin.qual +
+           survived.kits + feed.per.skin + avg.skin.length.male + skin.price +
+           avg.skin.length.female
+         + margin + feeding.cost.pr.skin + avg.skin.price + income.from.skins +
+           variable.costs + fixed.costs + pelting.costs + income.fr.sold.kits +
+           gross.feeding.costs + cage_utilization + n.females + sold.skins +
+           costs.pr.sold.skin + costs.pr.female + reg_EBV_TBV_LS + reg_EBV_TBV_qual +
+           reg_EBV_TBV_size + feed.usage.breeders + feed.intake.kits ~ Gen,
+         data = results,
+         FUN = c(mean, var),
          na.rm = T
-       ) 
+       )
      con <-
        file(
          description = paste(root, fileoutputpath, "Summarized/summarized", sep = '/'),
@@ -3506,16 +3524,21 @@ return(feed.used.breeders)
      summarized <-
        summaryBy(
          Gen + Gmean + Gvar + Fis + Obs.fert + mean.phenotype.bw.females + gen.value.bs +
-           mean.phenotype.bw.males + bw.var+cor.bw.phenotype +
-           skin.length.mean+
-           skin.length.var+
-           skin.qual.mean+
-           skin.qual.var+
-           cor.ls.own.to.ls+mated.females+barren.females+numb.false.sires+numb.kits+
-           remating.perc+perc.single.mat+mean.gen.val.qual+var.gen.val.qual+survived.kits+
-           avg.skin.length.male+avg.skin.length.female+feed.per.skin+skin.price+
-           margin+feeding.cost.pr.skin+avg.skin.price+income.from.skins+variable.costs+fixed.costs+pelting.costs+income.fr.sold.kits+
-           gross.feeding.costs+cage_utilization+n.females+sold.skins+costs.pr.sold.skin+costs.pr.female
+           mean.phenotype.bw.males + bw.var + cor.bw.phenotype +
+           skin.length.mean +
+           skin.length.var +
+           skin.qual.mean +
+           skin.qual.var +
+           cor.ls.own.to.ls + mated.females + barren.females + numb.false.sires +
+           numb.kits +
+           remating.perc + perc.single.mat + mean.gen.val.qual + var.gen.val.qual +
+           survived.kits +
+           avg.skin.length.male + avg.skin.length.female + feed.per.skin +
+           skin.price +
+           margin + feeding.cost.pr.skin + avg.skin.price + income.from.skins +
+           variable.costs + fixed.costs + pelting.costs + income.fr.sold.kits +
+           gross.feeding.costs + cage_utilization + n.females + sold.skins +
+           costs.pr.sold.skin + costs.pr.female + labor.costs+ feed.usage.breeders + feed.intake.kits
          ~ Gen,
          data = results,
          FUN = c(mean, var),

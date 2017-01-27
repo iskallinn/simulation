@@ -59,6 +59,7 @@ Simulation <- function (
   pelting.costs =  12,           # pelting costs pr skin
   fixed.costs = 286*n.females,   # fixed costs at start of simulation 
   price.sold.kit = 80,
+  maintenance.energy = 0.527,
   genetic.means = c(
     0,                  # live.qual
     0,                  # h.length
@@ -227,6 +228,8 @@ Simulation <- function (
     "costs.pr.female",
     "FI.pr.kit",
     "labor.costs",
+    "feed.usage.breeders",
+    "feed.intake.kits",
     sep = "\t",
     file = con
   )  } else if (selection.method != blup) { # phenotypic or random
@@ -276,7 +279,9 @@ Simulation <- function (
       "costs.pr.sold.skin",
       "costs.pr.female",
       "FI.pr.kit",
-          "labor.costs",
+      "labor.costs",
+      "feed.usage.breeders",
+      "feed.intake.kits",
       sep = "\t",
       file = con
     )
@@ -327,7 +332,9 @@ Simulation <- function (
                       genetic.means,
                       risktaking,
                       root,
-                      fileoutputpath
+                      fileoutputpath,
+                      feed.price,
+                      maintenance.energy
     )
     
     for (y in 1:n) {
@@ -385,7 +392,9 @@ Simulation <- function (
           cheat,
           risktaking,
           root,
-          fileoutputpath
+          fileoutputpath,
+          feed.price,
+          maintenance.energy
           )
       
     }
